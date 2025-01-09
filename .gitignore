@@ -57,7 +57,8 @@ macsyfinder-*/
 data/
 sandbox/
 !/tests/data
-!/macsypy/data
+!/src/macsypy/data
+
 
 ######################################
 # Singularity/Apptainer def and simg #
