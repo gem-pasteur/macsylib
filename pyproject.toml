@@ -64,7 +64,6 @@ macsydata = "macsypy.scripts.macsydata:main"
 macsyprofile = "macsypy.scripts.macsyprofile:main"
 macsyconfig = "macsypy.scripts.macsyconfig:main"
 
-
 [project.urls]
 Homepage = "https://github.com/gem-pasteur/macsyfinder/"
 Documentation = "https://macsyfinder.readthedocs.io/en/latest/"
@@ -85,6 +84,7 @@ version = {attr = "macsypy.__version__"}
 
 [tool.setuptools.package-data]
 macsypy = ["data/pre-push"]
+
 
 [tool.coverage.run]
 branch = true
@@ -126,4 +126,3 @@ indent-style = "space"
 [tool.ruff.lint.per-file-ignores]
 #F841 Local variable `xxx` is assigned to but never used
 "tests/test_System.py" = ["F841"]
-
