@@ -5,7 +5,6 @@ recursive-include doc/build/html *
 include doc/build/latex/macsyfinder.pdf
 
 recursive-include utils *
-include etc/macsyfinder.conf
 
 recursive-include tests/ *
 recursive-exclude tests/__pycache__/ *
