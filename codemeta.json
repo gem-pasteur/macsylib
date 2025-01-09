@@ -1,0 +1,147 @@
+{
+    "@context": "https://w3id.org/codemeta/3.0",
+    "type": "SoftwareSourceCode",
+    "applicationCategory": "Biology",
+    "author": [
+        {
+            "id": "https://orcid.org/ 0000-0002-0220-0482",
+            "type": "Person",
+            "affiliation": {
+                "type": "Organization",
+                "name": "Institut Pasteur, Université Paris Cité, Bioinformatics and Biostatistics HUB, Paris, France "
+            },
+            "email": "bneron@pasteur.fr",
+            "familyName": "Néron",
+            "givenName": "Bertrand"
+        },
+        {
+            "id": "https://orcid.org/ 0000-0002-5231-3346",
+            "type": "Person",
+            "affiliation": {
+                "type": "Organization",
+                "name": " Univ. Grenoble Alpes, CNRS, UMR 5525, VetAgro Sup, Grenoble INP, TIMC, 38000 Grenoble, France "
+            },
+            "email": "sophie.abby@univ-grenoble-alpes.fr",
+            "familyName": "Abby",
+            "givenName": "Sophie"
+        },
+        {
+            "id": "https://orcid.org/ 0000-0001-7704-822X",
+            "type": "Person",
+            "affiliation": {
+                "type": "Organization",
+                "name": "Institut Pasteur, Université Paris Cité, CNRS UMR3525, Microbial Evolutionary Genomics, Paris, France"
+            },
+            "email": "erocha@pasteur.fr",
+            "familyName": "Rocha",
+            "givenName": "Eduardo"
+        }
+    ],
+    "codeRepository": "https://github.com/gem-pasteur/macsylib",
+    "contributor": [
+        {
+            "id": "https://orcid.org/ 0000-0002-7552-1009",
+            "type": "Person",
+            "affiliation": {
+                "type": "Organization",
+                "name": "Institut Pasteur, Université Paris Cité, Bioinformatics and Biostatistics HUB, Paris, France "
+            },
+            "email": "hmenager@pasteur.fr",
+            "familyName": "Ménager",
+            "givenName": "Hervé"
+        },
+        {
+            "id": "https://github.com/fjossandon",
+            "type": "Person",
+            "affiliation": {
+                "type": "Organization",
+                "name": "Biome Makers Inc."
+            },
+            "email": "fco.j.ossandon@gmail.com",
+            "familyName": "Ossandon",
+            "givenName": "Franscisco J,"
+        },
+        {
+            "id": "https://orcid.org/0000-0003-2277-689X",
+            "type": "Person",
+            "affiliation": {
+                "type": "Organization",
+                "name": "APC Microbiome Institute: Cork, IE "
+            },
+            "familyName": "Denise",
+            "givenName": "Rémi"
+        },
+        {
+            "id": "https://orcid.org/ 0000-0001-7389-447X",
+            "type": "Person",
+            "affiliation": {
+                "type": "Organization",
+                "name": "Institut Pasteur, Université Paris Cité, CNRS UMR3525, Microbial Evolutionary Genomics, Paris, France"
+            },
+            "email": "mtouchon@pasteur.fr",
+            "familyName": "Touchon",
+            "givenName": "Marie"
+        },
+        {
+            "id": "https://orcid.org/ 0000-0003-4797-6185",
+            "type": "Person",
+            "affiliation": {
+                "type": "Organization",
+                "name": "Institut Pasteur, Université Paris Cité, CNRS UMR3525, Microbial Evolutionary Genomics, Paris, France"
+            },
+            "email": "aperrin@pasteur.fr",
+            "familyName": "Perrin",
+            "givenName": "Amandine"
+        },
+        {
+            "id": "https://orcid.org/ 0000-0002-0930-8920",
+            "type": "Person",
+            "affiliation": {
+                "type": "Organization",
+                "name": "Institut Pasteur, Université Paris Cité, SeqBio, Paris, France "
+            },
+            "email": "yoann.dufresne@pasteur.fr",
+            "familyName": "Dufresne",
+            "givenName": "Yoann"
+        },
+        {
+            "id": "https://github.com/TrellixVulnTeam",
+            "type": "Person",
+            "email": "charles.mcfarland@trellix.com",
+            "givenName": "TrellixVulnTeam"
+        }
+    ],
+    "dateCreated": "2025-01-02",
+    "description": "MacSyLib is a package to model and detect macromolecular systems, genetic pathways… in prokaryotes protein datasets.",
+    "downloadUrl": "https://pypi.org/project/MacSyLib",
+    "funder": {
+        "type": "Organization",
+        "name": "Institut Pasteur Paris"
+    },
+    "keywords": [
+        "bioinformatics",
+        "functional genomics",
+        "gene functional annotation"
+    ],
+    "license": "https://spdx.org/licenses/GPL-3.0+",
+    "name": "MacSyLib",
+    "operatingSystem": [
+        "Linux",
+        "BSD",
+        "macOS"
+    ],
+    "programmingLanguage": "Python",
+    "relatedLink": "https://pypi.org/project/MacSyLib/",
+    "softwareRequirements": [
+        "Python >= 3.10",
+        "hmmer >= 3.1"
+    ],
+    "version": "2.1.5",
+    "codemeta:contIntegration": {
+        "id": "https://github.com/gem-pasteur/macsylib/actions"
+    },
+    "continuousIntegration": "https://github.com/gem-pasteur/macsylib/actions",
+    "developmentStatus": "active",
+    "issueTracker": "https://github.com/gem-pasteur/macsylib/issues",
+    "referencePublication": "https://doi.org/10.24072/pcjournal.250"
+}

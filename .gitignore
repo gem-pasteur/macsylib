@@ -1,0 +1,97 @@
+.eggs
+
+######################
+# Logs and databases #
+######################
+*\.log
+.DS_Store
+
+####################
+# Eclipse metadata_path #
+####################
+\.project
+\.pydevproject
+\.settings/
+
+#############
+# vim files #
+#############
+*\.swp
+*~
+\#*\#
+
+################# 
+# pycharm files #
+#################
+\.idea
+
+##########################
+# Python complied source #
+##########################
+*\.pyc
+*\.pyo
+build/
+dist/
+doc/_build/
+MacSyLib.egg-info/
+
+###########################
+# coverage files
+##########################
+htmlcov/
+.coverage
+!/.github/workflows/.coverage
+coverage_html/
+
+###################################
+# MacsyFinder results directories #
+###################################
+log*
+test/datatest/DEF_svg/
+macsypy/*_svg
+macsyfinder-*/
+
+####################
+# MacSyFinder data #
+####################
+data/
+sandbox/
+!/tests/data
+!/macsypy/data
+
+######################################
+# Singularity/Apptainer def and simg #
+######################################
+Singularity/
+
+##############################
+# MacsyFinder generated file #
+##############################
+MANIFEST
+uninstall.cfg
+uninstall_files
+macsyfinder.egg-info/
+*\.idx
+
+
+#############
+# nextflow  #
+#############
+.nextflow/
+.nextflow.log*
+work/
+
+########
+# ruff #
+########
+.ruff_cache/
+
+#########
+# stuff #
+#########
+.ipynb_checkpoints
+benchmark/
+Conda/
+Sandbox/
+perf/
+score_analysis/
