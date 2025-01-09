@@ -6,12 +6,6 @@
 *\.log
 .DS_Store
 
-####################
-# Eclipse metadata_path #
-####################
-\.project
-\.pydevproject
-\.settings/
 
 #############
 # vim files #
@@ -46,9 +40,7 @@ coverage_html/
 ###################################
 # MacsyFinder results directories #
 ###################################
-log*
 test/datatest/DEF_svg/
-macsypy/*_svg
 macsyfinder-*/
 
 ####################
@@ -71,7 +63,7 @@ Singularity/
 MANIFEST
 uninstall.cfg
 uninstall_files
-macsyfinder.egg-info/
+src/MacSyLib.egg-info
 *\.idx
 
 
