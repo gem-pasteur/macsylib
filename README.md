@@ -1,3 +1,6 @@
+![MacSyLib banner](./.github/logo_macsylib.png "MacSyLib")
+
+
 # MacSyLib
 
 MacSyLib is a package to model and detect macromolecular systems, genetic pathways… by similarity search in prokaryotes datasets.
