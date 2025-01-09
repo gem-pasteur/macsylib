@@ -72,6 +72,9 @@ Repository = "https://github.com/gem-pasteur/macsyfinder/"
 Issues = "https://github.com/gem-pasteur/macsyfinder/issues"
 Changelog = "https://macsyfinder.readthedocs.io/en/latest/user_guide/new_v2.html#what-s-new-in-macsyfinder-v2"
 
+[tool.setuptools]
+include-package-data = true
+
 [tool.setuptools.packages.find]
 where=["src"]
 include = ["macsypy*"]
@@ -79,6 +82,9 @@ namespaces = false
 
 [tool.setuptools.dynamic]
 version = {attr = "macsypy.__version__"}
+
+[tool.setuptools.package-data]
+macsypy = ["data/pre-push"]
 
 [tool.coverage.run]
 branch = true
