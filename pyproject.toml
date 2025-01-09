@@ -118,3 +118,6 @@ src = ['src/macsypy', 'tests', 'pyproject.toml']
 indent-style = "space"
 
 [tool.ruff.lint.per-file-ignores]
+#F841 Local variable `xxx` is assigned to but never used
+"tests/test_System.py" = ["F841"]
+
