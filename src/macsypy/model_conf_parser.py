@@ -56,11 +56,11 @@ class ModelConfParser:
 
         filtering_opt = {}
         weights = {}
-        if weights_node:
+        if weights_node is not None:
             weights = self.parse_weights(weights_node)
 
         filtering_node = model_conf_node.find("./filtering")
-        if filtering_node:
+        if filtering_node is not None:
             filtering_opt = self.parse_filtering(filtering_node)
 
         model_conf = {k: v for conf_part in (weights, filtering_opt) for k, v in conf_part.items()}
