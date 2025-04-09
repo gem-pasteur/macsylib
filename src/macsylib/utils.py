@@ -1,29 +1,31 @@
 #########################################################################
-# MacSyFinder - Detection of macromolecular systems in protein dataset  #
-#               using systems modelling and similarity search.          #
+# MacSyLib - Python library to detect macromolecular systems            #
+#            in prokaryotes protein dataset using systems modelling     #
+#            and similarity search.                                     #
+#                                                                       #
 # Authors: Sophie Abby, Bertrand Neron                                  #
-# Copyright (c) 2014-2024  Institut Pasteur (Paris) and CNRS.           #
+# Copyright (c) 2014-2025  Institut Pasteur (Paris) and CNRS.           #
 # See the COPYRIGHT file for details                                    #
 #                                                                       #
-# This file is part of MacSyFinder package.                             #
+# This file is part of MacSyLib package.                                #
 #                                                                       #
-# MacSyFinder is free software: you can redistribute it and/or modify   #
+# MacSyLib is free software: you can redistribute it and/or modify      #
 # it under the terms of the GNU General Public License as published by  #
 # the Free Software Foundation, either version 3 of the License, or     #
 # (at your option) any later version.                                   #
 #                                                                       #
-# MacSyFinder is distributed in the hope that it will be useful,        #
+# MacSyLib is distributed in the hope that it will be useful,           #
 # but WITHOUT ANY WARRANTY; without even the implied warranty of        #
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the          #
 # GNU General Public License for more details .                         #
 #                                                                       #
 # You should have received a copy of the GNU General Public License     #
-# along with MacSyFinder (COPYING).                                     #
+# along with MacSyLib (COPYING).                                        #
 # If not, see <https://www.gnu.org/licenses/>.                          #
 #########################################################################
 
 """
-Some macsyfinder helper functions
+Some mcsylib helper functions
 """
 
 import os
@@ -33,7 +35,7 @@ import contextlib
 from itertools import groupby
 
 from .registries import DefinitionLocation, ModelRegistry
-from .error import MacsypyError
+from .error import MacsylibError
 
 
 def get_def_to_detect(models: list[tuple[str, tuple[str]]],
@@ -66,7 +68,7 @@ def get_replicon_names(genome_path, db_type) -> list[str]:
     elif db_type in ('ordered_replicon', 'unordered'):
         return [os.path.splitext(os.path.basename(genome_path))[0]]
     else:
-        raise MacsypyError(f"Invalid genome type: {db_type}")
+        raise MacsylibError(f"Invalid genome type: {db_type}")
 
 
 def _get_gembase_replicon_names(genome_path: str) -> list[str]:
@@ -154,7 +156,7 @@ def open_compressed(path: str, mode: str = 'rt') -> str:
     if ext == '.gz':
         my_open = gzip.open
     elif ext == '.bz2' or ext == '.zip':
-        msg = f"MacSyFinder does not support '{ext[1:]}' compression (only gzip)."
+        msg = f"MacSyLib does not support '{ext[1:]}' compression (only gzip)."
         raise ValueError(msg)
     else:
         # I assumed it's a fasta not compressed

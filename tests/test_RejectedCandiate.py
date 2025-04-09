@@ -1,38 +1,40 @@
 #########################################################################
-# MacSyFinder - Detection of macromolecular systems in protein dataset  #
-#               using systems modelling and similarity search.          #
+# MacSyLib - Python library to detect macromolecular systems            #
+#            in prokaryotes protein dataset using systems modelling     #
+#            and similarity search.                                     #
+#                                                                       #
 # Authors: Sophie Abby, Bertrand Neron                                  #
-# Copyright (c) 2014-2024  Institut Pasteur (Paris) and CNRS.           #
+# Copyright (c) 2014-2025  Institut Pasteur (Paris) and CNRS.           #
 # See the COPYRIGHT file for details                                    #
 #                                                                       #
-# This file is part of MacSyFinder package.                             #
+# This file is part of MacSyLib package.                                #
 #                                                                       #
-# MacSyFinder is free software: you can redistribute it and/or modify   #
+# MacSyLib is free software: you can redistribute it and/or modify      #
 # it under the terms of the GNU General Public License as published by  #
 # the Free Software Foundation, either version 3 of the License, or     #
 # (at your option) any later version.                                   #
 #                                                                       #
-# MacSyFinder is distributed in the hope that it will be useful,        #
+# MacSyLib is distributed in the hope that it will be useful,           #
 # but WITHOUT ANY WARRANTY; without even the implied warranty of        #
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the          #
 # GNU General Public License for more details .                         #
 #                                                                       #
 # You should have received a copy of the GNU General Public License     #
-# along with MacSyFinder (COPYING).                                     #
+# along with MacSyLib (COPYING).                                        #
 # If not, see <https://www.gnu.org/licenses/>.                          #
 #########################################################################
 
 import os
 import argparse
 
-from macsypy.hit import CoreHit, ModelHit, HitWeight
-from macsypy.config import Config, MacsyDefaults
-from macsypy.gene import CoreGene, ModelGene, GeneStatus
-from macsypy.profile import ProfileFactory
-from macsypy.model import Model
-from macsypy.registries import ModelLocation
-from macsypy.cluster import Cluster
-from macsypy.system import RejectedCandidate
+from macsylib.hit import CoreHit, ModelHit, HitWeight
+from macsylib.config import Config, MacsyDefaults
+from macsylib.gene import CoreGene, ModelGene, GeneStatus
+from macsylib.profile import ProfileFactory
+from macsylib.model import Model
+from macsylib.registries import ModelLocation
+from macsylib.cluster import Cluster
+from macsylib.system import RejectedCandidate
 
 from tests import MacsyTest
 

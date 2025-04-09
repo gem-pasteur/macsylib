@@ -1,26 +1,29 @@
 #########################################################################
-# MacSyFinder - Detection of macromolecular systems in protein dataset  #
-#               using systems modelling and similarity search.          #
+# MacSyLib - Python library to detect macromolecular systems            #
+#            in prokaryotes protein dataset using systems modelling     #
+#            and similarity search.                                     #
+#                                                                       #
 # Authors: Sophie Abby, Bertrand Neron                                  #
-# Copyright (c) 2014-2024  Institut Pasteur (Paris) and CNRS.           #
+# Copyright (c) 2014-2025  Institut Pasteur (Paris) and CNRS.           #
 # See the COPYRIGHT file for details                                    #
 #                                                                       #
-# This file is part of MacSyFinder package.                             #
+# This file is part of MacSyLib package.                                #
 #                                                                       #
-# MacSyFinder is free software: you can redistribute it and/or modify   #
+# MacSyLib is free software: you can redistribute it and/or modify      #
 # it under the terms of the GNU General Public License as published by  #
 # the Free Software Foundation, either version 3 of the License, or     #
 # (at your option) any later version.                                   #
 #                                                                       #
-# MacSyFinder is distributed in the hope that it will be useful,        #
+# MacSyLib is distributed in the hope that it will be useful,           #
 # but WITHOUT ANY WARRANTY; without even the implied warranty of        #
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the          #
 # GNU General Public License for more details .                         #
 #                                                                       #
 # You should have received a copy of the GNU General Public License     #
-# along with MacSyFinder (COPYING).                                     #
+# along with MacSyLib (COPYING).                                        #
 # If not, see <https://www.gnu.org/licenses/>.                          #
 #########################################################################
+
 
 """
 This is the entrypoint to the macsydata command
@@ -42,13 +45,13 @@ from importlib import resources as impresources
 import colorlog
 from packaging import requirements, specifiers, version
 
-import macsypy
-from macsypy.error import MacsydataError, MacsyDataLimitError
-from macsypy.config import MacsyDefaults, Config
-from macsypy.registries import ModelRegistry, ModelLocation, scan_models_dir
-from macsypy.package import RemoteModelIndex, LocalModelIndex, Package, parse_arch_path
-from macsypy.metadata import Metadata, Maintainer
-from macsypy import licenses
+import macsylib
+from macsylib.error import MacsydataError, MacsyDataLimitError
+from macsylib.config import MacsyDefaults, Config
+from macsylib.registries import ModelRegistry, ModelLocation, scan_models_dir
+from macsylib.package import RemoteModelIndex, LocalModelIndex, Package, parse_arch_path
+from macsylib.metadata import Metadata, Maintainer
+from macsylib import licenses
 try:
     import git
 except ModuleNotFoundError:
@@ -68,8 +71,8 @@ def get_version_message() -> str:
     :return: the long description of the macsyfinder version
     :rtype: str
     """
-    msf_ver = macsypy.__version__
-    commit = macsypy.__commit__
+    msf_ver = macsylib.__version__
+    commit = macsylib.__commit__
     vers_msg = f"""Macsydata {msf_ver} {commit}
 Python {sys.version}
 
@@ -77,7 +80,7 @@ MacsyFinder is distributed under the terms of the GNU General Public License (GP
 See the COPYING file for details.
 
 If you use this software please cite:
-{macsypy.__citation__}
+{macsylib.__citation__}
 and don't forget to cite models used:
 macsydata cite <model>
 """
@@ -553,7 +556,7 @@ def do_cite(args: argparse.Namespace) -> None:
         pack_citations = [cite.replace('\n', '\n  ') for cite in pack_citations]
         pack_citations = '\n- '.join(pack_citations)
         pack_citations = '_ ' + pack_citations.rstrip()
-        macsy_cite = macsypy.__citation__
+        macsy_cite = macsylib.__citation__
         macsy_cite = macsy_cite.replace('\n', '\n  ')
         macsy_cite = '- ' + macsy_cite
         print(f"""To cite {pack_name}:
@@ -573,7 +576,7 @@ To cite MacSyFinder:
 def do_help(args: argparse.Namespace) -> None:
     """
     Display on stdout the content of readme file
-    if the readme file does not exist display a message to the user see :meth:`macsypy.package.help`
+    if the readme file does not exist display a message to the user see :meth:`macsylib.package.help`
 
     :param args: the arguments passed on the command line (the package name)
     :return: None
@@ -1029,7 +1032,7 @@ add files:
 {untracked_str}
 """)
 
-    pre_push_path = impresources.files('macsypy') / 'data' / 'pre-push'
+    pre_push_path = impresources.files('macsylib') / 'data' / 'pre-push'
     dest = os.path.join(repo.git_dir, 'hooks', 'pre-push')
     if os.path.exists(dest):
         _log.warning(f"A git hook '{pre_push_path}' already exists cannot install macsydata prepush hook.")
@@ -1414,8 +1417,8 @@ def main(args: list[str] = None) -> None:
     parsed_args = parser.parse_args(args)
     log_level = verbosity_to_log_level(parsed_args.verbose)
     # set logger for module 'package'
-    macsypy.init_logger()
-    macsypy.logger_set_level(level=log_level)
+    macsylib.init_logger()
+    macsylib.logger_set_level(level=log_level)
     # set logger for this script
     _log = init_logger(log_level)
 

@@ -1,24 +1,26 @@
 #########################################################################
-# MacSyFinder - Detection of macromolecular systems in protein dataset  #
-#               using systems modelling and similarity search.          #
+# MacSyLib - Python library to detect macromolecular systems            #
+#            in prokaryotes protein dataset using systems modelling     #
+#            and similarity search.                                     #
+#                                                                       #
 # Authors: Sophie Abby, Bertrand Neron                                  #
-# Copyright (c) 2014-2024  Institut Pasteur (Paris) and CNRS.           #
+# Copyright (c) 2014-2025  Institut Pasteur (Paris) and CNRS.           #
 # See the COPYRIGHT file for details                                    #
 #                                                                       #
-# This file is part of MacSyFinder package.                             #
+# This file is part of MacSyLib package.                                #
 #                                                                       #
-# MacSyFinder is free software: you can redistribute it and/or modify   #
+# MacSyLib is free software: you can redistribute it and/or modify      #
 # it under the terms of the GNU General Public License as published by  #
 # the Free Software Foundation, either version 3 of the License, or     #
 # (at your option) any later version.                                   #
 #                                                                       #
-# MacSyFinder is distributed in the hope that it will be useful,        #
+# MacSyLib is distributed in the hope that it will be useful,           #
 # but WITHOUT ANY WARRANTY; without even the implied warranty of        #
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the          #
 # GNU General Public License for more details .                         #
 #                                                                       #
 # You should have received a copy of the GNU General Public License     #
-# along with MacSyFinder (COPYING).                                     #
+# along with MacSyLib (COPYING).                                        #
 # If not, see <https://www.gnu.org/licenses/>.                          #
 #########################################################################
 
@@ -35,7 +37,7 @@ from typing import Iterator
 
 from .database import Indexes
 from .hit import CoreHit
-from .error import MacsypyError
+from .error import MacsylibError
 
 from .gene import CoreGene
 from .config import Config
@@ -109,7 +111,7 @@ class HMMReport(metaclass=abc.ABCMeta):
                         if my_db[hit_id] is None:
                             msg = f"hit id '{hit_id}' was not indexed, rebuild sequence '{idx.name}' index"
                             _log.critical(msg)
-                            raise MacsypyError(msg) from err
+                            raise MacsylibError(msg) from err
                     replicon_name = self._get_replicon_name(hit_id)
 
                     body = next(hmm_hits)
@@ -230,7 +232,7 @@ class HMMReport(metaclass=abc.ABCMeta):
         :param b_grp: the Hmmer output lines to deal with (grouped by hit)
         :type b_grp: list of list of strings
         :returns: a sequence of hits
-        :rtype: list of :class:`macsypy.report.CoreHit` objects
+        :rtype: list of :class:`macsylib.report.CoreHit` objects
 
         """
         first_line = next(b_grp)

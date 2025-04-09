@@ -1,24 +1,26 @@
 #########################################################################
-# MacSyFinder - Detection of macromolecular systems in protein dataset  #
-#               using systems modelling and similarity search.          #
+# MacSyLib - Python library to detect macromolecular systems            #
+#            in prokaryotes protein dataset using systems modelling     #
+#            and similarity search.                                     #
+#                                                                       #
 # Authors: Sophie Abby, Bertrand Neron                                  #
-# Copyright (c) 2014-2024  Institut Pasteur (Paris) and CNRS.           #
+# Copyright (c) 2014-2025  Institut Pasteur (Paris) and CNRS.           #
 # See the COPYRIGHT file for details                                    #
 #                                                                       #
-# This file is part of MacSyFinder package.                             #
+# This file is part of MacSyLib package.                                #
 #                                                                       #
-# MacSyFinder is free software: you can redistribute it and/or modify   #
+# MacSyLib is free software: you can redistribute it and/or modify      #
 # it under the terms of the GNU General Public License as published by  #
 # the Free Software Foundation, either version 3 of the License, or     #
 # (at your option) any later version.                                   #
 #                                                                       #
-# MacSyFinder is distributed in the hope that it will be useful,        #
+# MacSyLib is distributed in the hope that it will be useful,           #
 # but WITHOUT ANY WARRANTY; without even the implied warranty of        #
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the          #
 # GNU General Public License for more details .                         #
 #                                                                       #
 # You should have received a copy of the GNU General Public License     #
-# along with MacSyFinder (COPYING).                                     #
+# along with MacSyLib (COPYING).                                        #
 # If not, see <https://www.gnu.org/licenses/>.                          #
 #########################################################################
 
@@ -33,7 +35,7 @@ import logging
 from .model import Model, ModelBank
 from .gene import ModelGene, GeneBank
 from .gene import Exchangeable
-from .error import MacsypyError, ModelInconsistencyError
+from .error import MacsylibError, ModelInconsistencyError
 
 from typing import Any
 from .config import Config, NoneConfig
@@ -81,7 +83,7 @@ class DefinitionParser:
         for def_loc in models_2_detect:
             path = def_loc.path
             if path is None:
-                raise MacsypyError(f"{path}: No such model definitions")
+                raise MacsylibError(f"{path}: No such model definitions")
             model_location = self.model_registry[def_loc.root_name(def_loc.fqn)]
             model_node = self._get_model_node(def_loc)
             model = self._create_model(def_loc, model_node)
@@ -107,7 +109,7 @@ class DefinitionParser:
         except Exception as err:
             msg = f"unable to parse model definition '{def_loc.fqn}' : {err}"
             _log.critical(msg)
-            raise MacsypyError(msg) from None
+            raise MacsylibError(msg) from None
         return model_node
 
 
@@ -377,7 +379,7 @@ class DefinitionParser:
         between XML definitions, configuration file, and command-line options.
 
         :param models: the list of models to check
-        :raise: :class:`macsypy.error.ModelInconsistencyError` if one test fails
+        :raise: :class:`macsylib.error.ModelInconsistencyError` if one test fails
 
         (see `feature <https://projets.pasteur.fr/issues/1850>`_)
 

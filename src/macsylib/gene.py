@@ -1,24 +1,26 @@
 #########################################################################
-# MacSyFinder - Detection of macromolecular systems in protein dataset  #
-#               using systems modelling and similarity search.          #
+# MacSyLib - Python library to detect macromolecular systems            #
+#            in prokaryotes protein dataset using systems modelling     #
+#            and similarity search.                                     #
+#                                                                       #
 # Authors: Sophie Abby, Bertrand Neron                                  #
-# Copyright (c) 2014-2024  Institut Pasteur (Paris) and CNRS.           #
+# Copyright (c) 2014-2025  Institut Pasteur (Paris) and CNRS.           #
 # See the COPYRIGHT file for details                                    #
 #                                                                       #
-# This file is part of MacSyFinder package.                             #
+# This file is part of MacSyLib package.                                #
 #                                                                       #
-# MacSyFinder is free software: you can redistribute it and/or modify   #
+# MacSyLib is free software: you can redistribute it and/or modify      #
 # it under the terms of the GNU General Public License as published by  #
 # the Free Software Foundation, either version 3 of the License, or     #
 # (at your option) any later version.                                   #
 #                                                                       #
-# MacSyFinder is distributed in the hope that it will be useful,        #
+# MacSyLib is distributed in the hope that it will be useful,           #
 # but WITHOUT ANY WARRANTY; without even the implied warranty of        #
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the          #
 # GNU General Public License for more details .                         #
 #                                                                       #
 # You should have received a copy of the GNU General Public License     #
-# along with MacSyFinder (COPYING).                                     #
+# along with MacSyLib (COPYING).                                        #
 # If not, see <https://www.gnu.org/licenses/>.                          #
 #########################################################################
 from __future__ import annotations
@@ -26,7 +28,7 @@ from __future__ import annotations
 from enum import Enum
 import logging
 
-from .error import MacsypyError
+from .error import MacsylibError
 
 from typing import Iterator, Any, TYPE_CHECKING
 from .registries import ModelLocation
@@ -163,7 +165,7 @@ class ModelGene:
         :param multi_model: True if this Gene is allowing to appear in several system occurrence from different model.
         """
         if not isinstance(gene, CoreGene):
-            raise MacsypyError(f"The ModeleGene gene argument must be a CoreGene not {type(gene)}.")
+            raise MacsylibError(f"The ModeleGene gene argument must be a CoreGene not {type(gene)}.")
         self._gene = gene
         self._exchangeables = []
         self._model = model
@@ -288,7 +290,7 @@ class ModelGene:
     def multi_model(self) -> bool:
         """
         :return: True if this Gene can belong to different occurrences of systems from different
-                 model :class:`macsypy.model.Model`
+                 model :class:`macsylib.model.Model`
                 (and can be used for multiple System assessments), False otherwise.
         :rtype: boolean.
         """
@@ -380,9 +382,9 @@ class Exchangeable(ModelGene):
         This method should never be called, it's a security to avoid to add exchangeable to an exchangeable.
 
         :param exchangeable: the exchangeable gene to add
-        :raise MacsypyError:
+        :raise MacsylibError:
         """
-        raise MacsypyError("Cannot add 'Exchangeable' to an Exchangeable")
+        raise MacsylibError("Cannot add 'Exchangeable' to an Exchangeable")
 
     @property
     def status(self) -> GeneStatus:

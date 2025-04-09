@@ -76,11 +76,11 @@ include-package-data = true
 
 [tool.setuptools.packages.find]
 where=["src"]
-include = ["macsypy*"]
+include = ["macsylib*"]
 namespaces = false
 
 [tool.setuptools.dynamic]
-version = {attr = "macsypy.__version__"}
+version = {attr = "macsylib.__version__"}
 
 [tool.setuptools.package-data]
 macsypy = ["data/pre-push"]
@@ -88,7 +88,7 @@ macsypy = ["data/pre-push"]
 
 [tool.coverage.run]
 branch = true
-source = ["src/macsypy"]
+source = ["src/macsylib"]
 command_line = "-m unittest discover -vv"
 
 
@@ -118,7 +118,7 @@ exclude = [
 line-length = 120
 indent-width = 4
 
-src = ['src/macsypy', 'tests', 'pyproject.toml']
+src = ['src/macsylib', 'tests', 'pyproject.toml']
 
 [tool.ruff.format]
 indent-style = "space"

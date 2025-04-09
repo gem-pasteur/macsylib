@@ -1,24 +1,26 @@
 #########################################################################
-# MacSyFinder - Detection of macromolecular systems in protein dataset  #
-#               using systems modelling and similarity search.          #
+# MacSyLib - Python library to detect macromolecular systems            #
+#            in prokaryotes protein dataset using systems modelling     #
+#            and similarity search.                                     #
+#                                                                       #
 # Authors: Sophie Abby, Bertrand Neron                                  #
-# Copyright (c) 2014-2024  Institut Pasteur (Paris) and CNRS.           #
+# Copyright (c) 2014-2025  Institut Pasteur (Paris) and CNRS.           #
 # See the COPYRIGHT file for details                                    #
 #                                                                       #
-# This file is part of MacSyFinder package.                             #
+# This file is part of MacSyLib package.                                #
 #                                                                       #
-# MacSyFinder is free software: you can redistribute it and/or modify   #
+# MacSyLib is free software: you can redistribute it and/or modify      #
 # it under the terms of the GNU General Public License as published by  #
 # the Free Software Foundation, either version 3 of the License, or     #
 # (at your option) any later version.                                   #
 #                                                                       #
-# MacSyFinder is distributed in the hope that it will be useful,        #
+# MacSyLib is distributed in the hope that it will be useful,           #
 # but WITHOUT ANY WARRANTY; without even the implied warranty of        #
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the          #
 # GNU General Public License for more details .                         #
 #                                                                       #
 # You should have received a copy of the GNU General Public License     #
-# along with MacSyFinder (COPYING).                                     #
+# along with MacSyLib (COPYING).                                        #
 # If not, see <https://www.gnu.org/licenses/>.                          #
 #########################################################################
 
@@ -33,7 +35,7 @@ from subprocess import Popen
 from threading import Lock
 
 from .report import GembaseHMMReport, GeneralHMMReport, OrderedHMMReport, HMMReport
-from .error import MacsypyError
+from .error import MacsylibError
 from .utils import open_compressed
 
 from .config import Config, NoneConfig
@@ -71,7 +73,7 @@ class ProfileFactory:
             try:
                 path = model_location.get_profile(gene.name)
             except KeyError:
-                raise MacsypyError(f"'{model_location.name}/{gene.name}': No such profile")
+                raise MacsylibError(f"'{model_location.name}/{gene.name}': No such profile")
             profile = Profile(gene, self.cfg, path)
             self._profiles[key] = profile
         return profile
@@ -144,7 +146,7 @@ class Profile:
         except Exception as err:
             msg = f'Cannot read profile {self.path}: {err}'
             _log.critical(msg)
-            raise MacsypyError(msg)
+            raise MacsylibError(msg)
 
         return length, ga_threshold
 

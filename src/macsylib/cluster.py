@@ -1,24 +1,26 @@
 #########################################################################
-# MacSyFinder - Detection of macromolecular systems in protein dataset  #
-#               using systems modelling and similarity search.          #
+# MacSyLib - Python library to detect macromolecular systems            #
+#            in prokaryotes protein dataset using systems modelling     #
+#            and similarity search.                                     #
+#                                                                       #
 # Authors: Sophie Abby, Bertrand Neron                                  #
-# Copyright (c) 2014-2024  Institut Pasteur (Paris) and CNRS.           #
+# Copyright (c) 2014-2025  Institut Pasteur (Paris) and CNRS.           #
 # See the COPYRIGHT file for details                                    #
 #                                                                       #
-# This file is part of MacSyFinder package.                             #
+# This file is part of MacSyLib package.                                #
 #                                                                       #
-# MacSyFinder is free software: you can redistribute it and/or modify   #
+# MacSyLib is free software: you can redistribute it and/or modify      #
 # it under the terms of the GNU General Public License as published by  #
 # the Free Software Foundation, either version 3 of the License, or     #
 # (at your option) any later version.                                   #
 #                                                                       #
-# MacSyFinder is distributed in the hope that it will be useful,        #
+# MacSyLib is distributed in the hope that it will be useful,           #
 # but WITHOUT ANY WARRANTY; without even the implied warranty of        #
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the          #
 # GNU General Public License for more details .                         #
 #                                                                       #
 # You should have received a copy of the GNU General Public License     #
-# along with MacSyFinder (COPYING).                                     #
+# along with MacSyLib (COPYING).                                        #
 # If not, see <https://www.gnu.org/licenses/>.                          #
 #########################################################################
 from __future__ import annotations
@@ -27,13 +29,12 @@ from __future__ import annotations
 import itertools
 import logging
 
-import macsypy.gene
-from .error import MacsypyError
-from .gene import GeneStatus
+import macsylib.gene
+from .error import MacsylibError
+from .gene import ModelGene, GeneStatus
 from .hit import Loner, LonerMultiSystem, get_best_hit_4_func, ModelHit, CoreHit, HitWeight
 from .database import RepliconInfo
 from .model import Model
-from .gene import ModelGene
 
 _log = logging.getLogger(__name__)
 
@@ -84,15 +85,15 @@ def _clusterize(hits: list[ModelHit], model: Model, hit_weights: HitWeight, rep_
     clusterize hit regarding the distance between them
 
     :param hits: the hits to clusterize
-    :type hits: list of :class:`macsypy.model.ModelHit` objects
+    :type hits: list of :class:`macsylib.model.ModelHit` objects
     :param model: the model to consider
-    :type model: :class:`macsypy.model.Model` object
+    :type model: :class:`macsylib.model.Model` object
     :param hit_weights: the hit weight to compute the score
-    :type hit_weights: :class:`macsypy.hit.HitWeight` object
-    :type rep_info: :class:`macsypy.Indexes.RepliconInfo` object
+    :type hit_weights: :class:`macsylib.hit.HitWeight` object
+    :type rep_info: :class:`macsylib.Indexes.RepliconInfo` object
 
     :return: the clusters
-    :rtype: list of :class:`macsypy.cluster.Cluster` objects.
+    :rtype: list of :class:`macsylib.cluster.Cluster` objects.
     """
 
     def do_clst(clusters: list[Cluster], cluster_scaffold: list[ModelHit], model: Model, hit_weights: HitWeight) -> None:
@@ -198,8 +199,8 @@ def _get_true_loners(clusters: list[Cluster]) -> tuple[dict[str: Loner | LonerMu
     :param clusters: the clusters
     :return: tuple of 2 elts
 
-             * dict containing true clusters  {str func_name : :class:`macsypy.hit.Loner | :class:`macsypy.hit.LonerMultiSystem` object}
-             * list of :class:`macsypy.cluster.Cluster` objects
+             * dict containing true clusters  {str func_name : :class:`macsylib.hit.Loner | :class:`macsylib.hit.LonerMultiSystem` object}
+             * list of :class:`macsylib.cluster.Cluster` objects
     """
     def add_true_loner(clstr: Cluster) -> None:
         """
@@ -283,7 +284,7 @@ def build_clusters(hits: list[ModelHit],
     :rtype: tuple with 2 elements
 
             * true_clusters which is list of :class:`Cluster` objects
-            * true_loners: a dict { str function: :class:macsypy.hit.Loner | :class:macsypy.hit.LonerMultiSystem object}
+            * true_loners: a dict { str function: :class:macsylib.hit.Loner | :class:macsylib.hit.LonerMultiSystem object}
     """
     if hits:
         clusters = _clusterize(hits, model, hit_weights, rep_info)
@@ -366,13 +367,13 @@ class Cluster:
 
     def _check_replicon_consistency(self) -> None:
         """
-        :raise: MacsypyError if all hits of a cluster are NOT related to the same replicon
+        :raise: MacsylibError if all hits of a cluster are NOT related to the same replicon
         """
         rep_name = self.hits[0].replicon_name
         if not all([h.replicon_name == rep_name for h in self.hits]):
             msg = "Cannot build a cluster from hits coming from different replicons"
             _log.error(msg)
-            raise MacsypyError(msg)
+            raise MacsylibError(msg)
 
 
     def __contains__(self, m_hit: ModelHit) -> bool:
@@ -417,7 +418,7 @@ class Cluster:
         genes_roles = self.functions
         functions = set()
         for gene in genes:
-            if isinstance(gene, macsypy.gene.ModelGene):
+            if isinstance(gene, macsylib.gene.ModelGene):
                 function = gene.name
             else:
                 # gene is a string
@@ -433,10 +434,10 @@ class Cluster:
         :param cluster:
         :param bool before: If False the hits of the cluster will be added at the end of this one,
                             Otherwise the cluster hits will be inserted before the hits of this one.
-        :raise MacsypyError: if the two clusters have not the same model
+        :raise MacError: if the two clusters have not the same model
         """
         if cluster.model != self.model:
-            raise MacsypyError("Try to merge Clusters from different model")
+            raise MacsylibError("Try to merge Clusters from different model")
         else:
             if before:
                 self.hits = cluster.hits + self.hits
@@ -474,7 +475,7 @@ class Cluster:
                 elif m_hit.status == GeneStatus.NEUTRAL:
                     hit_score = self._hit_weights.neutral
                 else:
-                    raise MacsypyError(f"a Cluster contains hit {m_hit.gene.name} {m_hit.position}"
+                    raise MacsylibError(f"a Cluster contains hit {m_hit.gene.name} {m_hit.position}"
                                        f" which is neither mandatory nor accessory: {m_hit.status}")
                 _log.debug(f"{m_hit.id} is {m_hit.status} hit score = {hit_score}")
 

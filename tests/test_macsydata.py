@@ -1,24 +1,26 @@
 #########################################################################
-# MacSyFinder - Detection of macromolecular systems in protein dataset  #
-#               using systems modelling and similarity search.          #
+# MacSyLib - Python library to detect macromolecular systems            #
+#            in prokaryotes protein dataset using systems modelling     #
+#            and similarity search.                                     #
+#                                                                       #
 # Authors: Sophie Abby, Bertrand Neron                                  #
-# Copyright (c) 2014-2024  Institut Pasteur (Paris) and CNRS.           #
+# Copyright (c) 2014-2025  Institut Pasteur (Paris) and CNRS.           #
 # See the COPYRIGHT file for details                                    #
 #                                                                       #
-# This file is part of MacSyFinder package.                             #
+# This file is part of MacSyLib package.                                #
 #                                                                       #
-# MacSyFinder is free software: you can redistribute it and/or modify   #
+# MacSyLib is free software: you can redistribute it and/or modify      #
 # it under the terms of the GNU General Public License as published by  #
 # the Free Software Foundation, either version 3 of the License, or     #
 # (at your option) any later version.                                   #
 #                                                                       #
-# MacSyFinder is distributed in the hope that it will be useful,        #
+# MacSyLib is distributed in the hope that it will be useful,           #
 # but WITHOUT ANY WARRANTY; without even the implied warranty of        #
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the          #
 # GNU General Public License for more details .                         #
 #                                                                       #
 # You should have received a copy of the GNU General Public License     #
-# along with MacSyFinder (COPYING).                                     #
+# along with MacSyLib (COPYING).                                        #
 # If not, see <https://www.gnu.org/licenses/>.                          #
 #########################################################################
 
@@ -34,13 +36,13 @@ import shlex
 from collections import namedtuple
 
 import yaml
-import macsypy.registries
-from macsypy.registries import scan_models_dir, ModelRegistry
-from macsypy import package
+import macsylib.registries
+from macsylib.registries import scan_models_dir, ModelRegistry
+from macsylib import package
 
 from tests import MacsyTest
-from macsypy.scripts import macsydata
-from macsypy.error import MacsydataError, MacsyDataLimitError
+from macsylib.scripts import macsydata
+from macsylib.error import MacsydataError, MacsyDataLimitError
 import warnings
 warnings.simplefilter('ignore', UserWarning,)
 try:
@@ -198,8 +200,8 @@ class TestMacsydata(MacsyTest):
         pack_name = "nimportnaoik"
         self.args.package = pack_name
         self.args.models_dir = None
-        with self.catch_log(log_name='macsypy'):
-            # macsypy.registry throw a warning if metadata is not found
+        with self.catch_log(log_name='macsylib'):
+            # macsylib.registry throw a warning if metadata is not found
             # silenced it
             with self.catch_log(log_name='macsydata') as log:
                 with self.assertRaises(ValueError):
@@ -436,7 +438,7 @@ fake_2-0.0b2   ({os.path.join(model_dir, 'models', fake_packs[1])})"""
         pack_name = "nimportnaoik"
         self.args.package = pack_name
         self.args.models_dir = None
-        with self.catch_log(log_name='macsypy'):
+        with self.catch_log(log_name='macsylib'):
             with self.catch_log(log_name='macsydata') as log:
                 with self.assertRaises(ValueError):
                     macsydata.do_cite(self.args)
@@ -476,8 +478,8 @@ To cite MacSyFinder:
         pack_name = "nimportnaoik"
         self.args.package = pack_name
         self.args.models_dir = None
-        with self.catch_log(log_name='macsypy'):
-            # macsypy.registry throw a warning if metadata is not found
+        with self.catch_log(log_name='macsylib'):
+            # macsylib.registry throw a warning if metadata is not found
             # silenced it
             with self.catch_log(log_name='macsydata') as log:
                 with self.assertRaises(ValueError):
@@ -512,7 +514,7 @@ To cite MacSyFinder:
         fake_pack_path = self.create_fake_package(pack_name)
 
         find_local_package = macsydata._find_installed_package
-        macsydata._find_installed_package = lambda x, models_dir: macsypy.registries.ModelLocation(path=fake_pack_path)
+        macsydata._find_installed_package = lambda x, models_dir: macsylib.registries.ModelLocation(path=fake_pack_path)
         try:
             with self.catch_io(out=True):
                 macsydata.do_show_definition(self.args)
@@ -536,7 +538,7 @@ To cite MacSyFinder:
         fake_pack_path = self.create_fake_package(pack_name)
 
         find_local_package = macsydata._find_installed_package
-        macsydata._find_installed_package = lambda x, models_dir: macsypy.registries.ModelLocation(path=fake_pack_path)
+        macsydata._find_installed_package = lambda x, models_dir: macsylib.registries.ModelLocation(path=fake_pack_path)
         try:
             with self.catch_io(out=True):
                 macsydata.do_show_definition(self.args)
@@ -580,7 +582,7 @@ To cite MacSyFinder:
         self.args.models_dir = None
         fake_pack_path = self.create_fake_package(pack_name)
         find_local_package = macsydata._find_installed_package
-        macsydata._find_installed_package = lambda x, models_dir: macsypy.registries.ModelLocation(path=fake_pack_path)
+        macsydata._find_installed_package = lambda x, models_dir: macsylib.registries.ModelLocation(path=fake_pack_path)
         try:
             with self.catch_log(log_name='macsydata') as log:
                 macsydata.do_show_definition(self.args)
@@ -595,8 +597,8 @@ To cite MacSyFinder:
         pack_name = 'nimportnaoik'
         self.args.model = [pack_name]
         self.args.models_dir = None
-        with self.catch_log(log_name='macsypy'):
-            # macsypy.registry throw a warning if metadata is not found
+        with self.catch_log(log_name='macsylib'):
+            # macsylib.registry throw a warning if metadata is not found
             # silenced it
             with self.catch_log(log_name='macsydata') as log:
                 with self.assertRaises(ValueError):
@@ -611,7 +613,7 @@ To cite MacSyFinder:
         self.args.models_dir = None
         fake_pack_path = self.create_fake_package(pack_name)
         find_local_package = macsydata._find_installed_package
-        macsydata._find_installed_package = lambda x, models_dir: macsypy.registries.ModelLocation(path=fake_pack_path)
+        macsydata._find_installed_package = lambda x, models_dir: macsylib.registries.ModelLocation(path=fake_pack_path)
         try:
             with self.catch_log(log_name='macsydata') as log:
                 with self.assertRaises(ValueError):

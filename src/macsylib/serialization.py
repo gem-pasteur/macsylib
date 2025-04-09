@@ -1,29 +1,31 @@
 #########################################################################
-# MacSyFinder - Detection of macromolecular systems in protein dataset  #
-#               using systems modelling and similarity search.          #
+# MacSyLib - Python library to detect macromolecular systems            #
+#            in prokaryotes protein dataset using systems modelling     #
+#            and similarity search.                                     #
+#                                                                       #
 # Authors: Sophie Abby, Bertrand Neron                                  #
-# Copyright (c) 2014-2024  Institut Pasteur (Paris) and CNRS.           #
+# Copyright (c) 2014-2025  Institut Pasteur (Paris) and CNRS.           #
 # See the COPYRIGHT file for details                                    #
 #                                                                       #
-# This file is part of MacSyFinder package.                             #
+# This file is part of MacSyLib package.                                #
 #                                                                       #
-# MacSyFinder is free software: you can redistribute it and/or modify   #
+# MacSyLib is free software: you can redistribute it and/or modify      #
 # it under the terms of the GNU General Public License as published by  #
 # the Free Software Foundation, either version 3 of the License, or     #
 # (at your option) any later version.                                   #
 #                                                                       #
-# MacSyFinder is distributed in the hope that it will be useful,        #
+# MacSyLib is distributed in the hope that it will be useful,           #
 # but WITHOUT ANY WARRANTY; without even the implied warranty of        #
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the          #
 # GNU General Public License for more details .                         #
 #                                                                       #
 # You should have received a copy of the GNU General Public License     #
-# along with MacSyFinder (COPYING).                                     #
+# along with MacSyLib (COPYING).                                        #
 # If not, see <https://www.gnu.org/licenses/>.                          #
 #########################################################################
 
 """
-This module focus on the way to serialize the different macsyfinder modules
+This module focus on the way to serialize the different macsylib outputs
 """
 
 import abc
@@ -108,10 +110,10 @@ class TsvSystemSerializer(SystemSerializer):
 
     def serialize(self, system: System, hit_system_tracker: HitSystemTracker) -> str:
         r"""
-        :param :class:`macsypy.system.System` system: The system to serialize.
+        :param :class:`macsylib.system.System` system: The system to serialize.
         :param hit_system_tracker: The hit_system_tracker which allow to know for each hit
                in which system it is implied.
-        :type hit_system_tracker: :class:`macsypy.system.HitSystemTracker` object
+        :type hit_system_tracker: :class:`macsylib.system.HitSystemTracker` object
         :return: a serialisation of this system in tabulated separated value format
                  each line represent a hit and have the following structure:
 
@@ -172,7 +174,7 @@ class TsvSolutionSerializer:
         :param hit_system_tracker:
         :return: a serialisation of this solution (a list of systems) in tabulated separated value format
                  each line represent a hit and have the same structure as system serialization
-                 :meth:`macsypy.serialization.TsvSystemSerializer.serialize` but with an extra column
+                 :meth:`macsylib.serialization.TsvSystemSerializer.serialize` but with an extra column
                  sol_id which is a technical id to identify the different solutions.
         """
         tsv = ''
@@ -339,13 +341,13 @@ wholeness = {system.wholeness:.3f}
 
 class TsvSpecialHitSerializer:
     """
-    Serialize special hits: :class:`macsypy.hit.Loner` and :class:`macsypy.hit.MultiSystem` in tsv format
+    Serialize special hits: :class:`macsylib.hit.Loner` and :class:`macsylib.hit.MultiSystem` in tsv format
     """
 
     def serialize(self, best_hits: typing.Iterable[Loner] | typing.Iterable[MultiSystem]):
         """
         :param best_hits: the special hits to serialized
-        :type best_hits: sequence of :class:`macsypy.hit.Loner` or :class:`macsypy.hit.MultiSystem` objects
+        :type best_hits: sequence of :class:`macsylib.hit.Loner` or :class:`macsylib.hit.MultiSystem` objects
         """
         s = ""
         if best_hits:

@@ -1,24 +1,26 @@
 #########################################################################
-# MacSyFinder - Detection of macromolecular systems in protein dataset  #
-#               using systems modelling and similarity search.          #
+# MacSyLib - Python library to detect macromolecular systems            #
+#            in prokaryotes protein dataset using systems modelling     #
+#            and similarity search.                                     #
+#                                                                       #
 # Authors: Sophie Abby, Bertrand Neron                                  #
-# Copyright (c) 2014-2024  Institut Pasteur (Paris) and CNRS.           #
+# Copyright (c) 2014-2025  Institut Pasteur (Paris) and CNRS.           #
 # See the COPYRIGHT file for details                                    #
 #                                                                       #
-# This file is part of MacSyFinder package.                             #
+# This file is part of MacSyLib package.                                #
 #                                                                       #
-# MacSyFinder is free software: you can redistribute it and/or modify   #
+# MacSyLib is free software: you can redistribute it and/or modify      #
 # it under the terms of the GNU General Public License as published by  #
 # the Free Software Foundation, either version 3 of the License, or     #
 # (at your option) any later version.                                   #
 #                                                                       #
-# MacSyFinder is distributed in the hope that it will be useful,        #
+# MacSyLib is distributed in the hope that it will be useful,           #
 # but WITHOUT ANY WARRANTY; without even the implied warranty of        #
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the          #
 # GNU General Public License for more details .                         #
 #                                                                       #
 # You should have received a copy of the GNU General Public License     #
-# along with MacSyFinder (COPYING).                                     #
+# along with MacSyLib (COPYING).                                        #
 # If not, see <https://www.gnu.org/licenses/>.                          #
 #########################################################################
 
@@ -30,7 +32,7 @@ from collections import namedtuple
 import os.path
 import logging
 
-from .error import MacsypyError, EmptyFileError
+from .error import MacsylibError, EmptyFileError
 from .utils import open_compressed
 
 
@@ -66,16 +68,16 @@ def fasta_iter(fasta_file: TextIO) -> Iterator[tuple[str, str, int]]:
             # bad fasta format
             msg = f"Error during sequence '{fasta_file.name}' parsing: Check the fasta format."
             _log.critical(msg)
-            raise MacsypyError(msg)
+            raise MacsylibError(msg)
         length = len(seq)
         yield _id, comment, length
 
 
 class Indexes:
     """
-    Handle the indexes for macsyfinder:
+    Handle the indexes for macsylib:
 
-     - find the indexes required by macsyfinder to compute some scores, or build them.
+     - find the indexes required by macsylib to compute some scores, or build them.
     """
 
     _field_separator = "^^"
@@ -87,7 +89,7 @@ class Indexes:
         Launch the indexes building.
 
         :param cfg: the configuration
-        :type cfg: :class:`macsypy.config.Config` object
+        :type cfg: :class:`macsylib.config.Config` object
         """
         self.cfg = cfg
         self._fasta_path = cfg.sequence_db()
@@ -149,7 +151,7 @@ class Indexes:
 
     def find_my_indexes(self) -> str | None:
         """
-        :return: the file of macsyfinder indexes if it exists in the dataset folder, None otherwise.
+        :return: the file of macsylib indexes if it exists in the dataset folder, None otherwise.
         :rtype: string
         """
         index_dir = self._index_dir(build=False)
@@ -189,7 +191,7 @@ class Indexes:
 
     def _build_my_indexes(self, index_dir: str) -> str:
         """
-        Build macsyfinder indexes. These indexes are stored in a file.
+        Build macsylib indexes. These indexes are stored in a file.
 
         The file format is the following:
          - the first line is the path of the sequence-db indexed
@@ -211,11 +213,11 @@ class Indexes:
         except ValueError as err:
             msg = f"Cannot index '{self._fasta_path}': {err}"
             _log.critical(msg)
-            raise MacsypyError(msg)
+            raise MacsylibError(msg)
         except Exception as err:
             msg = f"unable to index the sequence dataset: {self.cfg.sequence_db()} : {err}"
             _log.critical(msg, exc_info=True)
-            raise MacsypyError(msg) from err
+            raise MacsylibError(msg) from err
         if seq_nb == 0:
             os.unlink(index_file)
             msg = f"The sequence-db file '{self._fasta_path}' does not contains sequences."
@@ -225,14 +227,14 @@ class Indexes:
 
     def __iter__(self) -> Iterator[tuple[str, str, int]]:
         """
-        :raise MacsypyError: if the indexes are not buid
+        :raise MacsylibError: if the indexes are not buid
         :return: an iterator on the indexes
 
         To use it the index must be built.
         """
         path = self.find_my_indexes()
         if path is None:
-            raise MacsypyError("Build index before to use it.")
+            raise MacsylibError("Build index before to use it.")
         with open(path) as idx_file:
             # The first line of index is the path to the data
             # It is not an index
@@ -241,10 +243,10 @@ class Indexes:
                 try:
                     seq_id, length, _rank = line.split(self._field_separator)
                 except Exception as err:
-                    raise MacsypyError(f"fail to parse database index {path} at line: {line}."
+                    raise MacsylibError(f"fail to parse database index {path} at line: {line}."
                                        f"Try to rebuild index with --idx option or remove file."
                                        f"If error persist feel free to submit an issue at"
-                                       f"https://github.com/gem-pasteur/macsyfinder/issues/new?assignees=&labels=bug&template=bug_report.md&title=%5BBUG%5D ", err) from err
+                                       f"https://github.com/gem-pasteur/macsylib/issues/new?assignees=&labels=bug&template=bug_report.md&title=%5BBUG%5D ", err) from err
                 length = int(length)
                 _rank = int(_rank)
                 yield seq_id, length, _rank
@@ -286,7 +288,7 @@ class RepliconDB:
     def __init__(self, cfg: Config) -> None:
         """
         :param cfg: The configuration object
-        :type cfg: :class:`macsypy.config.Config` object
+        :type cfg: :class:`macsylib.config.Config` object
 
         .. note ::
             This class can be instanced only if the db_type is 'gembase' or 'ordered_replicon'

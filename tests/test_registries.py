@@ -1,38 +1,39 @@
 #########################################################################
-# MacSyFinder - Detection of macromolecular systems in protein dataset  #
-#               using systems modelling and similarity search.          #
+# MacSyLib - Python library to detect macromolecular systems            #
+#            in prokaryotes protein dataset using systems modelling     #
+#            and similarity search.                                     #
+#                                                                       #
 # Authors: Sophie Abby, Bertrand Neron                                  #
-# Copyright (c) 2014-2024  Institut Pasteur (Paris) and CNRS.           #
+# Copyright (c) 2014-2025  Institut Pasteur (Paris) and CNRS.           #
 # See the COPYRIGHT file for details                                    #
 #                                                                       #
-# This file is part of MacSyFinder package.                             #
+# This file is part of MacSyLib package.                                #
 #                                                                       #
-# MacSyFinder is free software: you can redistribute it and/or modify   #
+# MacSyLib is free software: you can redistribute it and/or modify      #
 # it under the terms of the GNU General Public License as published by  #
 # the Free Software Foundation, either version 3 of the License, or     #
 # (at your option) any later version.                                   #
 #                                                                       #
-# MacSyFinder is distributed in the hope that it will be useful,        #
+# MacSyLib is distributed in the hope that it will be useful,           #
 # but WITHOUT ANY WARRANTY; without even the implied warranty of        #
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the          #
 # GNU General Public License for more details .                         #
 #                                                                       #
 # You should have received a copy of the GNU General Public License     #
-# along with MacSyFinder (COPYING).                                     #
+# along with MacSyLib (COPYING).                                        #
 # If not, see <https://www.gnu.org/licenses/>.                          #
 #########################################################################
-
 
 import os
 import tempfile
 import argparse
 import colorlog
 
-import macsypy
-from macsypy.config import Config, MacsyDefaults
-from macsypy import registries
-from macsypy.registries import ModelLocation, DefinitionLocation, ModelRegistry, scan_models_dir
-from macsypy.metadata import Metadata, Maintainer
+import macsylib
+from macsylib.config import Config, MacsyDefaults
+from macsylib import registries
+from macsylib.registries import ModelLocation, DefinitionLocation, ModelRegistry, scan_models_dir
+from macsylib.metadata import Metadata, Maintainer
 from tests import MacsyTest
 
 
@@ -83,8 +84,8 @@ def _create_fake_models_tree(root_models_dir, sys_def, metadata=True):
 class ModelLocationTest(MacsyTest):
 
     def setUp(self):
-        macsypy.init_logger()
-        logger = colorlog.getLogger('macsypy.registries')
+        macsylib.init_logger()
+        logger = colorlog.getLogger('macsylib.registries')
         registries._log = logger
         self._tmp_dir = tempfile.TemporaryDirectory(prefix='test_msf_ModelLocation_')
         self.tmp_dir = self._tmp_dir.name
@@ -129,9 +130,9 @@ class ModelLocationTest(MacsyTest):
 
     def tearDown(self):
         self._tmp_dir.cleanup()
-        logger = colorlog.getLogger('macsypy.registries')
-        del logger.manager.loggerDict['macsypy.registries']
-        del logger.manager.loggerDict['macsypy']
+        logger = colorlog.getLogger('macsylib.registries')
+        del logger.manager.loggerDict['macsylib.registries']
+        del logger.manager.loggerDict['macsylib']
 
 
     def test_ModelLocation(self):
@@ -199,7 +200,7 @@ class ModelLocationTest(MacsyTest):
     def test_version_no_metadata(self):
         # test new way to specify profiles and definitions
         simple_dir = _create_fake_models_tree(self.root_models_dir, self.simple_models, metadata=False)
-        with self.catch_log(log_name='macsypy') as log:
+        with self.catch_log(log_name='macsylib') as log:
             model_loc = ModelLocation(path=simple_dir)
             log_msg = log.get_value().strip()
         self.assertEqual(model_loc.version, None)

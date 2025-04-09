@@ -1,24 +1,29 @@
 #########################################################################
+# MacSyLib - Python library to detect macromolecular systems            #
+#            in prokaryotes protein dataset using systems modelling     #
+#            and similarity search.                                     #
+#                                                                       #
 # Authors: Sophie Abby, Bertrand Neron                                  #
-# Copyright (c) 2014-2024  Institut Pasteur (Paris) and CNRS.           #
+# Copyright (c) 2014-2025  Institut Pasteur (Paris) and CNRS.           #
 # See the COPYRIGHT file for details                                    #
 #                                                                       #
-# This file is part of MacSyFinder package.                             #
+# This file is part of MacSyLib package.                                #
 #                                                                       #
-# MacSyFinder is free software: you can redistribute it and/or modify   #
+# MacSyLib is free software: you can redistribute it and/or modify      #
 # it under the terms of the GNU General Public License as published by  #
 # the Free Software Foundation, either version 3 of the License, or     #
 # (at your option) any later version.                                   #
 #                                                                       #
-# MacSyFinder is distributed in the hope that it will be useful,        #
+# MacSyLib is distributed in the hope that it will be useful,           #
 # but WITHOUT ANY WARRANTY; without even the implied warranty of        #
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the          #
 # GNU General Public License for more details .                         #
 #                                                                       #
 # You should have received a copy of the GNU General Public License     #
-# along with MacSyFinder (COPYING).                                     #
+# along with MacSyLib (COPYING).                                        #
 # If not, see <https://www.gnu.org/licenses/>.                          #
 #########################################################################
+
 
 import sys
 import os
@@ -32,13 +37,13 @@ import typing
 
 import colorlog
 
-import macsypy
-from macsypy.config import MacsyDefaults, Config
-from macsypy.database import Indexes
-from macsypy.hit import get_best_hits, CoreHit
-from macsypy.registries import split_def_name
-from macsypy.utils import get_replicon_names
-from macsypy.metadata import Metadata
+import macsylib
+from macsylib.config import MacsyDefaults, Config
+from macsylib.database import Indexes
+from macsylib.hit import get_best_hits, CoreHit
+from macsylib.registries import split_def_name
+from macsylib.utils import get_replicon_names
+from macsylib.metadata import Metadata
 
 # _log is set in main func
 _log = None
@@ -48,8 +53,8 @@ def get_version_message() -> str:
     """
     :return: the long description of the macsyfinder version
     """
-    version = macsypy.__version__
-    commit = macsypy.__commit__
+    version = macsylib.__version__
+    commit = macsylib.__commit__
     vers_msg = f"""macsyprofile {version} {commit}
 Python {sys.version}
 
@@ -57,7 +62,7 @@ MacsyFinder is distributed under the terms of the GNU General Public License (GP
 See the COPYING file for details.
 
 If you use this software please cite:
-{macsypy.__citation__}
+{macsylib.__citation__}
 and don't forget to cite models used:
 macsydata cite <model>
 """
@@ -296,7 +301,7 @@ def header(cmd: list[str], model: str, model_vers: str) -> str:
     :model_vers: The version of the model
     :return: The header of the result file
     """
-    header = f"""# macsyprofile {macsypy.__version__}
+    header = f"""# macsyprofile {macsylib.__version__}
 # models: {model}-{model_vers}
 # macsyprofile {' '.join(cmd)}
 hit_id\treplicon_name\tposition_hit\thit_sequence_length\tgene_name\ti_eval\tscore\tprofile_coverage\tsequence_coverage\tbegin\tend"""
