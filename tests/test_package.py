@@ -423,7 +423,7 @@ class TestPackage(MacsyTest):
         self.tmpdir = self._tmp_dir.name
 
         macsylib.init_logger()
-        macsylib.logger_set_level(30)
+        macsylib.logger_set_level(level=30)
         logger = colorlog.getLogger('macsylib.package')
         package._log = logger
         logger = colorlog.getLogger('macsylib.model_conf_parser')

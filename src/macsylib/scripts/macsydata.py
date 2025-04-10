@@ -563,7 +563,7 @@ def do_cite(args: argparse.Namespace) -> None:
 
 {pack_citations}
 
-To cite MacSyFinder:
+To cite MacSyLib:
 
 {macsy_cite}
 """)

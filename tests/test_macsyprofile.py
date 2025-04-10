@@ -43,7 +43,7 @@ from macsylib.scripts import macsyprofile
 class TestMacsyprofile(MacsyTest):
 
     def setUp(self):
-        self._tmp_dir = tempfile.TemporaryDirectory(prefix='test_msf_macsyprofile_')
+        self._tmp_dir = tempfile.TemporaryDirectory(prefix='test_macsy_macsyprofile_')
         self.tmpdir = self._tmp_dir.name
 
         self.args = argparse.Namespace()
@@ -456,8 +456,8 @@ hit_id\treplicon_name\tposition_hit\thit_sequence_length\tgene_name\ti_eval\tsco
     def test_functional_old_conf(self):
         # old fashioned macsyfinder.conf
         # models are not specified in the conf
-        old = self.find_data('conf_files', 'macsyfinder-old.conf')
-        shutil.copyfile(old, os.path.join(self.tmpdir, 'macsyfinder.conf'))
+        old = self.find_data('conf_files', 'macsylib-old.conf')
+        shutil.copyfile(old, os.path.join(self.tmpdir, 'macsylib.conf'))
 
         previous_run = self.tmpdir
         cmd = f"macsyprofile --index-dir {self.tmpdir} {previous_run}"
@@ -468,4 +468,4 @@ hit_id\treplicon_name\tposition_hit\thit_sequence_length\tgene_name\ti_eval\tsco
                 log_msg = log.get_value().strip()
             self.assertEqual(log_msg,
                              f"Cannot find models in conf file {self.tmpdir}."
-                             f" May be these results have been generated with an old version of macsyfinder.")
+                             f" May be these results have been generated with an old version of macsylib.")

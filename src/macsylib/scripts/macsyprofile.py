@@ -51,14 +51,14 @@ _log = None
 
 def get_version_message() -> str:
     """
-    :return: the long description of the macsyfinder version
+    :return: the long description of the macsylib version
     """
     version = macsylib.__version__
     commit = macsylib.__commit__
     vers_msg = f"""macsyprofile {version} {commit}
 Python {sys.version}
 
-MacsyFinder is distributed under the terms of the GNU General Public License (GPLv3).
+MacSyLib is distributed under the terms of the GNU General Public License (GPLv3).
 See the COPYING file for details.
 
 If you use this software please cite:
@@ -366,7 +366,7 @@ def parse_args(args: list[str]) -> argparse.Namespace:
     """
     msf_def = MacsyDefaults()
     parser = argparse.ArgumentParser(
-        epilog="For more details, visit the MacSyFinder website and see the MacSyFinder documentation.",
+        epilog="For more details, visit the MacSyLib website and see the MacSyLib documentation.",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         description=dedent(r'''
 
@@ -384,12 +384,12 @@ def parse_args(args: list[str]) -> argparse.Namespace:
                  *                           *  *           *     *
 
 
-    MacSyProfile - MacSyFinder profile helper tool
+    MacSyProfile - MacSyLib profile helper tool
     '''))
 
     parser.add_argument('previous_run',
                         action='store',
-                        help='The path to a macsyfinder results directory.'
+                        help='The path to a macsylib results directory.'
                         )
     parser.add_argument('--coverage-profile',
                         action='store',
@@ -508,7 +508,7 @@ def main(args: list[str] | None = None, log_level: str | int | None = None) -> N
         profiles_dir = os.path.join(model_dir, 'profiles')
     except IndexError:
         _log.critical(f"Cannot find models in conf file {msf_run_path}. "
-                      f"May be these results have been generated with an old version of macsyfinder.")
+                      f"May be these results have been generated with an old version of macsylib.")
         sys.tracebacklimit = 10
         raise ValueError() from None
 

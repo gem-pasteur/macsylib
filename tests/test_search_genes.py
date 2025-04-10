@@ -48,8 +48,8 @@ class TestSearchGenes(MacsyTest):
     def setUp(self):
         self._tmp_dir = tempfile.TemporaryDirectory(prefix='test_msf_search_genes_')
         self.tmp_dir = self._tmp_dir.name
-        macsylib.init_logger()
-        macsylib.logger_set_level(30)
+        macsylib.init_logger(name='macsylib')
+        macsylib.logger_set_level(level=30)
 
         args = argparse.Namespace()
         args.sequence_db = self.find_data("base", "test_base.fa")

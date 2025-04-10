@@ -153,7 +153,7 @@ class TestIndex(MacsyTest):
                     with self.assertRaises(MacsylibError) as ctx:
                         idx = Indexes(cfg)
                         idx.build()
-                    exp_msg = f"Cannot index '{args.sequence_db}': MacSyFinder does not support '{ext[1:]}' compression (only gzip)."
+                    exp_msg = f"Cannot index '{args.sequence_db}': MacSyLib does not support '{ext[1:]}' compression (only gzip)."
                     self.assertEqual(str(ctx.exception),
                                      exp_msg
                                      )

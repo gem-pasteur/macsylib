@@ -45,8 +45,8 @@ class TestModelConfParser(MacsyTest):
         # where I tests loggers model_conf_parser
         # is not replaced by the logger set in setup
         # then the catch_log doesn't work anymore
-        macsylib.init_logger()
-        macsylib.logger_set_level(logging.INFO)
+        macsylib.init_logger(name='macsylib')
+        macsylib.logger_set_level(name='macsylib', level=logging.INFO)
         logger = colorlog.getLogger('macsylib')
         macsylib.model_conf_parser._log = logger
 

@@ -46,7 +46,7 @@ from tests import MacsyTest
 class TestProfile(MacsyTest):
 
     def setUp(self):
-        self._tmp_dir = tempfile.TemporaryDirectory(prefix='test_msf_Profile_')
+        self._tmp_dir = tempfile.TemporaryDirectory(prefix='test_macsy_Profile_')
         args = argparse.Namespace()
         args.sequence_db = self.find_data("base", "test_1.fasta")
         args.db_type = 'gembase'
@@ -103,7 +103,7 @@ class TestProfile(MacsyTest):
                     with self.assertRaises(MacsylibError) as ctx:
                         Profile(gene, self.cfg, path)
                     self.assertEqual(str(ctx.exception),
-                                     f"Cannot read profile {path}: MacSyFinder does not support '{ext}' compression "
+                                     f"Cannot read profile {path}: MacSyLib does not support '{ext}' compression "
                                      f"(only gzip).")
 
         ###################

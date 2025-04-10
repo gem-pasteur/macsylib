@@ -465,7 +465,7 @@ _ bla bla
   ligne 2
   ligne 3 et bbbbb
 
-To cite MacSyFinder:
+To cite MacSyLib:
 
 - Néron, Bertrand; Denise, Rémi; Coluzzi, Charles; Touchon, Marie; Rocha, Eduardo P.C.; Abby, Sophie S.
   MacSyFinder v2: Improved modelling and search engine to identify molecular systems in genomes.
