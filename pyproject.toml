@@ -83,7 +83,7 @@ namespaces = false
 version = {attr = "macsylib.__version__"}
 
 [tool.setuptools.package-data]
-macsypy = ["data/pre-push"]
+macsylib = ["data/pre-push"]
 
 
 [tool.coverage.run]
