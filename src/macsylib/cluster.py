@@ -28,6 +28,7 @@ from __future__ import annotations
 
 import itertools
 import logging
+from collections import defaultdict
 
 import macsylib.gene
 from .error import MacsylibError
@@ -80,52 +81,60 @@ def _colocates(h1: ModelHit, h2: ModelHit, rep_info: RepliconInfo) -> bool:
     return False
 
 
-def _clusterize(hits: list[ModelHit], model: Model, hit_weights: HitWeight, rep_info: RepliconInfo):
+def scaffold_to_cluster(cluster_scaffold: list[ModelHit], model: Model, hit_weights: HitWeight) -> Cluster:
+    """
+    transform a list of ModelHit in a cluster if the hit colocalize and they are not all neutral
+    and they do not code for same gene
+    add the new cluster to the clusters
+
+    :param cluster_scaffold: model hit to transform in cluster
+    :param model: The model related to thus cluster
+    :param hit_weights: the hit weight to compute scores
+    :return: Cluster
+    """
+    gene_types = {hit.gene_ref.name for hit in cluster_scaffold}
+
+    if len(gene_types) > 1:
+        if all([_hit.gene_ref.status == GeneStatus.NEUTRAL for _hit in cluster_scaffold]):
+            # contains different genes but all are neutral
+            # we do not consider a group of neutral as a cluster
+            _log.debug(f"{', '.join([h.id for h in cluster_scaffold])} "
+                       f"is composed of only neutral. It's not a cluster.")
+            return None
+        else:
+            return  Cluster(cluster_scaffold, model, hit_weights)
+    else:
+        cluster = Cluster(cluster_scaffold, model, hit_weights)
+        if cluster.loner:
+            # it's a group of one loner add as cluster
+            # it will be squashed at  next step (_get_true_loners )
+            # the hit transformation in loner is performed at the end when circularity and merging is done
+            return cluster
+        elif model.min_genes_required == 1:
+            if cluster.hits[0].gene_ref.status == GeneStatus.NEUTRAL:
+                # even min_genes_required == 1
+                # a neutral alone is not a cluster
+                _log.debug(f"{', '.join([h.id for h in cluster_scaffold])} "
+                       f"is composed of only neutral. It's not a cluster.")
+                return None
+            else:
+                return cluster
+        else:
+            _log.debug(f"({', '.join([h.id for h in cluster_scaffold])}) "
+                       f"is composed of only type of gene {cluster_scaffold[0].gene_ref.name}. It's not a cluster.")
+            return None
+
+
+def clusterize_hits_on_distance_only(hits: list[ModelHit], model: Model, hit_weights: HitWeight, rep_info: RepliconInfo) -> list[Cluster]:
     """
     clusterize hit regarding the distance between them
 
     :param hits: the hits to clusterize
-    :type hits: list of :class:`macsylib.model.ModelHit` objects
     :param model: the model to consider
-    :type model: :class:`macsylib.model.Model` object
     :param hit_weights: the hit weight to compute the score
-    :type hit_weights: :class:`macsylib.hit.HitWeight` object
-    :type rep_info: :class:`macsylib.Indexes.RepliconInfo` object
-
+    :param rep_info: The information on the replicon
     :return: the clusters
-    :rtype: list of :class:`macsylib.cluster.Cluster` objects.
     """
-
-    def do_clst(clusters: list[Cluster], cluster_scaffold: list[ModelHit], model: Model, hit_weights: HitWeight) -> None:
-        """
-        transform a list of ModelHit in a cluster if the hit colocalize and they are not all neutral
-        and they do not code for same gene
-        add the new cluster to the clusters
-
-        :param cluster_scaffold:
-        :param model:
-        :param hit_weights:
-        :return: None
-        """
-        gene_types = {hit.gene_ref.name for hit in cluster_scaffold}
-        if len(gene_types) > 1:
-            if all([_hit.gene_ref.status == GeneStatus.NEUTRAL for _hit in cluster_scaffold]):
-                # we do not consider a group of neutral as a cluster
-                _log.debug(f"({', '.join([h.id for h in cluster_scaffold])}) "
-                           f"is composed of only neutral. It's not a cluster.")
-            else:
-                cluster = Cluster(cluster_scaffold, model, hit_weights)
-                clusters.append(cluster)
-        else:
-            cluster = Cluster(cluster_scaffold, model, hit_weights)
-            if cluster.loner:
-                # it's a group of one loner add as cluster
-                # it will be squashed at  next step (_get_true_loners )
-                clusters.append(cluster)
-            else:
-                _log.debug(f"({', '.join([h.id for h in cluster_scaffold])}) "
-                           f"is composed of only type of gene {cluster_scaffold[0].gene_ref.name}. It's not a cluster.")
-
     clusters = []
     cluster_scaffold = []
     # sort hits by increasing position and then descending score
@@ -143,52 +152,131 @@ def _clusterize(hits: list[ModelHit], model: Model, hit_weights: HitWeight, rep_
             if _colocates(previous_hit, m_hit, rep_info):
                 cluster_scaffold.append(m_hit)
             else:
-                if len(cluster_scaffold) > 1:
-                    # close the current scaffold if it contains at least 2 hits
-                    do_clst(clusters, cluster_scaffold, model, hit_weights)
-                elif model.min_genes_required == 1:
-                    # close the current scaffold if it contains 1 hit
-                    # but it's allowed by the model
-                    cluster = Cluster(cluster_scaffold, model, hit_weights)
+                # close the current scaffold
+                cluster = scaffold_to_cluster(cluster_scaffold, model, hit_weights)
+                if cluster is not None:
                     clusters.append(cluster)
-                elif model.get_gene(cluster_scaffold[0].gene.name).loner:
-                    # close the current scaffold it contains 1 hit but the model gene is tag as  a loner
-                    cluster = Cluster(cluster_scaffold, model, hit_weights)
-                    clusters.append(cluster)
-                    # the hit transformation in loner is performed at the end when circularity and merging is done
-
                 # open new scaffold
                 cluster_scaffold = [m_hit]
             previous_hit = m_hit
 
         # close the last current cluster
-        len_scaffold = len(cluster_scaffold)
-        if len_scaffold > 1:
-            do_clst(clusters, cluster_scaffold, model, hit_weights)
-        elif len_scaffold == 1:
+        cluster = scaffold_to_cluster(cluster_scaffold, model, hit_weights)
+        if cluster is not None:
+            clusters.append(cluster)
+        else:
             # handle circularity
-            # if there are clusters
-            # may be the hit collocate with the first hit of the first cluster
-            if clusters and _colocates(cluster_scaffold[0], clusters[0].hits[0], rep_info):
-                new_cluster = Cluster(cluster_scaffold, model, hit_weights)
-                clusters[0].merge(new_cluster, before=True)
-            elif cluster_scaffold[0].gene_ref.loner:
-                # the hit does not collocate, but it's a loner
-                # handle clusters containing only one loner
-                new_cluster = Cluster(cluster_scaffold, model, hit_weights)
-                clusters.append(new_cluster)
-            elif model.min_genes_required == 1:
-                # the hit does not collocate but the model required only one gene
-                # handle clusters containing only one gene
-                new_cluster = Cluster(cluster_scaffold, model, hit_weights)
-                clusters.append(new_cluster)
-
+            if rep_info.topology == 'circular':
+                # if there are clusters
+                # maybe the last hit in scaffold collocate with the first hit of the first cluster
+                if clusters and _colocates(cluster_scaffold[-1], clusters[0].hits[0], rep_info):
+                    new_cluster = Cluster(cluster_scaffold, model, hit_weights)
+                    clusters[0].merge(new_cluster, before=True)
+                elif _colocates(cluster_scaffold[-1], hits[0], rep_info):
+                    # maybe it colocalize with the first hit (which was not a cluster)
+                    cluster_scaffold.append(hits[0])
+                    cluster = scaffold_to_cluster(cluster_scaffold, model, hit_weights)
+                    if cluster is not None:
+                        clusters.append(cluster)
         # handle circularity
-        if len(clusters) > 1:
+        if rep_info.topology == 'circular' and len(clusters):
             if _colocates(clusters[-1].hits[-1], clusters[0].hits[0], rep_info):
                 clusters[0].merge(clusters[-1], before=True)
                 clusters = clusters[:-1]
     return clusters
+
+
+def is_integrase(hit: ModelHit, integrases: set[str]) -> bool:
+    """
+    find the integrase which is the closest to the hit
+
+    :param hit: The hit to check
+    :param integrases: the gene name of the integrases
+    :return: the closest integrase
+    """
+    return hit.gene_ref.name in integrases
+
+
+def closest_integrase(hit: ModelHit, hits_integrase:list[ModelHit]) -> ModelHit:
+    """
+
+    :param hit: the hit
+    :param hits_integrase: The integrases
+    :return: The closests integrase to the hit
+    """
+    closest_int = hits_integrase[0]
+    closest_dist = abs(hit.position - closest_int.position)
+    for integrase in hits_integrase[1:]:
+        distance = abs(hit.position - integrase.position)
+        if distance < closest_dist:
+            closest_dist = distance
+            closest_int = integrase
+    return closest_int
+
+
+def split_cluster_on_integrases(integrases: set[str], cluster: Cluster) -> list[Cluster]:
+    """
+    split a Cluster containing several integrases to have one cluster per integrases, whit thier closest hits
+
+    :param integrases: the gene name of integrases
+    :param cluster: The cluster to split
+    :return:
+    """
+    clusters = []
+    scaffolds = defaultdict(list)
+    hits_integrase = []
+    hits_not_integrase = []
+    for hit in cluster.hits:
+        if is_integrase(hit, integrases):
+            hits_integrase.append(hit)
+        else:
+            hits_not_integrase.append(hit)
+
+
+    if not hits_integrase:
+        return []
+    for hit in hits_not_integrase:
+        closest_int = closest_integrase(hit, hits_integrase)
+        scaffolds[closest_int].append(hit)
+
+    for integrase, scaffold in scaffolds.items():
+        scaffold.append(integrase)
+        scaffold.sort(key=lambda h: h.position)
+        cluster = scaffold_to_cluster(scaffold, cluster.model, cluster.hit_weights)
+        clusters.append(cluster)
+    clusters.sort(key=lambda c: c.hits[0].position)
+    return clusters
+
+
+def clusterize_hit_on_integrase(integrases: set[str],hits: list[ModelHit], model: Model, hit_weights: HitWeight, rep_info: RepliconInfo):
+    """
+    clusterize hit regarding the distance between them and around one integrase
+
+    :param hits: the hits to clusterize
+    :type hits: list of :class:`macsylib.model.ModelHit` objects
+    :param model: the model to consider
+    :type model: :class:`macsylib.model.Model` object
+    :param hit_weights: the hit weight to compute the score
+    :type hit_weights: :class:`macsylib.hit.HitWeight` object
+    :type rep_info: :class:`macsylib.Indexes.RepliconInfo` object
+
+    :return: the clusters
+    :rtype: list of :class:`macsylib.cluster.Cluster` objects.
+    """
+
+    dist_cls = clusterize_hits_on_distance_only(hits, model, hit_weights, rep_info)
+    integrase_clst = []
+    for clst in dist_cls:
+        integrase_nb = sum([1 for hit in clst.hits if is_integrase(hit, integrases)])
+        if integrase_nb == 0:
+            continue
+        elif integrase_nb == 1:
+            integrase_clst.append(clst)
+        else:
+            clusters = split_clusters_on_integrases(integrases, clst)
+            integrase_clst.extend(clusters)
+    integrase_clst.sort(key=lambda c: c.hits[0].position)
+    return integrase_clst
 
 
 def _get_true_loners(clusters: list[Cluster]) -> tuple[dict[str: Loner | LonerMultiSystem], list[Cluster]]:
@@ -287,7 +375,7 @@ def build_clusters(hits: list[ModelHit],
             * true_loners: a dict { str function: :class:macsylib.hit.Loner | :class:macsylib.hit.LonerMultiSystem object}
     """
     if hits:
-        clusters = _clusterize(hits, model, hit_weights, rep_info)
+        clusters = clusterize_hits_on_distance_only(hits, model, hit_weights, rep_info)
         # The hits in clusters are either ModelHit or MultiSystem
         # (they are cast during model.filter(hits) method)
         # the MultiSystem have no yet counterpart
@@ -348,7 +436,7 @@ class Cluster:
         """
         # need this method in build_cluster before to transform ModelHit in Loner
         # so cannot rely on Loner type
-        # beware return True if several hits of same gene composed this cluster
+        # beware return True if several hits of same gene composed this cluster (I use a set!)
         return len({h.gene_ref.name for h in self.hits}) == 1 and self.hits[0].gene_ref.loner
 
     @property
