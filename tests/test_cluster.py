@@ -37,7 +37,7 @@ from macsylib.hit import CoreHit, ModelHit, Loner, MultiSystem, LonerMultiSystem
 from macsylib.model import Model
 from macsylib.database import RepliconInfo
 from macsylib.cluster import (Cluster, build_clusters, _colocates, clusterize_hits_on_distance_only, _get_true_loners,
-                              scaffold_to_cluster, is_integrase, closest_integrase, split_cluster_on_integrases, clusterize_hit_on_integrase)
+                              scaffold_to_cluster, is_integrase, closest_integrase, split_cluster_on_integrases)
 from tests import MacsyTest
 
 
@@ -709,7 +709,7 @@ class TestBuildCluster(MacsyTest):
         h_70 = CoreHit(core_genes[6], "h70", 10, "replicon_1", 70, 1.0, 10.0, 1.0, 1.0, 10, 20)
         mh_70 = ModelHit(h_70, gene_ref=model_genes[6], gene_status=GeneStatus.ACCESSORY)
         c = Cluster([mh_10, mh_int_20, mh_30, mh_40, mh_50, mh_int_60, mh_70], model, self.hit_weights)
-        clusters = split_cluster_on_integrases({h.gene_ref.name for h in (mh_int_20, mh_int_60)}, c)
+        clusters = split_cluster_on_integrases({h.gene_ref.name for h in integrases}, c)
         self.assertEqual(len(clusters), 2)
         self.assertEqual(clusters[0].hits, [mh_10, mh_int_20, mh_30, mh_40])
         self.assertEqual(clusters[1].hits, [mh_50, mh_int_60, mh_70])
@@ -791,8 +791,6 @@ class TestBuildCluster(MacsyTest):
 
 
     def test_scaffold_to_cluster(self):
-        rep_info = RepliconInfo('linear', 1, 60, [(f"g_{i}", i * 10) for i in range(1, 7)])
-
         #              fqn      , inter_gene_max_sapce
         model = Model("foo/T2SS", inter_gene_max_space=11, min_genes_required=4)
 
@@ -872,7 +870,7 @@ class TestBuildCluster(MacsyTest):
         mh200 = ModelHit(h200, gene_ref=model_genes[0], gene_status=GeneStatus.MANDATORY)
         h300 = CoreHit(core_genes[0], "h300", 10, "replicon_1", 300, 1.0, 10.0, 1.0, 1.0, 10, 20)
         mh300 = ModelHit(h300, gene_ref=model_genes[0], gene_status=GeneStatus.MANDATORY)
-        c = scaffold_to_cluster([mh50, mh60], model, self.hit_weights)
+        c = scaffold_to_cluster([mh100, mh200, mh300], model, self.hit_weights)
         self.assertIsNone(c)
 
         # 1 hit model min_gene_required == 1
