@@ -273,7 +273,7 @@ def clusterize_hit_on_integrase(integrases: set[str],hits: list[ModelHit], model
         elif integrase_nb == 1:
             integrase_clst.append(clst)
         else:
-            clusters = split_clusters_on_integrases(integrases, clst)
+            clusters = split_cluster_on_integrases(integrases, clst)
             integrase_clst.extend(clusters)
     integrase_clst.sort(key=lambda c: c.hits[0].position)
     return integrase_clst
