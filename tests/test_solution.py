@@ -686,6 +686,10 @@ class SolutionExplorerTest(MacsyTest):
 
 
     def test_combine_clusters(self):
+        combinations = combine_clusters([],
+                                       {},
+                                       multi_loci=False)
+        self.assertListEqual(combinations, [])
         ##################################################
         # with 3 regular clusters 0 loner 0 multisystyem
         ##################################################
