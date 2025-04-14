@@ -139,6 +139,12 @@ class TestMetadata(MacsyTest):
         meta.copyright_holder = 'My institution'
         self.assertEqual(meta.copyright, '2020-2024, My institution')
 
+        meta_path = self.find_data('pack_metadata', 'metadata_no_copyright.yml')
+        meta = Metadata.load(meta_path)
+        self.assertEqual(meta.copyright, '')
+        self.assertEqual(meta.copyright_date, '')
+        self.assertEqual(meta.copyright_holder, '')
+
 
     def test_doc(self):
         meta_path = self.find_data('pack_metadata', 'good_metadata.yml')
