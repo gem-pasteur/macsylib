@@ -585,6 +585,16 @@ class TestConfig(MacsyTest):
         cfg = Config(self.defaults, self.parsed_args)
         self.assertTrue(cfg.cut_ga())
 
+    def test_models(self):
+        self.parsed_args.models = ['TFF-SF', 'all']
+        cfg = Config(self.defaults, self.parsed_args)
+        self.assertEqual(cfg.models(), ('TFF-SF', ['all']))
+        # if user ommit models, all models of the familly will be search for
+        self.parsed_args.models = ['TFF-SF']
+        cfg = Config(self.defaults, self.parsed_args)
+        self.assertEqual(cfg.models(), ('TFF-SF', ['all']))
+
+
     @unittest.skipIf(not shutil.which('hmmsearch'), "'hmmsearch' not found in PATH")
     def test_hmmsearch(self):
         cfg = Config(self.defaults, self.parsed_args)
