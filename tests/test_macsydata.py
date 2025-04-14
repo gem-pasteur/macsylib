@@ -1595,6 +1595,36 @@ Maybe you can use --user option to install in your HOME.""")
 
 
     @unittest.skipIf(git is None, "GitPython is not installed")
+    def test_init_package_license(self):
+        self.args.pack_name = 'init_pack_license'
+        self.args.maintainer = 'John Doe'
+        self.args.email = 'john.doe@domain.org'
+        self.args.authors = 'Jim Doe, John Doe'
+        self.args.license = 'cc-by-nc-sa'
+        self.args.holders = None
+        self.args.desc = 'description in one line of this package'
+        self.args.models_dir = self.models_dir[0]
+        self.args.no_clean = False
+        # see below (test_init_package_complete)
+        # why a do a mock for localtime
+        fake_time = namedtuple('FakeTime', ['tm_year'])
+        local_time_ori = macsydata.time.localtime
+        macsydata.time.localtime = lambda: fake_time(2022)
+        try:
+            with self.catch_log(log_name='macsydata'):
+                macsydata.do_init_package(self.args)
+
+            files = ('README.md', 'metadata.yml', 'model_conf.xml', os.path.join('definitions', 'model_example.xml'))
+            for f_name in files:
+                with self.subTest(file_name=f_name):
+                    expected_file = self.find_data(self.args.pack_name, f_name)
+                    got_file = os.path.join(self.args.models_dir, self.args.pack_name, f_name)
+                    self.assertFileEqual(expected_file, got_file)
+        finally:
+            macsydata.time.localtime = local_time_ori
+
+
+    @unittest.skipIf(git is None, "GitPython is not installed")
     def test_init_package_complete(self):
         self.args.pack_name = 'init_pack'
         self.args.maintainer = 'John Doe'
