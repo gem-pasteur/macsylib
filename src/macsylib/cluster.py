@@ -248,7 +248,11 @@ def split_cluster_on_integrases(integrases: set[str], cluster: Cluster) -> list[
     return clusters
 
 
-def clusterize_hit_on_integrase(integrases: set[str],hits: list[ModelHit], model: Model, hit_weights: HitWeight, rep_info: RepliconInfo):
+def clusterize_hit_on_integrase(integrases: set[str],
+                                hits: list[ModelHit],
+                                model: Model,
+                                hit_weights: HitWeight,
+                                rep_info: RepliconInfo) -> list[Cluster]:
     """
     clusterize hit regarding the distance between them and around one integrase
 
