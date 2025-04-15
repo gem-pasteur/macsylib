@@ -673,6 +673,10 @@ class MatchMaker(metaclass=abc.ABCMeta):
     """
 
     def __init__(self, model: Model) -> None:
+        """
+
+        :param model: The model used compute genetic constraints
+        """
         self._model = model
         # init my structures to count gene occurrences
         self.mandatory_counter = {g.name: 0 for g in model.mandatory_genes}
@@ -783,7 +787,13 @@ class OrderedMatchMaker(MatchMaker):
     check if a set of hits match the quorum for ordered replicons (ordered_replicon or gembase)
     """
 
-    def __init__(self, model, redundancy_penalty):
+    def __init__(self, model: Model, redundancy_penalty: float) -> None:
+        """
+
+        :param model: The model used compute genetic constraints
+        :param redundancy_penalty: The penalty applied to compute the score
+                                   when several genes coding for same function are present in same cluster.
+        """
         self._redundancy_penalty = redundancy_penalty
         super().__init__(model)
 
@@ -795,9 +805,7 @@ class OrderedMatchMaker(MatchMaker):
         a :class:`macsylib.cluster.RejectedCandidate`.
 
         :param clusters: The list of cluster to check if fit the model
-        :type clusters: list of :class:`macsylib.cluster.Cluster` objects
         :return: either a System or a RejectedCandidates
-        :rtype: :class:`macsylib.system.System` or :class:`macsylib.system.RejectedCandidate` object
         """
         # count the hits
         # and track for each hit for which gene it counts for
