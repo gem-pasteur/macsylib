@@ -37,8 +37,8 @@ from macsylib.hit import CoreHit, ModelHit, Loner, MultiSystem, LonerMultiSystem
 from macsylib.model import Model
 from macsylib.database import RepliconInfo
 from macsylib.cluster import (Cluster, build_clusters, _colocates, clusterize_hits_on_distance_only, _get_true_loners,
-                              scaffold_to_cluster, is_integrase, closest_integrase, split_cluster_on_integrases,
-                              clusterize_hit_on_integrase)
+                              scaffold_to_cluster, is_a, closest_hit, split_cluster_on_key_genes,
+                              clusterize_hits_around_key_genes)
 from tests import MacsyTest
 
 
@@ -703,7 +703,7 @@ class TestBuildCluster(MacsyTest):
         self.assertListEqual(got_clusters[0].hits, [mh20, mh25, mh29])
 
 
-    def test_split_cluster_on_integrase(self):
+    def test_split_cluster_on_key_genes(self):
         model = Model("foo/T2SS", 11)
         core_genes = []
         model_genes = []
@@ -724,7 +724,7 @@ class TestBuildCluster(MacsyTest):
         mh_int_20 = ModelHit(int_20, gene_ref=model_genes[1], gene_status=GeneStatus.MANDATORY)
         int_60 = CoreHit(core_genes[5], "int_h20", 10, "replicon_1", 60, 1.0, 10.0, 1.0, 1.0, 10, 20)
         mh_int_60 = ModelHit(int_60, gene_ref=model_genes[5], gene_status=GeneStatus.MANDATORY)
-        integrases = [mh_int_20, mh_int_60]
+        key_genes = [mh_int_20, mh_int_60]
 
         h_10 = CoreHit(core_genes[0], "h10", 10, "replicon_1", 10, 1.0, 10.0, 1.0, 1.0, 10, 20)
         mh_10 = ModelHit(h_10, gene_ref=model_genes[0], gene_status=GeneStatus.MANDATORY)
@@ -737,17 +737,17 @@ class TestBuildCluster(MacsyTest):
         h_70 = CoreHit(core_genes[6], "h70", 10, "replicon_1", 70, 1.0, 10.0, 1.0, 1.0, 10, 20)
         mh_70 = ModelHit(h_70, gene_ref=model_genes[6], gene_status=GeneStatus.ACCESSORY)
         c = Cluster([mh_10, mh_int_20, mh_30, mh_40, mh_50, mh_int_60, mh_70], model, self.hit_weights)
-        clusters = split_cluster_on_integrases({h.gene_ref.name for h in integrases}, c)
+        clusters = split_cluster_on_key_genes({h.gene_ref.name for h in key_genes}, c)
         self.assertEqual(len(clusters), 2)
         self.assertEqual(clusters[0].hits, [mh_10, mh_int_20, mh_30, mh_40])
         self.assertEqual(clusters[1].hits, [mh_50, mh_int_60, mh_70])
 
         c = Cluster([mh_10, mh_30, mh_40, mh_50, mh_70], model, self.hit_weights)
-        clusters = split_cluster_on_integrases({h.gene_ref.name for h in (mh_int_20, mh_int_60)}, c)
+        clusters = split_cluster_on_key_genes({h.gene_ref.name for h in (mh_int_20, mh_int_60)}, c)
         self.assertEqual(clusters, [])
 
 
-    def test_clusterize_hit_on_integrase(self):
+    def test_clusterize_hits_around_key_genes(self):
         rep_info = RepliconInfo('linear', 1, 80, [(f"g_{i}", i * 10) for i in range(1, 9)])
         model = Model("foo/T2SS", 11)
         core_genes = []
@@ -769,7 +769,7 @@ class TestBuildCluster(MacsyTest):
         mh_int_20 = ModelHit(int_20, gene_ref=model_genes[1], gene_status=GeneStatus.MANDATORY)
         int_60 = CoreHit(core_genes[5], "int_h20", 10, "replicon_1", 60, 1.0, 10.0, 1.0, 1.0, 10, 20)
         mh_int_60 = ModelHit(int_60, gene_ref=model_genes[5], gene_status=GeneStatus.MANDATORY)
-        integrases = [mh.gene_ref.name for mh in (mh_int_20, mh_int_60)]
+        key_genes = [mh.gene_ref.name for mh in (mh_int_20, mh_int_60)]
 
         # mh_10 -> mh_70 colocalize and contains 2 integrases the cluster must be split in 2
         h_10 = CoreHit(core_genes[0], "h10", 10, "replicon_1", 10, 1.0, 10.0, 1.0, 1.0, 10, 20)
@@ -793,7 +793,7 @@ class TestBuildCluster(MacsyTest):
 
         # One cluster with 2 integrases which need to be split
         # Plus one set of colocating hits but without integrase
-        clusters = clusterize_hit_on_integrase(integrases,
+        clusters = clusterize_hits_around_key_genes(key_genes,
                                             [mh_10, mh_int_20, mh_30, mh_40, mh_50, mh_int_60, mh_70, mh_100, mh_110,
                                              mh_120],
                                              model, self.hit_weights, rep_info)
@@ -803,7 +803,7 @@ class TestBuildCluster(MacsyTest):
         self.assertEqual(clusters[1].hits, [mh_50, mh_int_60, mh_70])
 
         # One cluster with One integrase
-        clusters = clusterize_hit_on_integrase(integrases,
+        clusters = clusterize_hits_around_key_genes(key_genes,
                                             [mh_10, mh_int_20, mh_30, mh_40],
                                              model, self.hit_weights, rep_info)
 
@@ -811,7 +811,7 @@ class TestBuildCluster(MacsyTest):
         self.assertEqual(clusters[0].hits, [mh_10, mh_int_20, mh_30, mh_40])
 
 
-    def test_closest_integrase(self):
+    def test_closest_hit(self):
         #              fqn      , inter_gene_max_sapce
         model = Model("foo/T2SS", 11)
         core_genes = []
@@ -832,28 +832,28 @@ class TestBuildCluster(MacsyTest):
         mh_int_20 = ModelHit(int_20, gene_ref=model_genes[1], gene_status=GeneStatus.MANDATORY)
         int_60 = CoreHit(core_genes[5], "int_h20", 10, "replicon_1", 60, 1.0, 10.0, 1.0, 1.0, 10, 20)
         mh_int_60 = ModelHit(int_60, gene_ref=model_genes[5], gene_status=GeneStatus.MANDATORY)
-        integrases = [mh_int_20, mh_int_60]  # 'sctC', 'abc'
+        ref_hits = [mh_int_20, mh_int_60]  # 'sctC', 'abc'
 
         h_10 = CoreHit(core_genes[0], "h10", 10, "replicon_1", 10, 1.0, 10.0, 1.0, 1.0, 10, 20)
         mh_10 = ModelHit(h_10, gene_ref=model_genes[0], gene_status=GeneStatus.MANDATORY)
-        self.assertEqual(closest_integrase(mh_10, integrases), mh_int_20)
+        self.assertEqual(closest_hit(mh_10, ref_hits), mh_int_20)
 
         h_30 = CoreHit(core_genes[2], "h30", 10, "replicon_1", 30, 1.0, 10.0, 1.0, 1.0, 10, 20)
         mh_30 = ModelHit(h_30, gene_ref=model_genes[2], gene_status=GeneStatus.MANDATORY)
-        self.assertEqual(closest_integrase(mh_30, integrases), mh_int_20)
+        self.assertEqual(closest_hit(mh_30, ref_hits), mh_int_20)
 
         h_50 = CoreHit(core_genes[4], "h50", 10, "replicon_1", 50, 1.0, 10.0, 1.0, 1.0, 10, 20)
         mh_50 = ModelHit(h_50, gene_ref=model_genes[4], gene_status=GeneStatus.MANDATORY)
-        self.assertEqual(closest_integrase(mh_50, integrases), mh_int_60)
+        self.assertEqual(closest_hit(mh_50, ref_hits), mh_int_60)
 
         # h40 is at same distance from int_20 and int_60
         # but algorithm favor the first solution
         h_40 = CoreHit(core_genes[3], "h40", 10, "replicon_1", 40, 1.0, 10.0, 1.0, 1.0, 10, 20)
         mh_40 = ModelHit(h_40, gene_ref=model_genes[3], gene_status=GeneStatus.MANDATORY)
-        self.assertEqual(closest_integrase(mh_40, integrases), mh_int_20)
+        self.assertEqual(closest_hit(mh_40, ref_hits), mh_int_20)
 
 
-    def test_is_integrase(self):
+    def test_is_a(self):
         #              fqn      , inter_gene_max_sapce
         model = Model("foo/T2SS", 11)
         core_genes = []
@@ -875,8 +875,8 @@ class TestBuildCluster(MacsyTest):
         h20 = CoreHit(core_genes[1], "h20", 10, "replicon_1", 20, 1.0, 20.0, 1.0, 1.0, 10, 20)
         mh20 = ModelHit(h20, gene_ref=model_genes[1], gene_status=GeneStatus.MANDATORY)
 
-        self.assertFalse(is_integrase(mh10, {'sctC','sctN'}))
-        self.assertTrue(is_integrase(mh20, {'sctC','sctN'}))
+        self.assertFalse(is_a(mh10, {'sctC', 'sctN'}))
+        self.assertTrue(is_a(mh20, {'sctC', 'sctN'}))
 
 
     def test_scaffold_to_cluster(self):

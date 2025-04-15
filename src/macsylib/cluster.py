@@ -186,27 +186,26 @@ def clusterize_hits_on_distance_only(hits: list[ModelHit], model: Model, hit_wei
     return clusters
 
 
-def is_integrase(hit: ModelHit, integrases: set[str]) -> bool:
+def is_a(hit: ModelHit, ref_hits: set[str]) -> bool:
     """
-    find the integrase which is the closest to the hit
-
     :param hit: The hit to check
-    :param integrases: the gene name of the integrases
-    :return: the closest integrase
+    :param ref_hits: the gene name of the reference hit
+    :return: True if the *hit* belong to the reference hits, False otherwise
     """
-    return hit.gene_ref.name in integrases
+    return hit.gene_ref.name in ref_hits
 
 
-def closest_integrase(hit: ModelHit, hits_integrase:list[ModelHit]) -> ModelHit:
+def closest_hit(hit: ModelHit, ref_hits:list[ModelHit]) -> ModelHit:
     """
 
     :param hit: the hit
-    :param hits_integrase: The integrases
+    :param ref_hits: The reference hits. the distance between *hit* and each *ref_hit*
+                    will be computed. the closest *ref_hit* will be returned
     :return: The closests integrase to the hit
     """
-    closest_int = hits_integrase[0]
+    closest_int = ref_hits[0]
     closest_dist = abs(hit.position - closest_int.position)
-    for integrase in hits_integrase[1:]:
+    for integrase in ref_hits[1:]:
         distance = abs(hit.position - integrase.position)
         if distance < closest_dist:
             closest_dist = distance
@@ -214,29 +213,29 @@ def closest_integrase(hit: ModelHit, hits_integrase:list[ModelHit]) -> ModelHit:
     return closest_int
 
 
-def split_cluster_on_integrases(integrases: set[str], cluster: Cluster) -> list[Cluster]:
+def split_cluster_on_key_genes(key_genes: set[str], cluster: Cluster) -> list[Cluster]:
     """
-    split a Cluster containing several integrases to have one cluster per integrases, whit thier closest hits
+    split a Cluster containing several key genes to have one cluster per key genes, with their closest hits
 
-    :param integrases: the gene name of integrases
+    :param key_genes: the gene names which be seed for cluster
     :param cluster: The cluster to split
     :return:
     """
     clusters = []
     scaffolds = defaultdict(list)
-    hits_integrase = []
-    hits_not_integrase = []
+    key_gene_hits = []
+    not_key_genes_hits = []
     for hit in cluster.hits:
-        if is_integrase(hit, integrases):
-            hits_integrase.append(hit)
+        if is_a(hit, key_genes):
+            key_gene_hits.append(hit)
         else:
-            hits_not_integrase.append(hit)
+            not_key_genes_hits.append(hit)
 
 
-    if not hits_integrase:
+    if not key_gene_hits:
         return []
-    for hit in hits_not_integrase:
-        closest_int = closest_integrase(hit, hits_integrase)
+    for hit in not_key_genes_hits:
+        closest_int = closest_hit(hit, key_gene_hits)
         scaffolds[closest_int].append(hit)
 
     for integrase, scaffold in scaffolds.items():
@@ -248,13 +247,13 @@ def split_cluster_on_integrases(integrases: set[str], cluster: Cluster) -> list[
     return clusters
 
 
-def clusterize_hit_on_integrase(integrases: set[str],
-                                hits: list[ModelHit],
-                                model: Model,
-                                hit_weights: HitWeight,
-                                rep_info: RepliconInfo) -> list[Cluster]:
+def clusterize_hits_around_key_genes(key_genes: set[str],
+                                     hits: list[ModelHit],
+                                     model: Model,
+                                     hit_weights: HitWeight,
+                                     rep_info: RepliconInfo) -> list[Cluster]:
     """
-    clusterize hit regarding the distance between them and around one integrase
+    clusterize hit regarding the distance between them and around key_gene
 
     :param hits: the hits to clusterize
     :type hits: list of :class:`macsylib.model.ModelHit` objects
@@ -269,18 +268,18 @@ def clusterize_hit_on_integrase(integrases: set[str],
     """
 
     dist_cls = clusterize_hits_on_distance_only(hits, model, hit_weights, rep_info)
-    integrase_clst = []
+    key_gene_clst = []
     for clst in dist_cls:
-        integrase_nb = sum([1 for hit in clst.hits if is_integrase(hit, integrases)])
-        if integrase_nb == 0:
+        key_gene_nb = sum([1 for hit in clst.hits if is_a(hit, key_genes)])
+        if key_gene_nb == 0:
             continue
-        elif integrase_nb == 1:
-            integrase_clst.append(clst)
+        elif key_gene_nb == 1:
+            key_gene_clst.append(clst)
         else:
-            clusters = split_cluster_on_integrases(integrases, clst)
-            integrase_clst.extend(clusters)
-    integrase_clst.sort(key=lambda c: c.hits[0].position)
-    return integrase_clst
+            clusters = split_cluster_on_key_genes(key_genes, clst)
+            key_gene_clst.extend(clusters)
+    key_gene_clst.sort(key=lambda c: c.hits[0].position)
+    return key_gene_clst
 
 
 def _get_true_loners(clusters: list[Cluster]) -> tuple[dict[str: Loner | LonerMultiSystem], list[Cluster]]:
