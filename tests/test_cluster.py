@@ -37,7 +37,8 @@ from macsylib.hit import CoreHit, ModelHit, Loner, MultiSystem, LonerMultiSystem
 from macsylib.model import Model
 from macsylib.database import RepliconInfo
 from macsylib.cluster import (Cluster, build_clusters, _colocates, clusterize_hits_on_distance_only, _get_true_loners,
-                              scaffold_to_cluster, is_integrase, closest_integrase, split_cluster_on_integrases)
+                              scaffold_to_cluster, is_integrase, closest_integrase, split_cluster_on_integrases,
+                              clusterize_hit_on_integrase)
 from tests import MacsyTest
 
 
@@ -491,6 +492,33 @@ class TestBuildCluster(MacsyTest):
         self.assertListEqual(got_clusters[0].hits, [mh51, mh61])
         self.assertListEqual(got_clusters[1].hits, [mh80, mh11])
 
+        # replicon is circular
+        # last hit mh80 colocalize with first hit mh10_alt which is not in a cluster but the 2 hits are neutral: it's not a cluster
+        rep_info = RepliconInfo('circular', 1, 80, [(f"g_{i}", i * 10) for i in range(1, 9)])
+
+        h10_alt = CoreHit(core_genes[3], "h10_alt", 10, "replicon_1", 10, 1.0, 80.0, 1.0, 1.0, 10, 20)
+        mh10_alt = ModelHit(h10_alt, gene_ref=model_genes[5], gene_status=GeneStatus.ACCESSORY)
+        h80 = CoreHit(core_genes[3], "h80", 10, "replicon_1", 80, 1.0, 80.0, 1.0, 1.0, 10, 20)
+        mh80 = ModelHit(h80, gene_ref=model_genes[5], gene_status=GeneStatus.ACCESSORY)
+        hits = [mh10_alt, mh30, mh31, mh50, mh51, mh60, mh61, mh80]
+        random.shuffle(hits)
+        got_clusters = clusterize_hits_on_distance_only(hits, model, self.hit_weights, rep_info)
+        self.assertEqual(len(got_clusters), 1)
+        self.assertListEqual(got_clusters[0].hits, [mh51, mh61])
+
+        # replicon is circular
+        # last hit mh80 does not colocates whit first one mh50
+        rep_info = RepliconInfo('circular', 1, 80, [(f"g_{i}", i * 10) for i in range(1, 9)])
+
+        h10_alt = CoreHit(core_genes[3], "h10_alt", 10, "replicon_1", 10, 1.0, 80.0, 1.0, 1.0, 10, 20)
+        mh10_alt = ModelHit(h10_alt, gene_ref=model_genes[5], gene_status=GeneStatus.ACCESSORY)
+        h80 = CoreHit(core_genes[3], "h80", 10, "replicon_1", 80, 1.0, 80.0, 1.0, 1.0, 10, 20)
+        mh80 = ModelHit(h80, gene_ref=model_genes[5], gene_status=GeneStatus.ACCESSORY)
+        hits = [mh10_alt,  mh50]
+        random.shuffle(hits)
+        got_clusters = clusterize_hits_on_distance_only(hits, model, self.hit_weights, rep_info)
+        self.assertEqual(len(got_clusters), 0)
+
         # # replicon is linear
         # # last hit DO NOT colocalize with first hit which is not in a cluster
         rep_info = RepliconInfo('linear', 1, 80, [(f"g_{i}", i * 10) for i in range(1, 9)])
@@ -720,7 +748,68 @@ class TestBuildCluster(MacsyTest):
 
 
     def test_clusterize_hit_on_integrase(self):
-        raise AssertionError('test_clusterize_hit_on_integrase is not implemented')
+        rep_info = RepliconInfo('linear', 1, 80, [(f"g_{i}", i * 10) for i in range(1, 9)])
+        model = Model("foo/T2SS", 11)
+        core_genes = []
+        model_genes = []
+        for g_name in ('gspD', 'sctC', 'sctJ', 'sctN', 'abc', 'tadZ', 'flgB'):
+            core_gene = CoreGene(self.model_location, g_name, self.profile_factory)
+            core_genes.append(core_gene)
+            model_genes.append(ModelGene(core_gene, model))
+
+        model.add_mandatory_gene(model_genes[0])
+        model.add_mandatory_gene(model_genes[1])  # integrase
+        model.add_accessory_gene(model_genes[2])
+        model.add_accessory_gene(model_genes[3])
+        model.add_accessory_gene(model_genes[4])
+        model.add_accessory_gene(model_genes[5])  # integrase
+        model.add_accessory_gene(model_genes[6])
+
+        int_20 = CoreHit(core_genes[1], "int_h20", 10, "replicon_1", 20, 1.0, 10.0, 1.0, 1.0, 10, 20)
+        mh_int_20 = ModelHit(int_20, gene_ref=model_genes[1], gene_status=GeneStatus.MANDATORY)
+        int_60 = CoreHit(core_genes[5], "int_h20", 10, "replicon_1", 60, 1.0, 10.0, 1.0, 1.0, 10, 20)
+        mh_int_60 = ModelHit(int_60, gene_ref=model_genes[5], gene_status=GeneStatus.MANDATORY)
+        integrases = [mh.gene_ref.name for mh in (mh_int_20, mh_int_60)]
+
+        # mh_10 -> mh_70 colocalize and contains 2 integrases the cluster must be split in 2
+        h_10 = CoreHit(core_genes[0], "h10", 10, "replicon_1", 10, 1.0, 10.0, 1.0, 1.0, 10, 20)
+        mh_10 = ModelHit(h_10, gene_ref=model_genes[0], gene_status=GeneStatus.MANDATORY)
+        h_30 = CoreHit(core_genes[2], "h30", 10, "replicon_1", 30, 1.0, 10.0, 1.0, 1.0, 10, 20)
+        mh_30 = ModelHit(h_30, gene_ref=model_genes[2], gene_status=GeneStatus.ACCESSORY)
+        h_40 = CoreHit(core_genes[3], "h40", 10, "replicon_1", 40, 1.0, 10.0, 1.0, 1.0, 10, 20)
+        mh_40 = ModelHit(h_40, gene_ref=model_genes[3], gene_status=GeneStatus.ACCESSORY)
+        h_50 = CoreHit(core_genes[4], "h50", 10, "replicon_1", 50, 1.0, 10.0, 1.0, 1.0, 10, 20)
+        mh_50 = ModelHit(h_50, gene_ref=model_genes[4], gene_status=GeneStatus.ACCESSORY)
+        h_70 = CoreHit(core_genes[6], "h70", 10, "replicon_1", 70, 1.0, 10.0, 1.0, 1.0, 10, 20)
+        mh_70 = ModelHit(h_70, gene_ref=model_genes[6], gene_status=GeneStatus.ACCESSORY)
+
+        # mh_100, mh_110, mh_120 colocalize but it does not contains an integrase so it's not a cluster
+        h_100 = CoreHit(core_genes[2], "h30", 10, "replicon_1", 100, 1.0, 10.0, 1.0, 1.0, 10, 20)
+        mh_100 = ModelHit(h_100, gene_ref=model_genes[2], gene_status=GeneStatus.ACCESSORY)
+        h_110 = CoreHit(core_genes[3], "h110", 10, "replicon_1", 110, 1.0, 10.0, 1.0, 1.0, 10, 20)
+        mh_110 = ModelHit(h_110, gene_ref=model_genes[3], gene_status=GeneStatus.ACCESSORY)
+        h_120 = CoreHit(core_genes[4], "h120", 10, "replicon_1", 120, 1.0, 10.0, 1.0, 1.0, 10, 20)
+        mh_120 = ModelHit(h_120, gene_ref=model_genes[4], gene_status=GeneStatus.ACCESSORY)
+
+        # One cluster with 2 integrases which need to be split
+        # Plus one set of colocating hits but without integrase
+        clusters = clusterize_hit_on_integrase(integrases,
+                                            [mh_10, mh_int_20, mh_30, mh_40, mh_50, mh_int_60, mh_70, mh_100, mh_110,
+                                             mh_120],
+                                             model, self.hit_weights, rep_info)
+
+        self.assertEqual(len(clusters), 2)
+        self.assertEqual(clusters[0].hits, [mh_10, mh_int_20, mh_30, mh_40])
+        self.assertEqual(clusters[1].hits, [mh_50, mh_int_60, mh_70])
+
+        # One cluster with One integrase
+        clusters = clusterize_hit_on_integrase(integrases,
+                                            [mh_10, mh_int_20, mh_30, mh_40],
+                                             model, self.hit_weights, rep_info)
+
+        self.assertEqual(len(clusters), 1)
+        self.assertEqual(clusters[0].hits, [mh_10, mh_int_20, mh_30, mh_40])
+
 
     def test_closest_integrase(self):
         #              fqn      , inter_gene_max_sapce
