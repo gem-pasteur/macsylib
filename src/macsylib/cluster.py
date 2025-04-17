@@ -28,7 +28,9 @@ from __future__ import annotations
 
 import itertools
 import logging
+import operator
 from collections import defaultdict
+from typing import Iterable
 
 import macsylib.gene
 from .error import MacsylibError
@@ -397,14 +399,14 @@ class Cluster:
 
     _id = itertools.count(1)
 
-    def __init__(self, hits: list[CoreHit | ModelHit], model, hit_weights) -> None:
+    def __init__(self, hits: Iterable[CoreHit | ModelHit], model, hit_weights) -> None:
         """
 
         :param hits: the hits constituting this cluster
         :param model: the model associated to this cluster
         :param hit_weights: the weight of the hit to compute the score
         """
-        self.hits = hits
+        self._hits = sorted(hits, key=operator.attrgetter('position'))
         self.model = model
         self._check_replicon_consistency()
         self._score = None
@@ -412,11 +414,32 @@ class Cluster:
         self._hit_weights = hit_weights
         self.id = f"c{next(self._id)}"
 
+
     def __len__(self) -> int:
         return len(self.hits)
 
+
     def __getitem__(self, item: str) -> CoreHit | ModelHit:
         return self.hits[item]
+
+
+    @property
+    def hits(self) -> list[CoreHit | ModelHit]:
+        """
+
+        :return: the hits sorted by the increasing position
+        """
+        return self._hits[:]
+
+
+    @hits.setter
+    def hits(self, hits: Iterable[CoreHit | ModelHit]) -> None:
+        """
+
+        set cluster hits
+        """
+        self._hits = sorted(hits, key=operator.attrgetter('position'))
+
 
     @property
     def hit_weights(self) -> HitWeight:
@@ -424,6 +447,7 @@ class Cluster:
         :return: the different weight for the hits used to compute the score
         """
         return self._hit_weights
+
 
     @property
     def loner(self) -> bool:
