@@ -118,13 +118,13 @@ class CoreHitTest(MacsyTest):
         self.assertEqual(s, str(hit))
 
 
-    def test_get_position(self):
+    def test_position(self):
         gene_name = "gspD"
         gene = CoreGene(self.model_location, gene_name, self.profile_factory)
 
         h0 = CoreHit(gene, "PSAE001c01_006940", 803, "PSAE001c01", 3450, float(1.2e-234), float(779.2),
                      float(1.000000), (741.0 - 104.0 + 1) / 803, 104, 741)
-        self.assertEqual(h0.get_position(), 3450)
+        self.assertEqual(h0.position, 3450)
 
 
     def test_hash(self):
@@ -201,7 +201,7 @@ class ModelHitTest(MacsyTest):
 
     def test_delegation(self):
         mhit_1 = ModelHit(self.chit_1, self.mg_gspd, GeneStatus.MANDATORY)
-        self.assertEqual(mhit_1.get_position(), 2)
+        self.assertEqual(mhit_1.position, 2)
         with self.assertRaises(AttributeError) as ctx:
             mhit_1.nimportnaoik()
         self.assertEqual(str(ctx.exception),

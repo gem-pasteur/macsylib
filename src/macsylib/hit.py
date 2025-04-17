@@ -140,13 +140,6 @@ class CoreHit:
                 )
 
 
-    def get_position(self) -> int:
-        """
-        :returns: the position of the hit (rank in the input dataset file)
-        """
-        return self.position
-
-
 class ModelHit:
     """
     Encapsulates a :class:`macsylib.report.CoreHit`
