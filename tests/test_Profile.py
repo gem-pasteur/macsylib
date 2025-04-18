@@ -1,24 +1,26 @@
 #########################################################################
-# MacSyFinder - Detection of macromolecular systems in protein dataset  #
-#               using systems modelling and similarity search.          #
+# MacSyLib - Python library to detect macromolecular systems            #
+#            in prokaryotes protein dataset using systems modelling     #
+#            and similarity search.                                     #
+#                                                                       #
 # Authors: Sophie Abby, Bertrand Neron                                  #
-# Copyright (c) 2014-2024  Institut Pasteur (Paris) and CNRS.           #
+# Copyright (c) 2014-2025  Institut Pasteur (Paris) and CNRS.           #
 # See the COPYRIGHT file for details                                    #
 #                                                                       #
-# This file is part of MacSyFinder package.                             #
+# This file is part of MacSyLib package.                                #
 #                                                                       #
-# MacSyFinder is free software: you can redistribute it and/or modify   #
+# MacSyLib is free software: you can redistribute it and/or modify      #
 # it under the terms of the GNU General Public License as published by  #
 # the Free Software Foundation, either version 3 of the License, or     #
 # (at your option) any later version.                                   #
 #                                                                       #
-# MacSyFinder is distributed in the hope that it will be useful,        #
+# MacSyLib is distributed in the hope that it will be useful,           #
 # but WITHOUT ANY WARRANTY; without even the implied warranty of        #
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the          #
 # GNU General Public License for more details .                         #
 #                                                                       #
 # You should have received a copy of the GNU General Public License     #
-# along with MacSyFinder (COPYING).                                     #
+# along with MacSyLib (COPYING).                                        #
 # If not, see <https://www.gnu.org/licenses/>.                          #
 #########################################################################
 
@@ -30,13 +32,13 @@ import tempfile
 import sysconfig
 import argparse
 
-from macsypy.profile import Profile
-from macsypy.gene import CoreGene, ModelGene
-from macsypy.model import Model
-from macsypy.profile import ProfileFactory
-from macsypy.config import Config, MacsyDefaults
-from macsypy.registries import ModelLocation
-from macsypy.error import MacsypyError
+from macsylib.profile import Profile
+from macsylib.gene import CoreGene, ModelGene
+from macsylib.model import Model
+from macsylib.profile import ProfileFactory
+from macsylib.config import Config, MacsyDefaults
+from macsylib.registries import ModelLocation
+from macsylib.error import MacsylibError
 
 from tests import MacsyTest
 
@@ -44,7 +46,7 @@ from tests import MacsyTest
 class TestProfile(MacsyTest):
 
     def setUp(self):
-        self._tmp_dir = tempfile.TemporaryDirectory(prefix='test_msf_Profile_')
+        self._tmp_dir = tempfile.TemporaryDirectory(prefix='test_macsy_Profile_')
         args = argparse.Namespace()
         args.sequence_db = self.find_data("base", "test_1.fasta")
         args.db_type = 'gembase'
@@ -97,19 +99,19 @@ class TestProfile(MacsyTest):
         for ext in 'bz2', 'zip':
             with self.subTest(ext=ext):
                 path = self.find_data('models', 'foo', 'profiles', f'{ext}.hmm.{ext}')
-                with self.catch_log(log_name='macsypy'):
-                    with self.assertRaises(MacsypyError) as ctx:
+                with self.catch_log(log_name='macsylib'):
+                    with self.assertRaises(MacsylibError) as ctx:
                         Profile(gene, self.cfg, path)
                     self.assertEqual(str(ctx.exception),
-                                     f"Cannot read profile {path}: MacSyFinder does not support '{ext}' compression "
+                                     f"Cannot read profile {path}: MacSyLib does not support '{ext}' compression "
                                      f"(only gzip).")
 
         ###################
         # unreadable gzip #
         ###################
         path = self.find_data('models', 'foo', 'profiles', 'bad_ext.hmm.gz')
-        with self.catch_log(log_name='macsypy'):
-            with self.assertRaises(MacsypyError) as ctx:
+        with self.catch_log(log_name='macsylib'):
+            with self.assertRaises(MacsylibError) as ctx:
                 Profile(gene, self.cfg, path)
             self.assertEqual(str(ctx.exception),
                             f"Cannot read profile {path}: Not a gzipped file (b'BZ')"
@@ -145,14 +147,14 @@ class TestProfile(MacsyTest):
 
         # GA threshold invalid format string instead float
         gene_name = 'bad_GA'
-        with self.catch_log(log_name='macsypy'):
+        with self.catch_log(log_name='macsylib'):
             # When a CoreGene is created a Profile is automatically instanciated
             # So I mute the log to do not polute output
             c_gene = CoreGene(self.model_location, gene_name, self.profile_factory)
         gene = ModelGene(c_gene, model)
         path = self.model_location.get_profile(gene_name)
 
-        with self.catch_log(log_name='macsypy') as log:
+        with self.catch_log(log_name='macsylib') as log:
             profile = Profile(gene, self.cfg, path)
             catch_msg = log.get_value().strip()
         self.assertFalse(profile.ga_threshold)
@@ -162,14 +164,14 @@ class TestProfile(MacsyTest):
 
         # GA threshold invalid format only one score
         gene_name = 'bad_GA_2'
-        with self.catch_log(log_name='macsypy'):
+        with self.catch_log(log_name='macsylib'):
             # When a CoreGene is created a Profile is automatically instanciated
             # So I mute the log to do not polute output
             c_gene = CoreGene(self.model_location, gene_name, self.profile_factory)
         gene = ModelGene(c_gene, model)
         path = self.model_location.get_profile(gene_name)
 
-        with self.catch_log(log_name='macsypy') as log:
+        with self.catch_log(log_name='macsylib') as log:
             profile = Profile(gene, self.cfg, path)
             catch_msg = log.get_value().strip()
         self.assertFalse(profile.ga_threshold)

@@ -1,24 +1,26 @@
 #########################################################################
-# MacSyFinder - Detection of macromolecular systems in protein dataset  #
-#               using systems modelling and similarity search.          #
+# MacSyLib - Python library to detect macromolecular systems            #
+#            in prokaryotes protein dataset using systems modelling     #
+#            and similarity search.                                     #
+#                                                                       #
 # Authors: Sophie Abby, Bertrand Neron                                  #
-# Copyright (c) 2014-2024  Institut Pasteur (Paris) and CNRS.           #
+# Copyright (c) 2014-2025  Institut Pasteur (Paris) and CNRS.           #
 # See the COPYRIGHT file for details                                    #
 #                                                                       #
-# This file is part of MacSyFinder package.                             #
+# This file is part of MacSyLib package.                                #
 #                                                                       #
-# MacSyFinder is free software: you can redistribute it and/or modify   #
+# MacSyLib is free software: you can redistribute it and/or modify      #
 # it under the terms of the GNU General Public License as published by  #
 # the Free Software Foundation, either version 3 of the License, or     #
 # (at your option) any later version.                                   #
 #                                                                       #
-# MacSyFinder is distributed in the hope that it will be useful,        #
+# MacSyLib is distributed in the hope that it will be useful,           #
 # but WITHOUT ANY WARRANTY; without even the implied warranty of        #
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the          #
 # GNU General Public License for more details .                         #
 #                                                                       #
 # You should have received a copy of the GNU General Public License     #
-# along with MacSyFinder (COPYING).                                     #
+# along with MacSyLib (COPYING).                                        #
 # If not, see <https://www.gnu.org/licenses/>.                          #
 #########################################################################
 from __future__ import annotations
@@ -35,7 +37,7 @@ from .model import Model
 from .hit import ModelHit, Loner, MultiSystem, LonerMultiSystem
 from .gene import GeneStatus, ModelGene
 from .cluster import Cluster
-from .error import MacsypyError
+from .error import MacsylibError
 
 _log = logging.getLogger(__name__)
 
@@ -160,7 +162,7 @@ class AbstractSetOfHits(metaclass=MetaSetOfHits):
             except AttributeError:
                 pass
             except KeyError:
-                raise MacsypyError(f"gene '{name}' does not belong to '{status}' genes in model '{self.model.name}'")
+                raise MacsylibError(f"gene '{name}' does not belong to '{status}' genes in model '{self.model.name}'")
 
 
     @property
@@ -199,7 +201,7 @@ class AbstractClusterizedHits(AbstractSetOfHits):
         """
 
         :param genes: The genes which must be tested.
-        :type genes: :class:`macsypy.gene.ModelGene` object or string representing the gene name
+        :type genes: :class:`macsylib.gene.ModelGene` object or string representing the gene name
         :return: the common functions between genes and this system.
         :rtype: set of string
         """
@@ -228,9 +230,9 @@ class System(AbstractClusterizedHits):
         """
 
         :param model:  The model which has been used to build this system
-        :type model: :class:`macsypy.model.Model` object
+        :type model: :class:`macsylib.model.Model` object
         :param clusters: The list of cluster that form this system
-        :type clusters: list of :class:`macsypy.cluster.Cluster` objects
+        :type clusters: list of :class:`macsylib.cluster.Cluster` objects
         """
         super().__init__(model, clusters)
         self.id = f"{self.replicon_name}_{model.name}_{next(self._id)}"
@@ -257,7 +259,7 @@ class System(AbstractClusterizedHits):
 
             :param clsts: list of clusters
             :return: return the functions which are represented in these clusters.
-            :rtype: dict with func str as keys and list of :class:`macsypy.cluster.Cluster` as values.
+            :rtype: dict with func str as keys and list of :class:`macsylib.cluster.Cluster` as values.
             """
             func_in_clst = {}
             for clst in clsts:
@@ -330,7 +332,7 @@ class System(AbstractClusterizedHits):
     def occurrence(self) -> int:
         """
         sometimes several systems collocates so they form only one cluster
-        so macsyfinder build only one system
+        so macsylib build only one system
         the occurrence is an indicator of how many systems are
         it's based on the number of occurrence of each mandatory genes
         The multi_system genes are not take in account.
@@ -398,7 +400,7 @@ class System(AbstractClusterizedHits):
         """
         :param other: the other systems to test compatibility
         :return: True if other system is compatible with this one. False otherwise.
-                 Two systems are compatible if they do not share :class:`macsypy.hit.CoreHit`
+                 Two systems are compatible if they do not share :class:`macsylib.hit.CoreHit`
                  except hit corresponding to a multi_system gene in the model.
 
                  .. note::
@@ -414,7 +416,7 @@ class System(AbstractClusterizedHits):
             # The Multi_systems are allowed to be "shared" by several oocurences of the same Model
             # The loners not but msf cannot decide which occurence is the right, so all occurences
             # are proposed to the user with eventually a warning
-            from macsypy.hit import Loner, MultiSystem, LonerMultiSystem
+            from macsylib.hit import Loner, MultiSystem, LonerMultiSystem
             other_hits = {mh.hit for mh in other.hits if not isinstance(mh, (Loner, MultiSystem, LonerMultiSystem))}
             my_hits = {mh.hit for mh in self.hits if not isinstance(mh, (Loner, MultiSystem, LonerMultiSystem))}
             return not (my_hits & other_hits)
@@ -459,7 +461,7 @@ class System(AbstractClusterizedHits):
 
 class RejectedCandidate(AbstractClusterizedHits):
     """
-    Handle a set of clusters which has been rejected during the :func:`macsypy.system.match`  step
+    Handle a set of clusters which has been rejected during the :func:`macsylib.system.match`  step
     This clusters (can be one) does not fill the requirements or contains forbidden genes.
     """
     _supported_status = (GeneStatus.MANDATORY,
@@ -473,7 +475,7 @@ class RejectedCandidate(AbstractClusterizedHits):
         """
         :param model:
         :param clusters: list of clusters. These Clusters should be created with
-                         :class:`macsypy.cluster.Cluster` of :class:`macsypy.hit.ModelHit` objects
+                         :class:`macsylib.cluster.Cluster` of :class:`macsylib.hit.ModelHit` objects
         :param reasons: the reason why these clusters have been rejected
         """
         super().__init__(model, clusters)
@@ -703,11 +705,11 @@ class MatchMaker(metaclass=abc.ABCMeta):
     def sort_hits_by_status(self, hits: Iterable[ModelHit]) \
             -> tuple[list[ModelHit], list[ModelHit], list[ModelHit], list[ModelHit]]:
         """
-        sort :class:`macsypy.hit.ModelHit` according the status of the gene the hit code for.
+        sort :class:`macsylib.hit.ModelHit` according the status of the gene the hit code for.
 
-        :param hits: list of :class:`macsypy.hit.ModelHit` object
+        :param hits: list of :class:`macsylib.hit.ModelHit` object
         :return: the valid hits according their status ([mandatory, ], [accessory, ], [neutral, ], [forbidden ])
-        :raise MacsypyError: when a gene is not found in the model
+        :raise MacsylibError: when a gene is not found in the model
         """
         mandatory_hits = []
         accessory_hits = []
@@ -752,7 +754,7 @@ class MatchMaker(metaclass=abc.ABCMeta):
                 model = hit.gene_ref.model
                 msg = f"Gene '{gene_name}' not found in model '{model.fqn}'"
                 _log.critical(msg)
-                raise MacsypyError(msg)
+                raise MacsylibError(msg)
 
         return mandatory_hits, accessory_hits, neutral_hits, forbidden_hits
 
@@ -789,13 +791,13 @@ class OrderedMatchMaker(MatchMaker):
     def match(self, clusters: Iterable[Cluster]) -> System | RejectedCandidate:
         """
         Check a set of clusters fill model constraints.
-        If yes create a :class:`macsypy.system.System` otherwise create
-        a :class:`macsypy.cluster.RejectedCandidate`.
+        If yes create a :class:`macsylib.system.System` otherwise create
+        a :class:`macsylib.cluster.RejectedCandidate`.
 
         :param clusters: The list of cluster to check if fit the model
-        :type clusters: list of :class:`macsypy.cluster.Cluster` objects
+        :type clusters: list of :class:`macsylib.cluster.Cluster` objects
         :return: either a System or a RejectedCandidates
-        :rtype: :class:`macsypy.system.System` or :class:`macsypy.system.RejectedCandidate` object
+        :rtype: :class:`macsylib.system.System` or :class:`macsylib.system.RejectedCandidate` object
         """
         # count the hits
         # and track for each hit for which gene it counts for

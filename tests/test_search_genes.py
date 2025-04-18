@@ -1,24 +1,26 @@
 #########################################################################
-# MacSyFinder - Detection of macromolecular systems in protein dataset  #
-#               using systems modelling and similarity search.          #
+# MacSyLib - Python library to detect macromolecular systems            #
+#            in prokaryotes protein dataset using systems modelling     #
+#            and similarity search.                                     #
+#                                                                       #
 # Authors: Sophie Abby, Bertrand Neron                                  #
-# Copyright (c) 2014-2024  Institut Pasteur (Paris) and CNRS.           #
+# Copyright (c) 2014-2025  Institut Pasteur (Paris) and CNRS.           #
 # See the COPYRIGHT file for details                                    #
 #                                                                       #
-# This file is part of MacSyFinder package.                             #
+# This file is part of MacSyLib package.                                #
 #                                                                       #
-# MacSyFinder is free software: you can redistribute it and/or modify   #
+# MacSyLib is free software: you can redistribute it and/or modify      #
 # it under the terms of the GNU General Public License as published by  #
 # the Free Software Foundation, either version 3 of the License, or     #
 # (at your option) any later version.                                   #
 #                                                                       #
-# MacSyFinder is distributed in the hope that it will be useful,        #
+# MacSyLib is distributed in the hope that it will be useful,           #
 # but WITHOUT ANY WARRANTY; without even the implied warranty of        #
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the          #
 # GNU General Public License for more details .                         #
 #                                                                       #
 # You should have received a copy of the GNU General Public License     #
-# along with MacSyFinder (COPYING).                                     #
+# along with MacSyLib (COPYING).                                        #
 # If not, see <https://www.gnu.org/licenses/>.                          #
 #########################################################################
 
@@ -29,15 +31,15 @@ import shutil
 import tempfile
 import argparse
 
-import macsypy
-from macsypy.config import Config, MacsyDefaults
-from macsypy.model import Model
-from macsypy.gene import CoreGene, ModelGene
-from macsypy.hit import CoreHit
-from macsypy.registries import ModelLocation
-from macsypy.profile import ProfileFactory
-from macsypy.database import Indexes
-from macsypy.search_genes import search_genes, worker_cpu
+import macsylib
+from macsylib.config import Config, MacsyDefaults
+from macsylib.model import Model
+from macsylib.gene import CoreGene, ModelGene
+from macsylib.hit import CoreHit
+from macsylib.registries import ModelLocation
+from macsylib.profile import ProfileFactory
+from macsylib.database import Indexes
+from macsylib.search_genes import search_genes, worker_cpu
 from tests import MacsyTest
 
 
@@ -46,8 +48,8 @@ class TestSearchGenes(MacsyTest):
     def setUp(self):
         self._tmp_dir = tempfile.TemporaryDirectory(prefix='test_msf_search_genes_')
         self.tmp_dir = self._tmp_dir.name
-        macsypy.init_logger()
-        macsypy.logger_set_level(30)
+        macsylib.init_logger(name='macsylib')
+        macsylib.logger_set_level(level=30)
 
         args = argparse.Namespace()
         args.sequence_db = self.find_data("base", "test_base.fa")
@@ -74,7 +76,7 @@ class TestSearchGenes(MacsyTest):
 
     def test_worker_cpu(self):
         worker_meth = self.cfg.worker
-        from macsypy import search_genes
+        from macsylib import search_genes
         threads_available_ori = search_genes.threads_available
         try:
             self.cfg.worker = lambda: 5

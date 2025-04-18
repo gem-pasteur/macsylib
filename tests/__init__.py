@@ -1,24 +1,26 @@
 #########################################################################
-# MacSyFinder - Detection of macromolecular systems in protein dataset  #
-#               using systems modelling and similarity search.          #
+# MacSyLib - Python library to detect macromolecular systems            #
+#            in prokaryotes protein dataset using systems modelling     #
+#            and similarity search.                                     #
+#                                                                       #
 # Authors: Sophie Abby, Bertrand Neron                                  #
-# Copyright (c) 2014-2024  Institut Pasteur (Paris) and CNRS.           #
+# Copyright (c) 2014-2025  Institut Pasteur (Paris) and CNRS.           #
 # See the COPYRIGHT file for details                                    #
 #                                                                       #
-# This file is part of MacSyFinder package.                             #
+# This file is part of MacSyLib package.                                #
 #                                                                       #
-# MacSyFinder is free software: you can redistribute it and/or modify   #
+# MacSyLib is free software: you can redistribute it and/or modify      #
 # it under the terms of the GNU General Public License as published by  #
 # the Free Software Foundation, either version 3 of the License, or     #
 # (at your option) any later version.                                   #
 #                                                                       #
-# MacSyFinder is distributed in the hope that it will be useful,        #
+# MacSyLib is distributed in the hope that it will be useful,           #
 # but WITHOUT ANY WARRANTY; without even the implied warranty of        #
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the          #
 # GNU General Public License for more details .                         #
 #                                                                       #
 # You should have received a copy of the GNU General Public License     #
-# along with MacSyFinder (COPYING).                                     #
+# along with MacSyLib (COPYING).                                        #
 # If not, see <https://www.gnu.org/licenses/>.                          #
 #########################################################################
 
@@ -36,8 +38,8 @@ import colorlog
 import json
 import re
 
-import macsypy
-import macsypy.config
+import macsylib
+import macsylib.config
 
 
 def path_to_modulename(p):
@@ -55,8 +57,8 @@ class MacsyTest(unittest.TestCase):
     _data_dir = os.path.join(_tests_dir, "data")
 
     def __init__(self, *args, **kwargs):
-        macsypy.__MACSY_DATA__ = self._tests_dir
-        macsypy.config.__MACSY_DATA__ = self._tests_dir
+        macsylib.__MACSY_DATA__ = self._tests_dir
+        macsylib.config.__MACSY_DATA__ = self._tests_dir
         super().__init__(*args, **kwargs)
 
     @staticmethod
@@ -298,7 +300,7 @@ class MacsyTest(unittest.TestCase):
 
 
     @contextmanager
-    def catch_log(self, log_name='macsypy'):
+    def catch_log(self, log_name='macsylib'):
         logger = colorlog.getLogger(log_name)
         handlers_ori = logger.handlers
         fake_handler = colorlog.StreamHandler(StringIO())

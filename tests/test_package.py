@@ -1,24 +1,26 @@
 #########################################################################
-# MacSyFinder - Detection of macromolecular systems in protein dataset  #
-#               using systems modelling and similarity search.          #
+# MacSyLib - Python library to detect macromolecular systems            #
+#            in prokaryotes protein dataset using systems modelling     #
+#            and similarity search.                                     #
+#                                                                       #
 # Authors: Sophie Abby, Bertrand Neron                                  #
-# Copyright (c) 2014-2024  Institut Pasteur (Paris) and CNRS.           #
+# Copyright (c) 2014-2025  Institut Pasteur (Paris) and CNRS.           #
 # See the COPYRIGHT file for details                                    #
 #                                                                       #
-# This file is part of MacSyFinder package.                             #
+# This file is part of MacSyLib package.                                #
 #                                                                       #
-# MacSyFinder is free software: you can redistribute it and/or modify   #
+# MacSyLib is free software: you can redistribute it and/or modify      #
 # it under the terms of the GNU General Public License as published by  #
 # the Free Software Foundation, either version 3 of the License, or     #
 # (at your option) any later version.                                   #
 #                                                                       #
-# MacSyFinder is distributed in the hope that it will be useful,        #
+# MacSyLib is distributed in the hope that it will be useful,           #
 # but WITHOUT ANY WARRANTY; without even the implied warranty of        #
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the          #
 # GNU General Public License for more details .                         #
 #                                                                       #
 # You should have received a copy of the GNU General Public License     #
-# along with MacSyFinder (COPYING).                                     #
+# along with MacSyLib (COPYING).                                        #
 # If not, see <https://www.gnu.org/licenses/>.                          #
 #########################################################################
 
@@ -35,11 +37,11 @@ import yaml
 import colorlog
 from unittest.mock import patch
 
-import macsypy
-from macsypy import package
-from macsypy.metadata import Maintainer
-from macsypy import model_conf_parser
-from macsypy.error import MacsydataError, MacsyDataLimitError
+import macsylib
+from macsylib import package
+from macsylib.metadata import Maintainer
+from macsylib import model_conf_parser
+from macsylib.error import MacsydataError, MacsyDataLimitError
 
 from tests import MacsyTest
 
@@ -420,11 +422,11 @@ class TestPackage(MacsyTest):
         self._tmp_dir = tempfile.TemporaryDirectory(prefix='test_msf_package_')
         self.tmpdir = self._tmp_dir.name
 
-        macsypy.init_logger()
-        macsypy.logger_set_level(30)
-        logger = colorlog.getLogger('macsypy.package')
+        macsylib.init_logger()
+        macsylib.logger_set_level(level=30)
+        logger = colorlog.getLogger('macsylib.package')
         package._log = logger
-        logger = colorlog.getLogger('macsypy.model_conf_parser')
+        logger = colorlog.getLogger('macsylib.model_conf_parser')
         model_conf_parser._log = logger
         maintainer = Maintainer("auth_name", "auth_name@mondomain.fr")
         self.metadata = package.Metadata(maintainer,
@@ -444,6 +446,10 @@ ligne 3 et bbbbb
 
     def tearDown(self) -> None:
         self._tmp_dir.cleanup()
+        logger = colorlog.getLogger('macsylib.package')
+        del logger.manager.loggerDict['macsylib.package']
+        del logger.manager.loggerDict['macsylib.model_conf_parser']
+        del logger.manager.loggerDict['macsylib']
 
 
     def create_fake_package(self, model,
@@ -585,7 +591,7 @@ ligne 3 et bbbbb
     def test_check_model_conf_bad_conf(self):
         fake_pack_path = self.create_fake_package('fake_model', conf=False, bad_conf=True)
         pack = package.Package(fake_pack_path)
-        with self.catch_log(log_name='macsypy'):
+        with self.catch_log(log_name='macsylib'):
             errors, warnings = pack._check_model_conf()
         self.maxDiff =None
         self.assertListEqual(errors, [f"The model configuration file '{fake_pack_path}/model_conf.xml' "
@@ -672,7 +678,7 @@ ligne 3 et bbbbb
     def test_check_model_consistency(self):
         fake_pack_path = self.create_fake_package('fake_model')
         pack = package.Package(fake_pack_path)
-        with self.catch_log(log_name='macsypy'):
+        with self.catch_log(log_name='macsylib'):
             errors, warnings = pack._check_model_consistency()
 
         self.assertEqual(warnings, [])
@@ -683,7 +689,7 @@ ligne 3 et bbbbb
         fake_pack_path = self.create_fake_package('fake_model')
         pack = package.Package(fake_pack_path)
         open(os.path.join(fake_pack_path, 'profiles', 'extra_profile.hmm'), 'w').close()
-        with self.catch_log(log_name='macsypy'):
+        with self.catch_log(log_name='macsylib'):
             errors, warnings = pack._check_model_consistency()
 
         self.assertEqual(warnings, ['The extra_profile profiles are not referenced in any definitions.'])
@@ -693,7 +699,7 @@ ligne 3 et bbbbb
     def test_check_model_consistency_lack_one_profile(self):
         fake_pack_path = self.create_fake_package('fake_model', skip_hmm=['flgB', 'fliE'])
         pack = package.Package(fake_pack_path)
-        with self.catch_log(log_name='macsypy'):
+        with self.catch_log(log_name='macsylib'):
             errors, warnings = pack._check_model_consistency()
 
         self.assertEqual(warnings, [])
@@ -706,7 +712,7 @@ ligne 3 et bbbbb
     def test_check_model_consistency_bad_definitions(self):
         fake_pack_path = self.create_fake_package('fake_model', bad_definitions=True)
         pack = package.Package(fake_pack_path)
-        with self.catch_log(log_name='macsypy'):
+        with self.catch_log(log_name='macsylib'):
             errors, warnings = pack._check_model_consistency()
         self.assertEqual(warnings, [])
         self.assertEqual(errors, ["fake_model/model_3: min_genes_required '1' must be greater or equal than "

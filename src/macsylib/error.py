@@ -1,39 +1,41 @@
 #########################################################################
-# MacSyFinder - Detection of macromolecular systems in protein dataset  #
-#               using systems modelling and similarity search.          #
+# MacSyLib - Python library to detect macromolecular systems            #
+#            in prokaryotes protein dataset using systems modelling     #
+#            and similarity search.                                     #
+#                                                                       #
 # Authors: Sophie Abby, Bertrand Neron                                  #
-# Copyright (c) 2014-2024  Institut Pasteur (Paris) and CNRS.           #
+# Copyright (c) 2014-2025  Institut Pasteur (Paris) and CNRS.           #
 # See the COPYRIGHT file for details                                    #
 #                                                                       #
-# This file is part of MacSyFinder package.                             #
+# This file is part of MacSyLib package.                                #
 #                                                                       #
-# MacSyFinder is free software: you can redistribute it and/or modify   #
+# MacSyLib is free software: you can redistribute it and/or modify      #
 # it under the terms of the GNU General Public License as published by  #
 # the Free Software Foundation, either version 3 of the License, or     #
 # (at your option) any later version.                                   #
 #                                                                       #
-# MacSyFinder is distributed in the hope that it will be useful,        #
+# MacSyLib is distributed in the hope that it will be useful,           #
 # but WITHOUT ANY WARRANTY; without even the implied warranty of        #
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the          #
 # GNU General Public License for more details .                         #
 #                                                                       #
 # You should have received a copy of the GNU General Public License     #
-# along with MacSyFinder (COPYING).                                     #
+# along with MacSyLib (COPYING).                                        #
 # If not, see <https://www.gnu.org/licenses/>.                          #
 #########################################################################
 
 """
-Manage MacSyFinder specific errors
+Manage MacSyLib specific errors
 """
 
 
-class MacsypyError(Exception):
+class MacsylibError(Exception):
     """
-    The base class for MacSyFinder specific exceptions.
+    The base class for MacSyLib specific exceptions.
     """
 
 
-class MacsydataError(MacsypyError):
+class MacsydataError(MacsylibError):
     """
     Raised when error is encounter during model package handling
     """
@@ -45,31 +47,31 @@ class MacsyDataLimitError(MacsydataError):
     """
 
 
-class OptionError(MacsypyError):
+class OptionError(MacsylibError):
     """
     Raised when command line option is not set properly
     """
 
 
-class ModelInconsistencyError(MacsypyError):
+class ModelInconsistencyError(MacsylibError):
     """
     Raised when a definition model is not consistent.
     """
 
 
-class SystemDetectionError(MacsypyError):
+class SystemDetectionError(MacsylibError):
     """
     Raised when the detection of systems from Hits encountered a problem.
     """
 
 
-class Timeout(MacsypyError):
+class Timeout(MacsylibError):
     """
     Raised when best solution reach the timeout
     """
 
 
-class EmptyFileError(MacsypyError):
+class EmptyFileError(MacsylibError):
     """
     Raised when fasta file does not contains sequences
     """

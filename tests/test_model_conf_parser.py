@@ -1,24 +1,26 @@
 #########################################################################
-# MacSyFinder - Detection of macromolecular systems in protein dataset  #
-#               using systems modelling and similarity search.          #
+# MacSyLib - Python library to detect macromolecular systems            #
+#            in prokaryotes protein dataset using systems modelling     #
+#            and similarity search.                                     #
+#                                                                       #
 # Authors: Sophie Abby, Bertrand Neron                                  #
-# Copyright (c) 2014-2024  Institut Pasteur (Paris) and CNRS.           #
+# Copyright (c) 2014-2025  Institut Pasteur (Paris) and CNRS.           #
 # See the COPYRIGHT file for details                                    #
 #                                                                       #
-# This file is part of MacSyFinder package.                             #
+# This file is part of MacSyLib package.                                #
 #                                                                       #
-# MacSyFinder is free software: you can redistribute it and/or modify   #
+# MacSyLib is free software: you can redistribute it and/or modify      #
 # it under the terms of the GNU General Public License as published by  #
 # the Free Software Foundation, either version 3 of the License, or     #
 # (at your option) any later version.                                   #
 #                                                                       #
-# MacSyFinder is distributed in the hope that it will be useful,        #
+# MacSyLib is distributed in the hope that it will be useful,           #
 # but WITHOUT ANY WARRANTY; without even the implied warranty of        #
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the          #
 # GNU General Public License for more details .                         #
 #                                                                       #
 # You should have received a copy of the GNU General Public License     #
-# along with MacSyFinder (COPYING).                                     #
+# along with MacSyLib (COPYING).                                        #
 # If not, see <https://www.gnu.org/licenses/>.                          #
 #########################################################################
 
@@ -26,20 +28,31 @@ import logging
 import colorlog
 import xml.etree.ElementTree as Et
 
-import macsypy
-from macsypy.error import MacsypyError
-from macsypy.model_conf_parser import ModelConfParser
-import macsypy.model_conf_parser
+import macsylib
+from macsylib.error import MacsylibError
+from macsylib.model_conf_parser import ModelConfParser
+import macsylib.model_conf_parser
 from tests import MacsyTest
 
 
 class TestModelConfParser(MacsyTest):
 
     def setUp(self) -> None:
-        macsypy.init_logger()
-        macsypy.logger_set_level(logging.INFO)
-        logger = colorlog.getLogger('macsypy')
-        macsypy.model_conf_parser._log = logger
+        # need to do hugly trick with logger
+        # because logger are singleton and
+        # trigger some side effect with othe unit tests
+        # for instance if run the test below after test_macsylib
+        # where I tests loggers model_conf_parser
+        # is not replaced by the logger set in setup
+        # then the catch_log doesn't work anymore
+        macsylib.init_logger(name='macsylib')
+        macsylib.logger_set_level(name='macsylib', level=logging.INFO)
+        logger = colorlog.getLogger('macsylib')
+        macsylib.model_conf_parser._log = logger
+
+    def tearDown(self) -> None:
+        logger = colorlog.getLogger('macsylib')
+        del logger.manager.loggerDict['macsylib']
 
 
     def test_parse(self):
@@ -90,8 +103,8 @@ class TestModelConfParser(MacsyTest):
         conf_file = self.find_data('conf_files', 'project.conf')
         mcp = ModelConfParser(conf_file)
 
-        with self.catch_log(log_name='macsypy'):
-            with self.assertRaises(MacsypyError) as ctx:
+        with self.catch_log(log_name='macsylib'):
+            with self.assertRaises(MacsylibError) as ctx:
                 mcp.parse()
 
         self.assertEqual(str(ctx.exception),
@@ -138,8 +151,8 @@ class TestModelConfParser(MacsyTest):
 
         # test bad value for cut_ga
         cut_ga_node.text = 'FOO'
-        with self.catch_log(log_name='macsypy'):
-            with self.assertRaises(MacsypyError) as ctx:
+        with self.catch_log(log_name='macsylib'):
+            with self.assertRaises(MacsylibError) as ctx:
                 mcp.parse_filtering(filtering_node)
 
         self.assertEqual(str(ctx.exception),
@@ -166,7 +179,7 @@ class TestModelConfParser(MacsyTest):
         filter_node = model_node.find("./filtering")
         extra_elt = Et.SubElement(filter_node, 'nimportnaoik')
         extra_elt.text = 'Foo'
-        with self.catch_log(log_name='macsypy') as log:
+        with self.catch_log(log_name='macsylib') as log:
             recieved_filters = mcp.parse_filtering(model_node.find("./filtering"))
             log_msg = log.get_value().strip()
 
@@ -186,8 +199,8 @@ class TestModelConfParser(MacsyTest):
         coverage_node = filter_node.find('coverage_profile')
         coverage_node.text = "FOO"
 
-        with self.catch_log(log_name='macsypy'):
-            with self.assertRaises(MacsypyError) as ctx:
+        with self.catch_log(log_name='macsylib'):
+            with self.assertRaises(MacsylibError) as ctx:
                 mcp.parse_filtering(model_node.find("./filtering"))
         self.assertEqual(str(ctx.exception),
                          f"The model configuration file '{conf_file}' cannot be parsed: "

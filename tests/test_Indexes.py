@@ -1,24 +1,26 @@
 #########################################################################
-# MacSyFinder - Detection of macromolecular systems in protein dataset  #
-#               using systems modelling and similarity search.          #
+# MacSyLib - Python library to detect macromolecular systems            #
+#            in prokaryotes protein dataset using systems modelling     #
+#            and similarity search.                                     #
+#                                                                       #
 # Authors: Sophie Abby, Bertrand Neron                                  #
-# Copyright (c) 2014-2024  Institut Pasteur (Paris) and CNRS.           #
+# Copyright (c) 2014-2025  Institut Pasteur (Paris) and CNRS.           #
 # See the COPYRIGHT file for details                                    #
 #                                                                       #
-# This file is part of MacSyFinder package.                             #
+# This file is part of MacSyLib package.                                #
 #                                                                       #
-# MacSyFinder is free software: you can redistribute it and/or modify   #
+# MacSyLib is free software: you can redistribute it and/or modify      #
 # it under the terms of the GNU General Public License as published by  #
 # the Free Software Foundation, either version 3 of the License, or     #
 # (at your option) any later version.                                   #
 #                                                                       #
-# MacSyFinder is distributed in the hope that it will be useful,        #
+# MacSyLib is distributed in the hope that it will be useful,           #
 # but WITHOUT ANY WARRANTY; without even the implied warranty of        #
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the          #
 # GNU General Public License for more details .                         #
 #                                                                       #
 # You should have received a copy of the GNU General Public License     #
-# along with MacSyFinder (COPYING).                                     #
+# along with MacSyLib (COPYING).                                        #
 # If not, see <https://www.gnu.org/licenses/>.                          #
 #########################################################################
 
@@ -32,9 +34,9 @@ import tempfile
 import argparse
 import gzip
 
-from macsypy.config import Config, MacsyDefaults
-from macsypy.database import Indexes, fasta_iter
-from macsypy.error import MacsypyError, EmptyFileError
+from macsylib.config import Config, MacsyDefaults
+from macsylib.database import Indexes, fasta_iter
+from macsylib.error import MacsylibError, EmptyFileError
 from tests import MacsyTest
 
 
@@ -79,7 +81,7 @@ class TestFastaIter(MacsyTest):
 
         with open(fasta_path) as fasta:
             f_iter = fasta_iter(fasta)
-            with self.assertRaises(MacsypyError) as ctx:
+            with self.assertRaises(MacsylibError) as ctx:
                 with self.catch_log():
                     for seq in f_iter:
                         pass
@@ -147,11 +149,11 @@ class TestIndex(MacsyTest):
             args.sequence_db = os.path.join(args.out_dir, os.path.basename(seq_db_compressed))
             cfg = Config(MacsyDefaults(), args)
             with self.subTest(ext=ext):
-                with self.catch_log(log_name='macsypy') as log:
-                    with self.assertRaises(MacsypyError) as ctx:
+                with self.catch_log(log_name='macsylib') as log:
+                    with self.assertRaises(MacsylibError) as ctx:
                         idx = Indexes(cfg)
                         idx.build()
-                    exp_msg = f"Cannot index '{args.sequence_db}': MacSyFinder does not support '{ext[1:]}' compression (only gzip)."
+                    exp_msg = f"Cannot index '{args.sequence_db}': MacSyLib does not support '{ext[1:]}' compression (only gzip)."
                     self.assertEqual(str(ctx.exception),
                                      exp_msg
                                      )
@@ -219,7 +221,7 @@ class TestIndex(MacsyTest):
         with open(idx_path, 'w') as idx_file:
             idx_content_old = "VICH001.B.00001.C001_01359;200;1\n"
             idx_file.write(idx_content_old)
-        with self.catch_log(log_name='macsypy') as log:
+        with self.catch_log(log_name='macsylib') as log:
             _ = idx.build()
             log_msg = log.get_value().strip()
         self.assertEqual(log_msg,
@@ -230,7 +232,7 @@ class TestIndex(MacsyTest):
         with open(idx_path, 'w') as idx_file:
             idx_content_old = f"{self.cfg.sequence_db()}\nVICH001.B.00001.C001_01359;200;1\n"
             idx_file.write(idx_content_old)
-        with self.catch_log(log_name='macsypy') as log:
+        with self.catch_log(log_name='macsylib') as log:
             _ = idx.build()
             log_msg = log.get_value().strip()
         self.assertEqual(log_msg,
@@ -417,7 +419,7 @@ VICH001.B.00001.C001_01565{idx._field_separator}414{idx._field_separator}49
         self.cfg = Config(MacsyDefaults(), args)
 
         idx = Indexes(self.cfg)
-        with self.assertRaises(MacsypyError) as e:
+        with self.assertRaises(MacsylibError) as e:
             # the directory for index exist and is writable but
             # the sequence file is corrupted and cannot be read correctly
             with self.catch_log():
@@ -427,7 +429,7 @@ VICH001.B.00001.C001_01565{idx._field_separator}414{idx._field_separator}49
 
     def test_iter(self):
         idx = Indexes(self.cfg)
-        with self.assertRaises(MacsypyError) as ctx:
+        with self.assertRaises(MacsylibError) as ctx:
             next(iter(idx))
 
         self.assertEqual(str(ctx.exception),

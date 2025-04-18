@@ -1,26 +1,28 @@
-#  MacSyFinder - Detection of macromolecular systems in protein dataset  #
-#                using systems modelling and similarity search.          #
-#  Authors: Sophie Abby, Bertrand Neron                                  #
-#  Copyright (c) 2014-2024  Institut Pasteur (Paris) and CNRS.           #
-#  See the COPYRIGHT file for details                                    #
-#                                                                        #
-#  This file is part of MacSyFinder package.                             #
-#                                                                        #
-#  MacSyFinder is free software: you can redistribute it and/or modify   #
-#  it under the terms of the GNU General Public License as published by  #
-#  the Free Software Foundation, either version 3 of the License, or     #
-#  (at your option) any later version.                                   #
-#                                                                        #
-#  MacSyFinder is distributed in the hope that it will be useful,        #
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of        #
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the          #
-#  GNU General Public License for more details .                         #
-#                                                                        #
-#  You should have received a copy of the GNU General Public License     #
-#  along with MacSyFinder (COPYING).                                     #
-#  If not, see <https://www.gnu.org/licenses/>.                          #
-##########################################################################
-
+#########################################################################
+# MacSyLib - Python library to detect macromolecular systems            #
+#            in prokaryotes protein dataset using systems modelling     #
+#            and similarity search.                                     #
+#                                                                       #
+# Authors: Sophie Abby, Bertrand Neron                                  #
+# Copyright (c) 2014-2025  Institut Pasteur (Paris) and CNRS.           #
+# See the COPYRIGHT file for details                                    #
+#                                                                       #
+# This file is part of MacSyLib package.                                #
+#                                                                       #
+# MacSyLib is free software: you can redistribute it and/or modify      #
+# it under the terms of the GNU General Public License as published by  #
+# the Free Software Foundation, either version 3 of the License, or     #
+# (at your option) any later version.                                   #
+#                                                                       #
+# MacSyLib is distributed in the hope that it will be useful,           #
+# but WITHOUT ANY WARRANTY; without even the implied warranty of        #
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the          #
+# GNU General Public License for more details .                         #
+#                                                                       #
+# You should have received a copy of the GNU General Public License     #
+# along with MacSyLib (COPYING).                                        #
+# If not, see <https://www.gnu.org/licenses/>.                          #
+#########################################################################
 def _preambule(PN: str, authors: str, cr_date: str, cr_holders: str, short_desc: str) -> str:
     """
 
@@ -42,8 +44,8 @@ See COPYRIGHT file for details."""
 
     preambule = f"""Authors: {authors}{copyright}
 
-{PN} is a package of models for macsyfinder
-(https://github.com/gem-pasteur/macsyfinder){short_desc}"""
+{PN} is a package of models for MacSyLib
+(https://github.com/gem-pasteur/macsylib){short_desc}"""
 
     return preambule
 

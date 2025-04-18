@@ -1,38 +1,40 @@
 #########################################################################
-# MacSyFinder - Detection of macromolecular systems in protein dataset  #
-#               using systems modelling and similarity search.          #
+# MacSyLib - Python library to detect macromolecular systems            #
+#            in prokaryotes protein dataset using systems modelling     #
+#            and similarity search.                                     #
+#                                                                       #
 # Authors: Sophie Abby, Bertrand Neron                                  #
-# Copyright (c) 2014-2024  Institut Pasteur (Paris) and CNRS.           #
+# Copyright (c) 2014-2025  Institut Pasteur (Paris) and CNRS.           #
 # See the COPYRIGHT file for details                                    #
 #                                                                       #
-# This file is part of MacSyFinder package.                             #
+# This file is part of MacSyLib package.                                #
 #                                                                       #
-# MacSyFinder is free software: you can redistribute it and/or modify   #
+# MacSyLib is free software: you can redistribute it and/or modify      #
 # it under the terms of the GNU General Public License as published by  #
 # the Free Software Foundation, either version 3 of the License, or     #
 # (at your option) any later version.                                   #
 #                                                                       #
-# MacSyFinder is distributed in the hope that it will be useful,        #
+# MacSyLib is distributed in the hope that it will be useful,           #
 # but WITHOUT ANY WARRANTY; without even the implied warranty of        #
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the          #
 # GNU General Public License for more details .                         #
 #                                                                       #
 # You should have received a copy of the GNU General Public License     #
-# along with MacSyFinder (COPYING).                                     #
+# along with MacSyLib (COPYING).                                        #
 # If not, see <https://www.gnu.org/licenses/>.                          #
 #########################################################################
 
 import os
 import argparse
 
-from macsypy.hit import CoreHit, ModelHit, Loner, MultiSystem, LonerMultiSystem, \
+from macsylib.hit import CoreHit, ModelHit, Loner, MultiSystem, LonerMultiSystem, \
     get_best_hits, get_best_hit_4_func, HitWeight, sort_model_hits, compute_best_MSHit
-from macsypy.config import Config, MacsyDefaults
-from macsypy.gene import CoreGene, ModelGene, Exchangeable, GeneStatus
-from macsypy.profile import ProfileFactory
-from macsypy.model import Model
-from macsypy.registries import ModelLocation
-from macsypy.error import MacsypyError
+from macsylib.config import Config, MacsyDefaults
+from macsylib.gene import CoreGene, ModelGene, Exchangeable, GeneStatus
+from macsylib.profile import ProfileFactory
+from macsylib.model import Model
+from macsylib.registries import ModelLocation
+from macsylib.error import MacsylibError
 from tests import MacsyTest
 
 
@@ -184,14 +186,14 @@ class ModelHitTest(MacsyTest):
         self.assertEqual(mhit_2.gene_ref, self.mg_gspd)
         self.assertEqual(mhit_2.status, GeneStatus.ACCESSORY)
 
-        with self.assertRaises(MacsypyError) as ctx:
+        with self.assertRaises(MacsylibError) as ctx:
             ModelHit(mhit_1, self.cg_gspd, GeneStatus.MANDATORY)
         self.assertEqual(str(ctx.exception),
-                         "The ModelHit 'hit' argument must be a CoreHit not <class 'macsypy.hit.ModelHit'>.")
-        with self.assertRaises(MacsypyError) as ctx:
+                         "The ModelHit 'hit' argument must be a CoreHit not <class 'macsylib.hit.ModelHit'>.")
+        with self.assertRaises(MacsylibError) as ctx:
             ModelHit(self.chit_1, self.cg_gspd, GeneStatus.MANDATORY)
         self.assertEqual(str(ctx.exception),
-                         "The ModelHit 'gene_ref' argument must be a ModelGene not <class 'macsypy.gene.CoreGene'>.")
+                         "The ModelHit 'gene_ref' argument must be a ModelGene not <class 'macsylib.gene.CoreGene'>.")
 
     def test_hash(self):
         self.assertEqual(hash(self.chit_1), hash(self.chit_1))
@@ -273,12 +275,12 @@ class LonerTest(MacsyTest):
         _ = Loner(self.chit_1, gene_ref=self.mg_gspd, gene_status=GeneStatus.MANDATORY, counterpart=[self.mhit_3])
 
         # try to create Loner from cCoreHit but without gene_ref nor gene_status
-        with self.assertRaises(MacsypyError) as ctx:
+        with self.assertRaises(MacsylibError) as ctx:
             Loner(self.chit_1, gene_ref=self.mg_gspd)
         self.assertEqual(str(ctx.exception),
                          "Cannot Create a Loner hit from CoreHit (gspD, 2) "
                          "without specifying 'gene_ref' and 'gene_status'")
-        with self.assertRaises(MacsypyError) as ctx:
+        with self.assertRaises(MacsylibError) as ctx:
             Loner(self.chit_1, gene_status=GeneStatus.MANDATORY)
         self.assertEqual(str(ctx.exception),
                          "Cannot Create a Loner hit from CoreHit (gspD, 2) "
@@ -290,16 +292,16 @@ class LonerTest(MacsyTest):
         self.assertEqual(l3.gene_ref, self.mg_gspd)
         self.assertEqual(l3.status, GeneStatus.MANDATORY)
 
-        with self.catch_log(log_name='macsypy'):
-            with self.assertRaises(MacsypyError) as ctx:
+        with self.catch_log(log_name='macsylib'):
+            with self.assertRaises(MacsylibError) as ctx:
                 Loner(self.chit_2, gene_ref=self.mg_sctj, gene_status=GeneStatus.ACCESSORY)
         self.assertEqual(str(ctx.exception),
                          "hit_2 cannot be a loner gene_ref 'sctJ' not tag as loner")
 
-        with self.assertRaises(MacsypyError) as ctx:
+        with self.assertRaises(MacsylibError) as ctx:
             Loner(self.chit_1, self.cg_gspd, GeneStatus.MANDATORY)
         self.assertEqual(str(ctx.exception),
-                         "The Loner 'gene_ref' argument must be a ModelGene not <class 'macsypy.gene.CoreGene'>.")
+                         "The Loner 'gene_ref' argument must be a ModelGene not <class 'macsylib.gene.CoreGene'>.")
 
 
     def test_counterpart(self):
@@ -377,12 +379,12 @@ class MultiSystemTest(MacsyTest):
         _ = MultiSystem(self.chit_1, gene_ref=self.mg_gspd, gene_status=GeneStatus.MANDATORY, counterpart=[self.mhit_3])
 
         # try to create MS from cCoreHit but without gene_ref nor gene_status
-        with self.assertRaises(MacsypyError) as ctx:
+        with self.assertRaises(MacsylibError) as ctx:
             MultiSystem(self.chit_1, gene_ref=self.mg_gspd)
         self.assertEqual(str(ctx.exception),
                          "Cannot Create a MultiSystem hit from CoreHit (gspD, 2) "
                          "without specifying 'gene_ref' and 'gene_status'")
-        with self.assertRaises(MacsypyError) as ctx:
+        with self.assertRaises(MacsylibError) as ctx:
             MultiSystem(self.chit_1, gene_status=GeneStatus.MANDATORY)
         self.assertEqual(str(ctx.exception),
                          "Cannot Create a MultiSystem hit from CoreHit (gspD, 2) "
@@ -394,16 +396,16 @@ class MultiSystemTest(MacsyTest):
         self.assertEqual(ms3.gene_ref, self.mg_gspd)
         self.assertEqual(ms3.status, GeneStatus.MANDATORY)
 
-        with self.catch_log(log_name='macsypy'):
-            with self.assertRaises(MacsypyError) as ctx:
+        with self.catch_log(log_name='macsylib'):
+            with self.assertRaises(MacsylibError) as ctx:
                 MultiSystem(self.chit_2, gene_ref=self.mg_sctj, gene_status=GeneStatus.ACCESSORY)
         self.assertEqual(str(ctx.exception),
                          "hit_2 cannot be a multi systems, gene_ref 'sctJ' not tag as multi_system")
 
-        with self.assertRaises(MacsypyError) as ctx:
+        with self.assertRaises(MacsylibError) as ctx:
             MultiSystem(self.chit_1, self.cg_gspd, GeneStatus.MANDATORY)
         self.assertEqual(str(ctx.exception),
-                         "The MultiSystem 'gene_ref' argument must be a ModelGene not <class 'macsypy.gene.CoreGene'>.")
+                         "The MultiSystem 'gene_ref' argument must be a ModelGene not <class 'macsylib.gene.CoreGene'>.")
 
 
     def test_counterpart(self):
@@ -482,12 +484,12 @@ class LonerMultiSystemTest(MacsyTest):
                              counterpart=[self.mhit_3])
 
         # try to create MS from CoreHit but without gene_ref nor gene_status
-        with self.assertRaises(MacsypyError) as ctx:
+        with self.assertRaises(MacsylibError) as ctx:
             LonerMultiSystem(self.chit_1, gene_ref=self.mg_gspd)
         self.assertEqual(str(ctx.exception),
                          "Cannot Create a LonerMultiSystem hit from CoreHit (gspD, 2) "
                          "without specifying 'gene_ref' and 'gene_status'")
-        with self.assertRaises(MacsypyError) as ctx:
+        with self.assertRaises(MacsylibError) as ctx:
             LonerMultiSystem(self.chit_1, gene_status=GeneStatus.MANDATORY)
         self.assertEqual(str(ctx.exception),
                          "Cannot Create a LonerMultiSystem hit from CoreHit (gspD, 2) "
@@ -499,17 +501,17 @@ class LonerMultiSystemTest(MacsyTest):
         self.assertEqual(lms.gene_ref, self.mg_gspd)
         self.assertEqual(lms.status, GeneStatus.MANDATORY)
 
-        with self.catch_log(log_name='macsypy'):
-            with self.assertRaises(MacsypyError) as ctx:
+        with self.catch_log(log_name='macsylib'):
+            with self.assertRaises(MacsylibError) as ctx:
                 LonerMultiSystem(self.chit_2, gene_ref=self.mg_sctj, gene_status=GeneStatus.ACCESSORY)
         self.assertEqual(str(ctx.exception),
                          "hit_2 cannot be a multi systems, gene_ref 'sctJ' not tag as multi_system")
 
-        with self.assertRaises(MacsypyError) as ctx:
+        with self.assertRaises(MacsylibError) as ctx:
             LonerMultiSystem(self.chit_1, self.cg_gspd, GeneStatus.MANDATORY)
         self.assertEqual(str(ctx.exception),
                          "The LonerMultiSystem 'gene_ref' argument must be a ModelGene"
-                         " not <class 'macsypy.gene.CoreGene'>.")
+                         " not <class 'macsylib.gene.CoreGene'>.")
 
         # create from a MultiSystem
         mh1 = MultiSystem(self.chit_1,
@@ -548,7 +550,7 @@ class LonerMultiSystemTest(MacsyTest):
         self.assertSetEqual(mh1.counterpart,
                             {self.mhit_3, self.mhit_4})
 
-        with self.assertRaises(MacsypyError) as ctx:
+        with self.assertRaises(MacsylibError) as ctx:
             with self.catch_log():
                 mh1.counterpart = [self.mhit_3, self.mhit_2]
         self.assertEqual(str(ctx.exception),
@@ -655,7 +657,7 @@ class GetBestHitTest(MacsyTest):
         self.assertEqual(h[0], h1)
 
         # bad criterion
-        with self.assertRaises(MacsypyError) as ctx:
+        with self.assertRaises(MacsylibError) as ctx:
             get_best_hits([h0, h1], key='nimportnaoik')
         self.assertEqual('The criterion for Hits comparison nimportnaoik does not exist or is not available.\n'
                          'It must be either "score", "i_eval" or "profile_coverage".', str(ctx.exception))
@@ -714,7 +716,7 @@ class GetBestHitTest(MacsyTest):
         self.assertEqual(loners, l1)
 
         # bad criterion
-        with self.assertRaises(MacsypyError) as ctx:
+        with self.assertRaises(MacsylibError) as ctx:
             get_best_hits([l0, l1], key='nimportnaoik')
         self.assertEqual('The criterion for Hits comparison nimportnaoik does not exist or is not available.\n'
                          'It must be either "score", "i_eval" or "profile_coverage".', str(ctx.exception))

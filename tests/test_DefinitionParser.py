@@ -1,24 +1,26 @@
 #########################################################################
-# MacSyFinder - Detection of macromolecular systems in protein dataset  #
-#               using systems modelling and similarity search.          #
+# MacSyLib - Python library to detect macromolecular systems            #
+#            in prokaryotes protein dataset using systems modelling     #
+#            and similarity search.                                     #
+#                                                                       #
 # Authors: Sophie Abby, Bertrand Neron                                  #
-# Copyright (c) 2014-2024  Institut Pasteur (Paris) and CNRS.           #
+# Copyright (c) 2014-2025  Institut Pasteur (Paris) and CNRS.           #
 # See the COPYRIGHT file for details                                    #
 #                                                                       #
-# This file is part of MacSyFinder package.                             #
+# This file is part of MacSyLib package.                                #
 #                                                                       #
-# MacSyFinder is free software: you can redistribute it and/or modify   #
+# MacSyLib is free software: you can redistribute it and/or modify      #
 # it under the terms of the GNU General Public License as published by  #
 # the Free Software Foundation, either version 3 of the License, or     #
 # (at your option) any later version.                                   #
 #                                                                       #
-# MacSyFinder is distributed in the hope that it will be useful,        #
+# MacSyLib is distributed in the hope that it will be useful,           #
 # but WITHOUT ANY WARRANTY; without even the implied warranty of        #
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the          #
 # GNU General Public License for more details .                         #
 #                                                                       #
 # You should have received a copy of the GNU General Public License     #
-# along with MacSyFinder (COPYING).                                     #
+# along with MacSyLib (COPYING).                                        #
 # If not, see <https://www.gnu.org/licenses/>.                          #
 #########################################################################
 
@@ -27,13 +29,13 @@ import os
 import tempfile
 import argparse
 
-from macsypy.config import Config, MacsyDefaults
-from macsypy.model import ModelBank
-from macsypy.profile import ProfileFactory
-from macsypy.gene import GeneBank, CoreGene, ModelGene, Exchangeable
-from macsypy.registries import ModelRegistry, scan_models_dir
-from macsypy.definition_parser import DefinitionParser
-from macsypy.error import MacsypyError, ModelInconsistencyError
+from macsylib.config import Config, MacsyDefaults
+from macsylib.model import ModelBank
+from macsylib.profile import ProfileFactory
+from macsylib.gene import GeneBank, CoreGene, ModelGene, Exchangeable
+from macsylib.registries import ModelRegistry, scan_models_dir
+from macsylib.definition_parser import DefinitionParser
+from macsylib.error import MacsylibError, ModelInconsistencyError
 from tests import MacsyTest
 
 
@@ -150,7 +152,7 @@ class TestModelParser(MacsyTest):
 
     def test_model_w_unkown_attr(self):
         model_2_detect = [self.model_registry['foo'].get_definition('foo/model_w_unknown_attribute')]
-        with self.assertRaises(MacsypyError) as context:
+        with self.assertRaises(MacsylibError) as context:
             with self.catch_log():
                 self.parser.parse(model_2_detect)
         self.assertEqual(str(context.exception),
@@ -160,7 +162,7 @@ class TestModelParser(MacsyTest):
 
     def test_gene_w_unkown_attr(self):
         model_2_detect = [self.model_registry['foo'].get_definition('foo/gene_w_unknown_attribute')]
-        with self.assertRaises(MacsypyError) as context:
+        with self.assertRaises(MacsylibError) as context:
             with self.catch_log():
                 self.parser.parse(model_2_detect)
         self.assertEqual(str(context.exception),
@@ -196,7 +198,7 @@ class TestModelParser(MacsyTest):
 
     def test_invalid_homolog(self):
         model_2_detect = [self.model_registry['foo'].get_definition('foo/invalid_homolog')]
-        with self.assertRaises(MacsypyError) as context:
+        with self.assertRaises(MacsylibError) as context:
                 self.parser.parse(model_2_detect)
         self.assertEqual(str(context.exception),
                          "'foo/foo_bar': No such profile")
@@ -539,8 +541,8 @@ class TestModelParser(MacsyTest):
         # the attribute vers is not set
         model_fqn = 'foo/model_old_1'
         models_2_detect = [self.model_registry['foo'].get_definition(model_fqn)]
-        with self.catch_log(log_name='macsypy'):
-            with self.assertRaises(MacsypyError) as ctx:
+        with self.catch_log(log_name='macsylib'):
+            with self.assertRaises(MacsylibError) as ctx:
                 self.parser.parse(models_2_detect)
         # test the err msg not the log
         # otherwise the olg differ of test are ran from run_test.py or setup.py
@@ -551,8 +553,8 @@ class TestModelParser(MacsyTest):
         # the root is system instead of model
         model_fqn = 'foo/model_old_2'
         models_2_detect = [self.model_registry['foo'].get_definition(model_fqn)]
-        with self.catch_log(log_name='macsypy'):
-            with self.assertRaises(MacsypyError) as ctx:
+        with self.catch_log(log_name='macsylib'):
+            with self.assertRaises(MacsylibError) as ctx:
                 self.parser.parse(models_2_detect)
         self.assertEqual(str(ctx.exception),
                          f"unable to parse model definition '{model_fqn}' : "
@@ -561,8 +563,8 @@ class TestModelParser(MacsyTest):
         # there still system_ref attribute
         model_fqn = 'foo/model_old_3'
         models_2_detect = [self.model_registry['foo'].get_definition(model_fqn)]
-        with self.catch_log(log_name='macsypy'):
-            with self.assertRaises(MacsypyError) as ctx:
+        with self.catch_log(log_name='macsylib'):
+            with self.assertRaises(MacsylibError) as ctx:
                 self.parser.parse(models_2_detect)
         self.assertEqual(str(ctx.exception),
                          f"unable to parse model definition '{model_fqn}' : "
@@ -571,8 +573,8 @@ class TestModelParser(MacsyTest):
         # there still homologs tag
         model_fqn = 'foo/model_old_4'
         models_2_detect = [self.model_registry['foo'].get_definition(model_fqn)]
-        with self.catch_log(log_name='macsypy'):
-            with self.assertRaises(MacsypyError) as ctx:
+        with self.catch_log(log_name='macsylib'):
+            with self.assertRaises(MacsylibError) as ctx:
                 self.parser.parse(models_2_detect)
         self.assertEqual(str(ctx.exception),
                          f"unable to parse model definition '{model_fqn}' : "
@@ -581,8 +583,8 @@ class TestModelParser(MacsyTest):
         # there still analogs tag
         model_fqn = 'foo/model_old_5'
         models_2_detect = [self.model_registry['foo'].get_definition(model_fqn)]
-        with self.catch_log(log_name='macsypy'):
-            with self.assertRaises(MacsypyError) as ctx:
+        with self.catch_log(log_name='macsylib'):
+            with self.assertRaises(MacsylibError) as ctx:
                 self.parser.parse(models_2_detect)
         self.assertEqual(str(ctx.exception),
                          f"unable to parse model definition '{model_fqn}' : "

@@ -1,24 +1,26 @@
 #########################################################################
-# MacSyFinder - Detection of macromolecular systems in protein dataset  #
-#               using systems modelling and similarity search.          #
+# MacSyLib - Python library to detect macromolecular systems            #
+#            in prokaryotes protein dataset using systems modelling     #
+#            and similarity search.                                     #
+#                                                                       #
 # Authors: Sophie Abby, Bertrand Neron                                  #
-# Copyright (c) 2014-2024  Institut Pasteur (Paris) and CNRS.           #
+# Copyright (c) 2014-2025  Institut Pasteur (Paris) and CNRS.           #
 # See the COPYRIGHT file for details                                    #
 #                                                                       #
-# This file is part of MacSyFinder package.                             #
+# This file is part of MacSyLib package.                                #
 #                                                                       #
-# MacSyFinder is free software: you can redistribute it and/or modify   #
+# MacSyLib is free software: you can redistribute it and/or modify      #
 # it under the terms of the GNU General Public License as published by  #
 # the Free Software Foundation, either version 3 of the License, or     #
 # (at your option) any later version.                                   #
 #                                                                       #
-# MacSyFinder is distributed in the hope that it will be useful,        #
+# MacSyLib is distributed in the hope that it will be useful,           #
 # but WITHOUT ANY WARRANTY; without even the implied warranty of        #
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the          #
 # GNU General Public License for more details .                         #
 #                                                                       #
 # You should have received a copy of the GNU General Public License     #
-# along with MacSyFinder (COPYING).                                     #
+# along with MacSyLib (COPYING).                                        #
 # If not, see <https://www.gnu.org/licenses/>.                          #
 #########################################################################
 
@@ -26,8 +28,7 @@ import xml.etree.ElementTree as Et
 import logging
 from typing import Any, Callable
 
-from macsypy.error import MacsypyError
-
+from .error import MacsylibError
 _log = logging.getLogger(__name__)
 
 
@@ -79,7 +80,7 @@ class ModelConfParser:
         except Exception as err:
             msg = f"unable to parse model configuration '{self._path}' : {err}"
             _log.critical(msg)
-            raise MacsypyError(msg) from None
+            raise MacsylibError(msg) from None
         return model_node
 
 
@@ -118,7 +119,7 @@ class ModelConfParser:
             else:
                 msg = f"cannot parse 'cut_ga' element in '{self._path}' expect True, 1, False, 0 got : '{value}'"
                 _log.critical(msg)
-                raise MacsypyError(msg)
+                raise MacsylibError(msg)
 
         elements = {'e_value_search': float,
                     'i_evalue_sel': float,
@@ -149,7 +150,7 @@ class ModelConfParser:
                 except (TypeError, ValueError) as err:
                     msg = f"The model configuration file '{self._path}' cannot be parsed: {err}"
                     _log.critical(msg)
-                    raise MacsypyError(msg) from None
+                    raise MacsylibError(msg) from None
             else:
                 _log.warning(f"unknown element '{element}' in '{self._path}' ignore it.")
                 continue

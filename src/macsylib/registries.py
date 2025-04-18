@@ -1,24 +1,26 @@
 #########################################################################
-# MacSyFinder - Detection of macromolecular systems in protein dataset  #
-#               using systems modelling and similarity search.          #
+# MacSyLib - Python library to detect macromolecular systems            #
+#            in prokaryotes protein dataset using systems modelling     #
+#            and similarity search.                                     #
+#                                                                       #
 # Authors: Sophie Abby, Bertrand Neron                                  #
-# Copyright (c) 2014-2024  Institut Pasteur (Paris) and CNRS.           #
+# Copyright (c) 2014-2025  Institut Pasteur (Paris) and CNRS.           #
 # See the COPYRIGHT file for details                                    #
 #                                                                       #
-# This file is part of MacSyFinder package.                             #
+# This file is part of MacSyLib package.                                #
 #                                                                       #
-# MacSyFinder is free software: you can redistribute it and/or modify   #
+# MacSyLib is free software: you can redistribute it and/or modify      #
 # it under the terms of the GNU General Public License as published by  #
 # the Free Software Foundation, either version 3 of the License, or     #
 # (at your option) any later version.                                   #
 #                                                                       #
-# MacSyFinder is distributed in the hope that it will be useful,        #
+# MacSyLib is distributed in the hope that it will be useful,           #
 # but WITHOUT ANY WARRANTY; without even the implied warranty of        #
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the          #
 # GNU General Public License for more details .                         #
 #                                                                       #
 # You should have received a copy of the GNU General Public License     #
-# along with MacSyFinder (COPYING).                                     #
+# along with MacSyLib (COPYING).                                        #
 # If not, see <https://www.gnu.org/licenses/>.                          #
 #########################################################################
 from __future__ import annotations  # to allow to use a Type in type hint before it's definition
@@ -70,7 +72,7 @@ def scan_models_dir(models_dir: str, profile_suffix: str = ".hmm", relative_path
     :param profile_suffix: the suffix of the hmm profiles
     :param relative_path: True if models_dir is relative false otherwise
     :return: the list of models in models_dir
-    :rtype: [:class:`macsypy.registries.ModelLocation`, ...]
+    :rtype: [:class:`macsylib.registries.ModelLocation`, ...]
     """
     models = []
     for models_type in os.listdir(models_dir):
@@ -85,9 +87,9 @@ def scan_models_dir(models_dir: str, profile_suffix: str = ".hmm", relative_path
 
 class ModelRegistry:
     """
-    scan canonical directories to register the different models available in global macsyfinder
+    scan canonical directories to register the different models available in global <program name>
     share data location (depending on installation /usr/share/data/models) or can be
-    overloaded with the location specify in the macsyfinder configuration (either in config file or command line)
+    overloaded with the location specify in the <program name | 'macsylib'> configuration (either in config file or command line)
     """
 
     def __init__(self) -> None:
@@ -321,7 +323,7 @@ class ModelLocation:
         """
         :return: the list of the definitions of this modelLocation.
                  It returns the 1rst level only (not recursive).
-                 For recursive explorations see :meth:`macsypy.registries.ModelLocation.get_all_definitions`
+                 For recursive explorations see :meth:`macsylib.registries.ModelLocation.get_all_definitions`
         """
         if self._definitions is not None:
             return sorted(list(self._definitions.values()))

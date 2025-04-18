@@ -1,24 +1,26 @@
 #########################################################################
-# MacSyFinder - Detection of macromolecular systems in protein dataset  #
-#               using systems modelling and similarity search.          #
+# MacSyLib - Python library to detect macromolecular systems            #
+#            in prokaryotes protein dataset using systems modelling     #
+#            and similarity search.                                     #
+#                                                                       #
 # Authors: Sophie Abby, Bertrand Neron                                  #
-# Copyright (c) 2014-2024  Institut Pasteur (Paris) and CNRS.           #
+# Copyright (c) 2014-2025  Institut Pasteur (Paris) and CNRS.           #
 # See the COPYRIGHT file for details                                    #
 #                                                                       #
-# This file is part of MacSyFinder package.                             #
+# This file is part of MacSyLib package.                                #
 #                                                                       #
-# MacSyFinder is free software: you can redistribute it and/or modify   #
+# MacSyLib is free software: you can redistribute it and/or modify      #
 # it under the terms of the GNU General Public License as published by  #
 # the Free Software Foundation, either version 3 of the License, or     #
 # (at your option) any later version.                                   #
 #                                                                       #
-# MacSyFinder is distributed in the hope that it will be useful,        #
+# MacSyLib is distributed in the hope that it will be useful,           #
 # but WITHOUT ANY WARRANTY; without even the implied warranty of        #
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the          #
 # GNU General Public License for more details .                         #
 #                                                                       #
 # You should have received a copy of the GNU General Public License     #
-# along with MacSyFinder (COPYING).                                     #
+# along with MacSyLib (COPYING).                                        #
 # If not, see <https://www.gnu.org/licenses/>.                          #
 #########################################################################
 
@@ -30,7 +32,7 @@ from configparser import ConfigParser, ParsingError
 import tempfile
 from time import strftime
 
-from macsypy.config import MacsyDefaults, Config, NoneConfig
+from macsylib.config import MacsyDefaults, Config, NoneConfig
 
 from tests import MacsyTest
 
@@ -119,7 +121,7 @@ class TestConfig(MacsyTest):
         for opt, val in self.defaults.items():
             if opt == 'out_dir':
                 self.assertEqual(cfg.out_dir(),
-                                 os.path.join(cfg.res_search_dir(), f'macsyfinder-{strftime("%Y%m%d_%H-%M-%S")}')
+                                 os.path.join(cfg.res_search_dir(), f'macsylib-{strftime("%Y%m%d_%H-%M-%S")}')
                                  )
             elif opt == 'multi_loci':
                 self.assertFalse(cfg.multi_loci('whatever'))
@@ -154,7 +156,7 @@ class TestConfig(MacsyTest):
             if opt == 'out_dir':
                 self.assertEqual(cfg.out_dir(),
                                  os.path.join(cfg.res_search_dir(),
-                                              f'macsyfinder-{strftime("%Y%m%d_%H-%M-%S")}')
+                                              f'macsylib-{strftime("%Y%m%d_%H-%M-%S")}')
                                  )
             elif opt == 'multi_loci':
                 self.assertTrue(cfg.multi_loci('set_1/Flagellum'))
@@ -188,7 +190,7 @@ class TestConfig(MacsyTest):
 
         try:
             shutil.copyfile(self.find_data(os.path.join('conf_files', 'project.conf')),
-                            os.path.join(self.tmp_dir, 'macsyfinder.conf')
+                            os.path.join(self.tmp_dir, 'macsylib.conf')
                             )
             cfg = Config(self.defaults, self.parsed_args)
 
@@ -200,7 +202,7 @@ class TestConfig(MacsyTest):
                 if opt == 'out_dir':
                     self.assertEqual(cfg.out_dir(),
                                      os.path.join(cfg.res_search_dir(),
-                                                  f'macsyfinder-{strftime("%Y%m%d_%H-%M-%S")}')
+                                                  f'macsylib-{strftime("%Y%m%d_%H-%M-%S")}')
                                      )
                 elif opt == 'multi_loci':
                     self.assertTrue(cfg.multi_loci('set_1/Flagellum'))
@@ -224,7 +226,7 @@ class TestConfig(MacsyTest):
         config_parser.add_section('general')
         config_parser.set('general', 'worker', 'foo')
         with tempfile.TemporaryDirectory() as tmpdirname:
-            dest_conf_file = os.path.join(tmpdirname, 'macsyfinder.conf')
+            dest_conf_file = os.path.join(tmpdirname, 'macsylib.conf')
             with open(dest_conf_file, 'w') as cfg_file:
                 config_parser.write(cfg_file)
             self.parsed_args.cfg_file = dest_conf_file
@@ -244,7 +246,7 @@ class TestConfig(MacsyTest):
                                 }
         with tempfile.TemporaryDirectory() as tmpdirname:
             ori_conf_file = self.find_data(os.path.join('conf_files', 'macsy_models.conf'))
-            dest_conf_file = os.path.join(tmpdirname, 'macsyfinder.conf')
+            dest_conf_file = os.path.join(tmpdirname, 'macsylib.conf')
             shutil.copy(ori_conf_file, dest_conf_file)
             os.environ['MACSY_CONF'] = dest_conf_file
             virtual_env = os.environ.get("VIRTUAL_ENV")
@@ -258,7 +260,7 @@ class TestConfig(MacsyTest):
                     if opt == 'out_dir':
                         self.assertEqual(cfg.out_dir(),
                                          os.path.join(cfg.res_search_dir(),
-                                                      f'macsyfinder-{strftime("%Y%m%d_%H-%M-%S")}')
+                                                      f'macsylib-{strftime("%Y%m%d_%H-%M-%S")}')
                                          )
                     elif opt == 'multi_loci':
                         self.assertTrue(cfg.multi_loci('set_1/Flagellum'))
@@ -285,9 +287,9 @@ class TestConfig(MacsyTest):
 
         with tempfile.TemporaryDirectory() as tmpdirname:
             ori_conf_file = self.find_data(os.path.join('conf_files', 'macsy_virtualenv_test.conf'))
-            conf_dir = os.path.join(tmpdirname, 'etc', 'macsyfinder')
+            conf_dir = os.path.join(tmpdirname, 'etc', 'macsylib')
             os.makedirs(conf_dir)
-            dest_conf_file = os.path.join(conf_dir, 'macsyfinder.conf')
+            dest_conf_file = os.path.join(conf_dir, 'macsylib.conf')
             shutil.copy(ori_conf_file, dest_conf_file)
             virtual_env = os.environ.get("VIRTUAL_ENV")
 
@@ -302,7 +304,7 @@ class TestConfig(MacsyTest):
                     if opt == 'out_dir':
                         self.assertEqual(cfg.out_dir(),
                                          os.path.join(cfg.res_search_dir(),
-                                                      f'macsyfinder-{strftime("%Y%m%d_%H-%M-%S")}')
+                                                      f'macsylib-{strftime("%Y%m%d_%H-%M-%S")}')
                                          )
                     elif opt in ('max_nb_genes', 'min_genes_required', 'multi_loci'):  # not set in cfg file
                         pass
@@ -347,7 +349,7 @@ class TestConfig(MacsyTest):
         for opt, val in expected_values.items():
             if opt == 'out_dir':
                 self.assertEqual(cfg.out_dir(),
-                                 os.path.join(cfg.res_search_dir(), f'macsyfinder-{strftime("%Y%m%d_%H-%M-%S")}')
+                                 os.path.join(cfg.res_search_dir(), f'macsylib-{strftime("%Y%m%d_%H-%M-%S")}')
                                  )
             elif opt == 'multi_loci':
                 self.assertTrue(cfg.multi_loci('set_1/Flagellum'))
@@ -395,7 +397,7 @@ class TestConfig(MacsyTest):
         for opt, exp_val in expected_values.items():
             if opt == 'out_dir':
                 self.assertEqual(cfg.out_dir(),
-                                 os.path.join(cfg.res_search_dir(), f"macsyfinder-{strftime('%Y%m%d_%H-%M-%S')}")
+                                 os.path.join(cfg.res_search_dir(), f"macsylib-{strftime('%Y%m%d_%H-%M-%S')}")
                                  )
             elif opt == 'multi_loci':
                 self.assertTrue(cfg.multi_loci('set_1/Flagellum'))
@@ -500,9 +502,9 @@ class TestConfig(MacsyTest):
         expected = {k: v for k, v in cfg._options.items() if v is not None}
         expected['max_nb_genes'] = 'Set_1/T2SS 5 set_1/Flagelum 12'
         expected['models'] = 'Set_1 T9SS T3SS T4SS_typeI'
-        # save in file 'macsyfinder.conf'
+        # save in file 'macsylib.conf'
         with tempfile.TemporaryDirectory() as tmpdirname:
-            cfg_path = os.path.join(tmpdirname, 'macsyfinder.conf')
+            cfg_path = os.path.join(tmpdirname, 'macsylib.conf')
             cfg.save(path_or_buf=cfg_path)
             new_args = Namespace()
             new_args.cfg_file = cfg_path
@@ -520,7 +522,7 @@ class TestConfig(MacsyTest):
     def test_out_dir(self):
         cfg = Config(self.defaults, self.parsed_args)
         self.assertEqual(cfg.out_dir(),
-                         os.path.join(cfg.res_search_dir(), f'macsyfinder-{strftime("%Y%m%d_%H-%M-%S")}')
+                         os.path.join(cfg.res_search_dir(), f'macsylib-{strftime("%Y%m%d_%H-%M-%S")}')
                          )
         self.parsed_args.out_dir = 'foo'
         cfg = Config(self.defaults, self.parsed_args)

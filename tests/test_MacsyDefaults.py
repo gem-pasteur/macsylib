@@ -1,24 +1,26 @@
 #########################################################################
-# MacSyFinder - Detection of macromolecular systems in protein dataset  #
-#               using systems modelling and similarity search.          #
+# MacSyLib - Python library to detect macromolecular systems            #
+#            in prokaryotes protein dataset using systems modelling     #
+#            and similarity search.                                     #
+#                                                                       #
 # Authors: Sophie Abby, Bertrand Neron                                  #
-# Copyright (c) 2014-2024  Institut Pasteur (Paris) and CNRS.           #
+# Copyright (c) 2014-2025  Institut Pasteur (Paris) and CNRS.           #
 # See the COPYRIGHT file for details                                    #
 #                                                                       #
-# This file is part of MacSyFinder package.                             #
+# This file is part of MacSyLib package.                                #
 #                                                                       #
-# MacSyFinder is free software: you can redistribute it and/or modify   #
+# MacSyLib is free software: you can redistribute it and/or modify      #
 # it under the terms of the GNU General Public License as published by  #
 # the Free Software Foundation, either version 3 of the License, or     #
 # (at your option) any later version.                                   #
 #                                                                       #
-# MacSyFinder is distributed in the hope that it will be useful,        #
+# MacSyLib is distributed in the hope that it will be useful,           #
 # but WITHOUT ANY WARRANTY; without even the implied warranty of        #
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the          #
 # GNU General Public License for more details .                         #
 #                                                                       #
 # You should have received a copy of the GNU General Public License     #
-# along with MacSyFinder (COPYING).                                     #
+# along with MacSyLib (COPYING).                                        #
 # If not, see <https://www.gnu.org/licenses/>.                          #
 #########################################################################
 
@@ -28,7 +30,7 @@ import shutil
 import tempfile
 
 
-from macsypy.config import MacsyDefaults
+from macsylib.config import MacsyDefaults
 
 from tests import MacsyTest
 
@@ -47,7 +49,7 @@ class TestMacsyDefaults(MacsyTest):
                          'idx': False,
                          'index_dir': None,
                          'inter_gene_max_space': None,
-                         'log_file': 'macsyfinder.log',
+                         'log_file': 'macsylib.log',
                          'log_level': logging.INFO,
                          'max_nb_genes': None,
                          'min_genes_required': None,
@@ -59,6 +61,7 @@ class TestMacsyDefaults(MacsyTest):
                          'out_dir': None,
                          'previous_run': None,
                          'profile_suffix': '.hmm',
+                         'prog_name': 'macsylib',
                          'quiet': 0,
                          'relative_path': False,
                          'replicon_topology': 'circular',
@@ -86,11 +89,11 @@ class TestMacsyDefaults(MacsyTest):
 
         with tempfile.TemporaryDirectory() as fake_virtual_env:
             os.environ['VIRTUAL_ENV'] = fake_virtual_env
-            system_models_dir = os.path.join(fake_virtual_env, 'share', 'macsyfinder', 'models')
+            system_models_dir = os.path.join(fake_virtual_env, 'share', 'macsylib', 'models')
             os.makedirs(system_models_dir)
             self.defaults['system_models_dir'] = [path for path in (system_models_dir,
                                                                     os.path.join(os.path.expanduser('~'),
-                                                                                 '.macsyfinder', 'models'))
+                                                                                 '.macsylib', 'models'))
                                                   if os.path.exists(path)]
             try:
                 defaults = MacsyDefaults()
@@ -110,10 +113,10 @@ class TestMacsyDefaults(MacsyTest):
     def test_MacsyDefaults_no_virtual_env(self):
 
         virtual_env = os.environ.get('VIRTUAL_ENV')
-        common_path = os.path.join('share', 'macsyfinder', 'models')
+        common_path = os.path.join('share', 'macsylib', 'models')
         prefixes = ('/', os.path.join('/', 'usr', 'local'))
         system_models_dir = [os.path.join(root, common_path) for root in prefixes]
-        system_models_dir.append(os.path.join(os.path.expanduser('~'), '.macsyfinder', 'models'))
+        system_models_dir.append(os.path.join(os.path.expanduser('~'), '.macsylib', 'models'))
         self.defaults['system_models_dir'] = [path for path in system_models_dir if os.path.exists(path)]
         if virtual_env:
             del os.environ['VIRTUAL_ENV']
@@ -130,3 +133,21 @@ class TestMacsyDefaults(MacsyTest):
         finally:
             if virtual_env:
                 os.environ['VIRTUAL_ENV'] = virtual_env
+
+
+    def test_MacsyDefaults_other_prog(self):
+        prog_name = 'NIMPORTNAOIK'
+        common_path = os.path.join('share', prog_name, 'models')
+        prefixes = ('/', os.path.join('/', 'usr', 'local'))
+        system_models_dir = [os.path.join(root, common_path) for root in prefixes]
+        system_models_dir.append(os.path.join(os.path.expanduser('~'), f'.{prog_name}', 'models'))
+        self.defaults['system_models_dir'] = [path for path in system_models_dir if os.path.exists(path)]
+        self.defaults['prog_name'] = prog_name
+        self.defaults['log_file'] = f"{prog_name}.log"
+        try:
+            defaults = MacsyDefaults(prog_name=prog_name)
+            self.maxDiff = None
+            self.assertDictEqual(defaults, self.defaults)
+        finally:
+            self.defaults['prog_name'] = 'macsylib'
+            self.defaults['log_file'] = 'macsylib.log'

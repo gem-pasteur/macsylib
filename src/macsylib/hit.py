@@ -1,24 +1,26 @@
 #########################################################################
-# MacSyFinder - Detection of macromolecular systems in protein dataset  #
-#               using systems modelling and similarity search.          #
+# MacSyLib - Python library to detect macromolecular systems            #
+#            in prokaryotes protein dataset using systems modelling     #
+#            and similarity search.                                     #
+#                                                                       #
 # Authors: Sophie Abby, Bertrand Neron                                  #
-# Copyright (c) 2014-2024  Institut Pasteur (Paris) and CNRS.           #
+# Copyright (c) 2014-2025  Institut Pasteur (Paris) and CNRS.           #
 # See the COPYRIGHT file for details                                    #
 #                                                                       #
-# This file is part of MacSyFinder package.                             #
+# This file is part of MacSyLib package.                                #
 #                                                                       #
-# MacSyFinder is free software: you can redistribute it and/or modify   #
+# MacSyLib is free software: you can redistribute it and/or modify      #
 # it under the terms of the GNU General Public License as published by  #
 # the Free Software Foundation, either version 3 of the License, or     #
 # (at your option) any later version.                                   #
 #                                                                       #
-# MacSyFinder is distributed in the hope that it will be useful,        #
+# MacSyLib is distributed in the hope that it will be useful,           #
 # but WITHOUT ANY WARRANTY; without even the implied warranty of        #
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the          #
 # GNU General Public License for more details .                         #
 #                                                                       #
 # You should have received a copy of the GNU General Public License     #
-# along with MacSyFinder (COPYING).                                     #
+# along with MacSyLib (COPYING).                                        #
 # If not, see <https://www.gnu.org/licenses/>.                          #
 #########################################################################
 from __future__ import annotations
@@ -29,8 +31,8 @@ from operator import attrgetter
 import logging
 from dataclasses import dataclass
 
-from macsypy.gene import CoreGene, ModelGene, GeneStatus
-from macsypy.error import MacsypyError
+from .gene import CoreGene, ModelGene, GeneStatus
+from .error import MacsylibError
 
 _log = logging.getLogger(__name__)
 
@@ -39,8 +41,8 @@ class CoreHit:
     """
     Handle the hits filtered from the Hmmer search.
     The hits are instanced by :py:meth:`HMMReport.extract` method
-    In one run of MacSyFinder, there exists only one CoreHit per gene
-    These hits are independent of any :class:`macsypy.model.Model` instance.
+    In one run of MacSyLib, there exists only one CoreHit per gene
+    These hits are independent of any :class:`macsylib.model.Model` instance.
     """
 
 
@@ -147,7 +149,7 @@ class CoreHit:
 
 class ModelHit:
     """
-    Encapsulates a :class:`macsypy.report.CoreHit`
+    Encapsulates a :class:`macsylib.report.CoreHit`
     This class stores a CoreHit that has been attributed to a putative system.
     Thus, it also stores:
 
@@ -165,17 +167,17 @@ class ModelHit:
                          The ModeleGene have the same name as the CoreGene
                          But one hit can be linked to several ModelGene (several Model)
                          To know for what gene this hit play role use the
-                         :meth:`macsypy.gene.ModelGene.alternate_of` ::
+                         :meth:`macsylib.gene.ModelGene.alternate_of` ::
 
                             hit.gene_ref.alternate_of()
 
         :param gene_status:
         """
         if not isinstance(hit, CoreHit):
-            raise MacsypyError(f"The {self.__class__.__name__} 'hit' argument must be a CoreHit not {type(hit)}.")
+            raise MacsylibError(f"The {self.__class__.__name__} 'hit' argument must be a CoreHit not {type(hit)}.")
         self._hit = hit
         if not isinstance(gene_ref, ModelGene):
-            raise MacsypyError(f"The {self.__class__.__name__} 'gene_ref' argument must be a ModelGene "
+            raise MacsylibError(f"The {self.__class__.__name__} 'gene_ref' argument must be a ModelGene "
                                f"not {type(gene_ref)}.")
         self.gene_ref = gene_ref
         self.status = gene_status
@@ -201,7 +203,7 @@ class ModelHit:
     @property
     def multi_system(self) -> bool:
         """
-        :return: True if the hit represent a `multi_system` :class:`macsypy.Gene.ModelGene`, False otherwise.
+        :return: True if the hit represent a `multi_system` :class:`macsylib.Gene.ModelGene`, False otherwise.
         """
         return self.gene_ref.multi_system
 
@@ -209,7 +211,7 @@ class ModelHit:
     @property
     def multi_model(self) -> bool:
         """
-        :return: True if the hit represent a `multi_model` :class:`macsypy.Gene.ModelGene`, False otherwise.
+        :return: True if the hit represent a `multi_model` :class:`macsylib.Gene.ModelGene`, False otherwise.
         """
         return self.gene_ref.multi_model
 
@@ -217,7 +219,7 @@ class ModelHit:
     @property
     def loner(self) -> bool:
         """
-        :return: True if the hit represent a `loner` :class:`macsypy.Gene.ModelGene`, False otherwise.
+        :return: True if the hit represent a `loner` :class:`macsylib.Gene.ModelGene`, False otherwise.
                  A True Loner is a hit representing a gene with the attribute loner and which does not include in a cluster.
 
                  - a hit representing a loner gene but include in a cluster is not a true loner
@@ -261,7 +263,7 @@ class AbstractCounterpartHit(ModelHit, metaclass=abc.ABCMeta):
                  gene_status: GeneStatus = None,
                  counterpart: set[ModelHit] = None) -> None:
         if isinstance(hit, CoreHit) and not (gene_ref and gene_status):
-            raise MacsypyError(f"Cannot Create a {self.__class__.__name__} hit from "
+            raise MacsylibError(f"Cannot Create a {self.__class__.__name__} hit from "
                                f"CoreHit ({hit.gene.name}, {hit.position}) "
                                 "without specifying 'gene_ref' and 'gene_status'")
         elif isinstance(hit, CoreHit):
@@ -297,7 +299,7 @@ class AbstractCounterpartHit(ModelHit, metaclass=abc.ABCMeta):
             msg = f"Try to set counterpart for hit '{self.gene_ref.name}' with non compatible hits: " \
                   f"{[hit.gene_ref.name for hit in counterparts]}"
             _log.error(msg)
-            raise MacsypyError(msg)
+            raise MacsylibError(msg)
 
     def __str__(self) -> str:
         ch_str = str(self._hit)[:-1]
@@ -335,7 +337,7 @@ class Loner(AbstractCounterpartHit):
                          The ModeleGene have the same name as the CoreGene
                          But one hit can be linked to several ModelGene (several Model)
                          To know for what gene this hit play role use the
-                         :meth:`macsypy.gene.ModelGene.alternate_of` ::
+                         :meth:`macsylib.gene.ModelGene.alternate_of` ::
 
                             hit.gene_ref.alternate_of()
 
@@ -347,7 +349,7 @@ class Loner(AbstractCounterpartHit):
         if not self.gene_ref.loner:
             msg = f"{hit.id} cannot be a loner gene_ref '{gene_ref.name}' not tag as loner"
             _log.critical(msg)
-            raise MacsypyError(msg)
+            raise MacsylibError(msg)
 
 
     @property
@@ -373,7 +375,7 @@ class MultiSystem(AbstractCounterpartHit):
                          The ModeleGene have the same name as the CoreGene
                          But one hit can be linked to several ModelGene (several Model)
                          To know for what gene this hit play role use the
-                         :meth:`macsypy.gene.ModelGene.alternate_of` ::
+                         :meth:`macsylib.gene.ModelGene.alternate_of` ::
 
                             hit.gene_ref.alternate_of()
 
@@ -385,7 +387,7 @@ class MultiSystem(AbstractCounterpartHit):
         if not self.gene_ref.multi_system:
             msg = f"{hit.id} cannot be a multi systems, gene_ref '{gene_ref.name}' not tag as multi_system"
             _log.critical(msg)
-            raise MacsypyError(msg)
+            raise MacsylibError(msg)
 
 
     @property
@@ -413,12 +415,15 @@ class LonerMultiSystem(Loner, MultiSystem):
                          The ModeleGene have the same name as the CoreGene
                          But one hit can be linked to several ModelGene (several Model)
                          To know for what gene this hit play role use the
-                         :meth:`macsypy.gene.ModelGene.alternate_of` ::
+                         :meth:`macsylib.gene.ModelGene.alternate_of` ::
 
                             hit.gene_ref.alternate_of()
 
+        :type gene_ref: :class:`macsylib.gene.ModelGene` object
         :param gene_status:
+        :type gene_status: :class:`macsylib.gene.GeneStatus` object
         :param counterpart: the other occurence of the gene or exchangeable in the replicon
+        :type counterpart: list of :class:`macsylib.hit.CoreHit`
         """
         if isinstance(hit, (Loner, MultiSystem)):
             super().__init__(hit,
@@ -433,7 +438,7 @@ class LonerMultiSystem(Loner, MultiSystem):
 class HitWeight:
     """
     The weight to compute the cluster and system score
-    see user documentation macsyfinder functioning for further details
+    see user documentation MacSyLib functioning for further details
     by default
 
         * itself = 1
@@ -484,15 +489,15 @@ def get_best_hit_4_func(function: str, hits: Iterable[ModelHit], key: str = 'sco
     elif key == 'profile_coverage':
         hits.sort(key=attrgetter(key), reverse=True)
     else:
-        raise MacsypyError(f'The criterion for Loners comparison {key} does not exist or is not available.\n')
+        raise MacsylibError(f'The criterion for Loners comparison {key} does not exist or is not available.\n')
     return hits[0]
 
 
 def sort_model_hits(model_hits: Iterable[ModelHit]) -> dict[str: list[ModelHit]]:
     """
-    Sort :class:`macsypy.hit.ModelHit` per function
+    Sort :class:`macsylib.hit.ModelHit` per function
 
-    :param model_hits: a sequence of :class:`macsypy.hit.ModelHit`
+    :param model_hits: a sequence of :class:`macsylib.hit.ModelHit`
     :return: dict {str function name: [model_hit, ...] }
     """
     ms_registry = {}
@@ -533,10 +538,10 @@ def get_best_hits(hits: Iterable[CoreHit | ModelHit],
         * profile_coverage
 
     :param hits: the hits to filter, all hits must match the same protein.
-    :type hits: [ :class:`macsypy.hit.CoreHit` object, ...]
+    :type hits: [ :class:`macsylib.hit.CoreHit` object, ...]
     :param str key: The criterion used to select the best hit 'score', i_evalue', 'profile_coverage'
     :return: the list of the best hits
-    :rtype: [ :class:`macsypy.hit.CoreHit` object, ...]
+    :rtype: [ :class:`macsylib.hit.CoreHit` object, ...]
     """
     hits_register = {}
     for hit in hits:
@@ -555,7 +560,7 @@ def get_best_hits(hits: Iterable[CoreHit | ModelHit],
         elif key == 'profile_coverage':
             hits_on_same_prot.sort(key=attrgetter(key), reverse=True)
         else:
-            raise MacsypyError(f'The criterion for Hits comparison {key} does not exist or is not available.\n'
+            raise MacsylibError(f'The criterion for Hits comparison {key} does not exist or is not available.\n'
                                f'It must be either "score", "i_eval" or "profile_coverage".')
         best_hits.append(hits_on_same_prot[0])
     return best_hits

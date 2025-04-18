@@ -1,24 +1,26 @@
 #########################################################################
-# MacSyFinder - Detection of macromolecular systems in protein dataset  #
-#               using systems modelling and similarity search.          #
+# MacSyLib - Python library to detect macromolecular systems            #
+#            in prokaryotes protein dataset using systems modelling     #
+#            and similarity search.                                     #
+#                                                                       #
 # Authors: Sophie Abby, Bertrand Neron                                  #
-# Copyright (c) 2014-2024  Institut Pasteur (Paris) and CNRS.           #
+# Copyright (c) 2014-2025  Institut Pasteur (Paris) and CNRS.           #
 # See the COPYRIGHT file for details                                    #
 #                                                                       #
-# This file is part of MacSyFinder package.                             #
+# This file is part of MacSyLib package.                                #
 #                                                                       #
-# MacSyFinder is free software: you can redistribute it and/or modify   #
+# MacSyLib is free software: you can redistribute it and/or modify      #
 # it under the terms of the GNU General Public License as published by  #
 # the Free Software Foundation, either version 3 of the License, or     #
 # (at your option) any later version.                                   #
 #                                                                       #
-# MacSyFinder is distributed in the hope that it will be useful,        #
+# MacSyLib is distributed in the hope that it will be useful,           #
 # but WITHOUT ANY WARRANTY; without even the implied warranty of        #
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the          #
 # GNU General Public License for more details .                         #
 #                                                                       #
 # You should have received a copy of the GNU General Public License     #
-# along with MacSyFinder (COPYING).                                     #
+# along with MacSyLib (COPYING).                                        #
 # If not, see <https://www.gnu.org/licenses/>.                          #
 #########################################################################
 
@@ -31,17 +33,17 @@ import logging
 from io import StringIO
 from itertools import groupby
 
-import macsypy
-from macsypy.config import MacsyDefaults, Config
-from macsypy.database import Indexes
+import macsylib
+from macsylib.config import MacsyDefaults, Config
+from macsylib.database import Indexes
 from tests import MacsyTest
-from macsypy.scripts import macsyprofile
+from macsylib.scripts import macsyprofile
 
 
 class TestMacsyprofile(MacsyTest):
 
     def setUp(self):
-        self._tmp_dir = tempfile.TemporaryDirectory(prefix='test_msf_macsyprofile_')
+        self._tmp_dir = tempfile.TemporaryDirectory(prefix='test_macsy_macsyprofile_')
         self.tmpdir = self._tmp_dir.name
 
         self.args = argparse.Namespace()
@@ -115,7 +117,7 @@ class TestMacsyprofile(MacsyTest):
     def test_header(self):
         out = "FOO"
         coverage_profile = 0.1
-        version = macsypy.__version__
+        version = macsylib.__version__
         cmd = f"macsyprofile --coverage-profile {coverage_profile} --out {out} --index-dir {self.tmpdir} {self.previous_run}"
         model_name = 'TFF-SF'
         model_vers = '0.0b2'
@@ -454,8 +456,8 @@ hit_id\treplicon_name\tposition_hit\thit_sequence_length\tgene_name\ti_eval\tsco
     def test_functional_old_conf(self):
         # old fashioned macsyfinder.conf
         # models are not specified in the conf
-        old = self.find_data('conf_files', 'macsyfinder-old.conf')
-        shutil.copyfile(old, os.path.join(self.tmpdir, 'macsyfinder.conf'))
+        old = self.find_data('conf_files', 'macsylib-old.conf')
+        shutil.copyfile(old, os.path.join(self.tmpdir, 'macsylib.conf'))
 
         previous_run = self.tmpdir
         cmd = f"macsyprofile --index-dir {self.tmpdir} {previous_run}"
@@ -466,4 +468,4 @@ hit_id\treplicon_name\tposition_hit\thit_sequence_length\tgene_name\ti_eval\tsco
                 log_msg = log.get_value().strip()
             self.assertEqual(log_msg,
                              f"Cannot find models in conf file {self.tmpdir}."
-                             f" May be these results have been generated with an old version of macsyfinder.")
+                             f" May be these results have been generated with an old version of macsylib.")

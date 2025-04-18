@@ -1,24 +1,26 @@
 #########################################################################
-# MacSyFinder - Detection of macromolecular systems in protein dataset  #
-#               using systems modelling and similarity search.          #
+# MacSyLib - Python library to detect macromolecular systems            #
+#            in prokaryotes protein dataset using systems modelling     #
+#            and similarity search.                                     #
+#                                                                       #
 # Authors: Sophie Abby, Bertrand Neron                                  #
-# Copyright (c) 2014-2024  Institut Pasteur (Paris) and CNRS.           #
+# Copyright (c) 2014-2025  Institut Pasteur (Paris) and CNRS.           #
 # See the COPYRIGHT file for details                                    #
 #                                                                       #
-# This file is part of MacSyFinder package.                             #
+# This file is part of MacSyLib package.                                #
 #                                                                       #
-# MacSyFinder is free software: you can redistribute it and/or modify   #
+# MacSyLib is free software: you can redistribute it and/or modify      #
 # it under the terms of the GNU General Public License as published by  #
 # the Free Software Foundation, either version 3 of the License, or     #
 # (at your option) any later version.                                   #
 #                                                                       #
-# MacSyFinder is distributed in the hope that it will be useful,        #
+# MacSyLib is distributed in the hope that it will be useful,           #
 # but WITHOUT ANY WARRANTY; without even the implied warranty of        #
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the          #
 # GNU General Public License for more details .                         #
 #                                                                       #
 # You should have received a copy of the GNU General Public License     #
-# along with MacSyFinder (COPYING).                                     #
+# along with MacSyLib (COPYING).                                        #
 # If not, see <https://www.gnu.org/licenses/>.                          #
 #########################################################################
 """
@@ -63,16 +65,16 @@ def get_git_revision_short_hash() -> str:
 __commit__ = f'{get_git_revision_short_hash()}' if 'dev' in __version__ else ''
 
 
-def init_logger(log_file: str = None, out: bool = True) -> list[logging.Handler]:
+def init_logger(name: str = 'macsylib', log_file: str = None, out: bool = True) -> list[logging.Handler]:
     """
-
+    :param name: the name of the logger
     :param log_file: The path toward a file log
     :param out: True if the log are display on the screen, False otherwise.
     :return: the logger handlers
     """
     import logging
     import colorlog
-    logger = colorlog.getLogger('macsypy')
+    logger = colorlog.getLogger(name)
     handlers = []
     if out:
         stdout_handler = colorlog.StreamHandler(sys.stdout)
@@ -106,10 +108,11 @@ def init_logger(log_file: str = None, out: bool = True) -> list[logging.Handler]
     return handlers
 
 
-def logger_set_level(level: Literal['NOTSET', 'DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'] | int = 'INFO'):
+def logger_set_level(name: str = 'macsylib', level: Literal['NOTSET', 'DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'] | int = 'INFO'):
     """
-    Set the level and the formatter to the logger 'macsypy'
+    Set the level and the formatter to the logger <name>
 
+    :param name: the name of the logger
     :param level:
     :type level: str among (NOTSET, DEBUG, INFO, WARNING, ERROR, CRITICAL) or a positive integer
     """
@@ -136,7 +139,7 @@ def logger_set_level(level: Literal['NOTSET', 'DEBUG', 'INFO', 'WARNING', 'ERROR
     elif not isinstance(level, int) or level < 0:
         raise ValueError(f"Level must be {', '.join(levels.keys())} or a positive integer")
 
-    logger = colorlog.getLogger('macsypy')
+    logger = colorlog.getLogger(name)
     if level <= logging.DEBUG:
         stdout_formatter = colorlog.ColoredFormatter(
             "%(log_color)s%(levelname)-8s : %(module)s: L %(lineno)d :%(reset)s %(message)s",

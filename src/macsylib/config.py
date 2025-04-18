@@ -1,24 +1,26 @@
 #########################################################################
-# MacSyFinder - Detection of macromolecular systems in protein dataset  #
-#               using systems modelling and similarity search.          #
+# MacSyLib - Python library to detect macromolecular systems            #
+#            in prokaryotes protein dataset using systems modelling     #
+#            and similarity search.                                     #
+#                                                                       #
 # Authors: Sophie Abby, Bertrand Neron                                  #
-# Copyright (c) 2014-2024  Institut Pasteur (Paris) and CNRS.           #
+# Copyright (c) 2014-2025  Institut Pasteur (Paris) and CNRS.           #
 # See the COPYRIGHT file for details                                    #
 #                                                                       #
-# This file is part of MacSyFinder package.                             #
+# This file is part of MacSyLib package.                                #
 #                                                                       #
-# MacSyFinder is free software: you can redistribute it and/or modify   #
+# MacSyLib is free software: you can redistribute it and/or modify      #
 # it under the terms of the GNU General Public License as published by  #
 # the Free Software Foundation, either version 3 of the License, or     #
 # (at your option) any later version.                                   #
 #                                                                       #
-# MacSyFinder is distributed in the hope that it will be useful,        #
+# MacSyLib is distributed in the hope that it will be useful,           #
 # but WITHOUT ANY WARRANTY; without even the implied warranty of        #
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the          #
 # GNU General Public License for more details .                         #
 #                                                                       #
 # You should have received a copy of the GNU General Public License     #
-# along with MacSyFinder (COPYING).                                     #
+# along with MacSyLib (COPYING).                                        #
 # If not, see <https://www.gnu.org/licenses/>.                          #
 #########################################################################
 
@@ -30,7 +32,7 @@ from time import strftime
 import logging
 from configparser import ConfigParser, ParsingError
 
-from  macsypy.model_conf_parser import ModelConfParser
+from  macsylib.model_conf_parser import ModelConfParser
 
 from typing import Any, TextIO, Literal, TypeAlias, Iterable
 
@@ -46,12 +48,12 @@ Topology: TypeAlias = Literal['linear', 'circular']
 
 class MacsyDefaults(dict):
     """
-    Handle all default values for macsyfinder.
+    Handle all default values for macsylib.
     the default values must be defined here, **NOT** in argument parser nor in config
     the argument parser or config must use a MacsyDefaults object
     """
 
-    def __init__(self, **kwargs) -> None:
+    def __init__(self, prog_name:str = 'macsylib', **kwargs) -> None:
         """
         :param kwargs: allow to overwrite a default value.
                        It mainly used in unit tests
@@ -61,7 +63,7 @@ class MacsyDefaults(dict):
         super().__init__()
         self.__dict__ = self
 
-        common_path = os.path.join('share', 'macsyfinder', 'models')
+        common_path = os.path.join('share', prog_name, 'models')
         virtual_env = os.environ.get('VIRTUAL_ENV')
         if virtual_env:
             system_models_dir = os.path.join(virtual_env, common_path)
@@ -75,8 +77,8 @@ class MacsyDefaults(dict):
 
             # depending on distrib it's installed in /share or /usr/local/share
             # if it's installed with --user
-            # install models in ~/.macsyfinder instead of ~/.local/share/macsyfinder
-
+            # install models in ~/.<program name> instead of ~/.local/share/<program name>
+        self.prog_name = prog_name
         self.cfg_file = kwargs.get('cfg_file', None)
         self.coverage_profile = kwargs.get('coverage_profile', 0.5)
         self.e_value_search = kwargs.get('e_value_search', 0.1)
@@ -88,7 +90,7 @@ class MacsyDefaults(dict):
         self.index_dir = kwargs.get('index_dir', None)
         self.inter_gene_max_space = kwargs.get('inter_gene_max_space', None)
         self.log_level = kwargs.get('log_level', logging.INFO)
-        self.log_file = kwargs.get('log_file', 'macsyfinder.log')
+        self.log_file = kwargs.get('log_file', f'{prog_name}.log')
         self.max_nb_genes = kwargs.get('max_nb_genes', None)
         self.min_genes_required = kwargs.get('min_genes_required', None)
         self.min_mandatory_genes_required = kwargs.get('min_mandatory_genes_required', None)
@@ -96,7 +98,7 @@ class MacsyDefaults(dict):
         self.system_models_dir = kwargs.get('system_models_dir', [path for path in
                                                                   (system_models_dir,
                                                                    os.path.join(os.path.expanduser('~'),
-                                                                                '.macsyfinder', 'models'))
+                                                                                f'.{prog_name}', 'models'))
                                                                   if os.path.exists(path)]
                                             )
         self.models_dir = kwargs.get('models_dir', None)
@@ -128,7 +130,7 @@ class MacsyDefaults(dict):
 
 class Config:
     """
-    Handle configuration values for macsyfinder.
+    Handle configuration values for macsylib.
     This values come from default and ar superseded by the configuration files, then the command line settings.
     """
 
@@ -155,35 +157,35 @@ class Config:
 
     def __init__(self, defaults: MacsyDefaults, parsed_args: argparse.Namespace) -> None:
         """
-        Store macsyfinder configuration options and propose an interface to access to them.
+        Store macsylib configuration options and propose an interface to access to them.
 
         The config object is populated in several steps, the rules of precedence are
 
         system-wide conf < user home conf < model conf < (project conf | previous run) < command line
 
-        system-wide conf = etc/macsyfinder/macsyfinder.conf
-        user home conf = ~/.macsyfinder/macsyfinder.conf
+        system-wide conf = etc/<program name>/<program name>.conf
+        user home conf = ~/.<program name>/<program name>.conf
         model conf = model_conf.xml at the root of the model package
-        project conf = macsyfinder.conf  where the analysis is run
-        previous run = macsyfinder.conf in previous run results dir
+        project conf = <program name>.conf  where the analysis is run
+        previous run = <program name>.conf in previous run results dir
         command line = the options set on the command line
 
         :param defaults:
         :param parsed_args: the command line arguments parsed
         """
         self._defaults = defaults
-        self.cfg_name = "macsyfinder.conf"
+        self.cfg_name = f"{self._defaults.prog_name}.conf"
 
         virtual_env = os.environ.get('VIRTUAL_ENV')
         if virtual_env:
-            system_wide_config_file = os.path.join(virtual_env, 'etc', 'macsyfinder', self.cfg_name)
+            system_wide_config_file = os.path.join(virtual_env, 'etc', self._defaults.prog_name, self.cfg_name)
         else:
             # not in virtual_env
             var_env = os.environ.get('MACSY_CONF')
             if var_env:
                 system_wide_config_file = var_env
             else:
-                system_wide_config_file = os.path.join('/', 'etc', 'macsyfinder', self.cfg_name)
+                system_wide_config_file = os.path.join('/', 'etc', self._defaults.prog_name, self.cfg_name)
 
         self._options = {}
         self._tmp_opts = {}
@@ -193,11 +195,11 @@ class Config:
         if os.path.exists(system_wide_config_file):
             self._set_system_wide_config(system_wide_config_file)
 
-        user_wide_config_file = os.path.join(os.path.expanduser('~'), '.macsyfinder', self.cfg_name)
+        user_wide_config_file = os.path.join(os.path.expanduser('~'), f'.{self._defaults.prog_name}', self.cfg_name)
         if os.path.exists(user_wide_config_file):
             self._set_user_wide_config(user_wide_config_file)
 
-        project_config_file = os.path.join(os.getcwd(), 'macsyfinder.conf')
+        project_config_file = os.path.join(os.getcwd(), f'{self._defaults.prog_name}.conf')
         if os.path.exists(project_config_file):
             self._set_project_config_file(project_config_file)
 
@@ -296,9 +298,9 @@ class Config:
 
     def _set_user_wide_config(self, config_path: str) -> None:
         """
-        Set the options from the ~/.macsyfinder/macsyfinder.conf file
+        Set the options from the ~/.<program name>/<program name>.conf file
 
-        :param config_path: The path to the ~/.macsyfinder/macsyfinder.conf
+        :param config_path: The path to the ~/.<program name>/<program name>.conf
         """
         user_wide_config = self._config_file_2_dict(config_path)
         self._set_options(user_wide_config)
@@ -318,7 +320,7 @@ class Config:
 
     def _set_project_config_file(self, config_path: str) -> None:
         """
-        Set the options from the macsyfinder.conf present in the current directory
+        Set the options from the <program_name>.conf present in the current directory
 
         :param config_path: the path to the configuration file
         """
@@ -391,7 +393,7 @@ class Config:
             parser.read([file])
             _log.debug(f"Configuration file {file} parsed.")
         except ParsingError as err:
-            raise ParsingError(f"The macsyfinder configuration file '{file}' is not well formed: {err}") from None
+            raise ParsingError(f"The {self._defaults.prog_name} configuration file '{file}' is not well formed: {err}") from None
         opts = {}
         sections = list(parser.sections())
 
@@ -671,7 +673,7 @@ class Config:
             return out_dir
         else:
             out_dir = os.path.join(self._options['res_search_dir'],
-                                   f"macsyfinder-{strftime('%Y%m%d_%H-%M-%S')}")
+                                   f"{self._defaults.prog_name}-{strftime('%Y%m%d_%H-%M-%S')}")
             self._options['out_dir'] = out_dir
             return out_dir
 
@@ -743,7 +745,7 @@ class Config:
         """
         # if models_dir is provide by the user this value mask canonical ones
         # prefix_data, 'models'
-        # os.path.expanduser('~'), '.macsyfinder', 'data'
+        # os.path.expanduser('~'), '.<program name | macsylib>', 'data'
         # models_dir must return a list of path
         if os.path.exists(path) and os.path.isdir(path):
             self._options['models_dir'] = [path]
@@ -849,7 +851,7 @@ class Config:
 class NoneConfig:
     """
     Minimalist Config object just use in some special case where config is required by api
-    but not used for instance in :class:`macsypy.package.Package`
+    but not used for instance in :class:`macsylib.package.Package`
     """
 
     def __getattr__(self, prop):
