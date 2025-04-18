@@ -446,10 +446,6 @@ ligne 3 et bbbbb
 
     def tearDown(self) -> None:
         self._tmp_dir.cleanup()
-        logger = colorlog.getLogger('macsylib.package')
-        del logger.manager.loggerDict['macsylib.package']
-        del logger.manager.loggerDict['macsylib.model_conf_parser']
-        del logger.manager.loggerDict['macsylib']
 
 
     def create_fake_package(self, model,

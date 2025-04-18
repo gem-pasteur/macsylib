@@ -1,26 +1,29 @@
 #########################################################################
-# MacSyFinder - Detection of macromolecular systems in protein dataset  #
-#               using systems modelling and similarity search.          #
+# MacSyLib - Python library to detect macromolecular systems            #
+#            in prokaryotes protein dataset using systems modelling     #
+#            and similarity search.                                     #
+#                                                                       #
 # Authors: Sophie Abby, Bertrand Neron                                  #
-# Copyright (c) 2014-2024  Institut Pasteur (Paris) and CNRS.           #
+# Copyright (c) 2014-2025  Institut Pasteur (Paris) and CNRS.           #
 # See the COPYRIGHT file for details                                    #
 #                                                                       #
-# This file is part of MacSyFinder package.                             #
+# This file is part of MacSyLib package.                                #
 #                                                                       #
-# MacSyFinder is free software: you can redistribute it and/or modify   #
+# MacSyLib is free software: you can redistribute it and/or modify      #
 # it under the terms of the GNU General Public License as published by  #
 # the Free Software Foundation, either version 3 of the License, or     #
 # (at your option) any later version.                                   #
 #                                                                       #
-# MacSyFinder is distributed in the hope that it will be useful,        #
+# MacSyLib is distributed in the hope that it will be useful,           #
 # but WITHOUT ANY WARRANTY; without even the implied warranty of        #
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the          #
 # GNU General Public License for more details .                         #
 #                                                                       #
 # You should have received a copy of the GNU General Public License     #
-# along with MacSyFinder (COPYING).                                     #
+# along with MacSyLib (COPYING).                                        #
 # If not, see <https://www.gnu.org/licenses/>.                          #
 #########################################################################
+
 
 import unittest
 import logging
@@ -29,12 +32,12 @@ import argparse
 import tempfile
 import itertools
 
-import macsypy
-from macsypy.config import MacsyDefaults, Config
-from macsypy.search_systems import search_systems
-from macsypy.utils import get_def_to_detect
-from macsypy.system import System, AbstractUnordered, RejectedCandidate
-from macsypy.registries import scan_models_dir, ModelRegistry
+import macsylib
+from macsylib.config import MacsyDefaults, Config
+from macsylib.search_systems import search_systems
+from macsylib.utils import get_def_to_detect
+from macsylib.system import System, AbstractUnordered, RejectedCandidate
+from macsylib.registries import scan_models_dir, ModelRegistry
 
 from tests import MacsyTest
 
@@ -42,7 +45,7 @@ from tests import MacsyTest
 class TestSearchSystems(MacsyTest):
 
     def setUp(self):
-        self._tmp_dir = tempfile.TemporaryDirectory(prefix='test_msf_macsyfinder_')
+        self._tmp_dir = tempfile.TemporaryDirectory(prefix='test_msf_macsylib_')
         self.tmp_dir = self._tmp_dir.name
         self._reset_id()
 
@@ -74,8 +77,8 @@ class TestSearchSystems(MacsyTest):
 
     @unittest.skipIf(not shutil.which('hmmsearch'), 'hmmsearch not found in PATH')
     def test_search_systems_unordered(self):
-        logger = logging.getLogger('macsypy.macsyfinder')
-        macsypy.logger_set_level(level='ERROR')
+        logger = logging.getLogger('macsylib')
+        macsylib.logger_set_level(level='ERROR')
         defaults = MacsyDefaults()
 
         seq_db = self.find_data('base', 'VICH001.B.00001.C001.prt')
@@ -105,8 +108,8 @@ class TestSearchSystems(MacsyTest):
 
     @unittest.skipIf(not shutil.which('hmmsearch'), 'hmmsearch not found in PATH')
     def test_search_systems_ordered(self):
-        logger = logging.getLogger('macsypy.macsyfinder')
-        macsypy.logger_set_level(level='ERROR')
+        logger = logging.getLogger('macsylib')
+        macsylib.logger_set_level(level='ERROR')
         defaults = MacsyDefaults()
 
         # test ordered replicon
@@ -143,8 +146,8 @@ class TestSearchSystems(MacsyTest):
 
     def test_hits_but_no_systems(self):
         # test hits but No Systems
-        logger = logging.getLogger('macsypy.macsyfinder')
-        macsypy.logger_set_level(level='ERROR')
+        logger = logging.getLogger('macsylib.macsyfinder')
+        macsylib.logger_set_level(level='ERROR')
         defaults = MacsyDefaults()
 
         # test ordered replicon
@@ -231,8 +234,8 @@ class TestSearchSystems(MacsyTest):
 
     def test_no_hits(self):
         # test No hits
-        logger = logging.getLogger('macsypy.macsyfinder')
-        macsypy.logger_set_level(level='ERROR')
+        logger = logging.getLogger('macsylib.macsyfinder')
+        macsylib.logger_set_level(level='ERROR')
         defaults = MacsyDefaults()
 
         # test ordered replicon
@@ -261,8 +264,8 @@ class TestSearchSystems(MacsyTest):
         # test multisystems
         # multisytem hit are not in System (to small cluster)
         # no system
-        logger = logging.getLogger('macsypy.macsyfinder')
-        macsypy.logger_set_level(level='ERROR')
+        logger = logging.getLogger('macsylib.macsyfinder')
+        macsylib.logger_set_level(level='ERROR')
         defaults = MacsyDefaults()
 
         # test ordered replicon
@@ -291,8 +294,8 @@ class TestSearchSystems(MacsyTest):
     def test_multisystems_in_sys(self):
         # multisystem is in System, so it can play role for other cluster
         # 2 systems found
-        logger = logging.getLogger('macsypy.macsyfinder')
-        macsypy.logger_set_level(level='ERROR')
+        logger = logging.getLogger('macsylib.macsyfinder')
+        macsylib.logger_set_level(level='ERROR')
         defaults = MacsyDefaults()
 
         # test ordered replicon

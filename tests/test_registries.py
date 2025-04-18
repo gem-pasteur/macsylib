@@ -130,9 +130,6 @@ class ModelLocationTest(MacsyTest):
 
     def tearDown(self):
         self._tmp_dir.cleanup()
-        logger = colorlog.getLogger('macsylib.registries')
-        del logger.manager.loggerDict['macsylib.registries']
-        del logger.manager.loggerDict['macsylib']
 
 
     def test_ModelLocation(self):
