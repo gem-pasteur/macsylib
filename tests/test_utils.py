@@ -60,6 +60,7 @@ set_2
 """
         self.assertEqual(exp_list_models, rcv_list_models)
 
+
     @unittest.skipIf(platform.system() == 'Windows' or os.getuid() == 0, 'Skip test on Windows or if run as root')
     def test_list_models_no_permission(self):
         log = colorlog.getLogger('macsylib')
@@ -69,7 +70,7 @@ set_2
         cmd_args.list_models = True
         models_dir_perm = os.stat(cmd_args.models_dir).st_mode
         try:
-            os.chmod(cmd_args.models_dir, 0o000)
+            os.chmod(cmd_args.models_dir, 0o110)
             with self.catch_log(log_name='macsylib') as log:
                 rcv_list_models = list_models(cmd_args)
                 log_msg = log.get_value().strip()
