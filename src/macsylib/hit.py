@@ -321,7 +321,7 @@ class Loner(AbstractCounterpartHit):
                  hit: CoreHit | ModelHit,
                  gene_ref: ModelGene = None,
                  gene_status: GeneStatus = None,
-                 counterpart: Iterable[CoreHit] = None) -> None:
+                 counterpart: Iterable[ModelHit] = None) -> None:
         """
         hit that is outside a cluster, the gene_ref is a loner
 
@@ -359,7 +359,7 @@ class MultiSystem(AbstractCounterpartHit):
                  hit: CoreHit | ModelHit,
                  gene_ref: ModelGene = None,
                  gene_status: GeneStatus = None,
-                 counterpart: Iterable[CoreHit] = None):
+                 counterpart: Iterable[ModelHit] = None):
         """
         hit that is outside a cluster, the gene_ref is a loner
 
@@ -399,7 +399,7 @@ class LonerMultiSystem(Loner, MultiSystem):
     def __init__(self, hit: CoreHit | ModelHit,
                  gene_ref: ModelGene = None,
                  gene_status: GeneStatus = None,
-                 counterpart: Iterable[CoreHit] = None):
+                 counterpart: Iterable[ModelHit] = None):
         """
         hit that is outside a cluster, the gene_ref is loner and multi_system
 

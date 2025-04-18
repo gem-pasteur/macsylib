@@ -70,7 +70,25 @@ class TestMetadata(MacsyTest):
         self.assertEqual(meta.cite, ['bla bla',
                                                 'link to publication',
                                                 'ligne 1\nligne 2\nligne 3 et bbbbb\n'])
+        self.assertEqual(meta.copyright_holder, 'Institut Pasteur, CNRS')
+        self.assertEqual(meta.copyright_date, '2019')
 
+
+    def test_load_copyright_range(self):
+        meta_path = self.find_data('pack_metadata', 'metadata_copyright_range.yml')
+        meta = Metadata.load(meta_path)
+        self.assertEqual(meta.maintainer, Maintainer(name='auth_name', email='auth_name@mondomain.fr'))
+        self.assertEqual(meta.short_desc, 'this is a short description of the repos')
+        self.assertEqual(meta.vers, '0.0b2')
+        self.assertEqual(meta.license, 'CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)')
+        self.assertEqual(meta.doc, 'http://link/to/the/documentation')
+        self.assertEqual(meta.cite, ['bla bla',
+                                                'link to publication',
+                                                'ligne 1\nligne 2\nligne 3 et bbbbb\n'])
+        self.assertEqual(meta.copyright_holder, 'Institut Pasteur, CNRS')
+        self.assertEqual(meta.copyright_date, '2019-2024')
+
+    def test_load_bad_metadata(self):
         meta_path = self.find_data('pack_metadata', 'bad_metadata.yml')
         with self.assertRaises(ValueError) as ctx:
             Metadata.load(meta_path)

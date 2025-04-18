@@ -37,8 +37,9 @@ from macsylib.registries import ModelLocation
 from macsylib.cluster import Cluster
 from macsylib.system import System, HitSystemTracker, LikelySystem, UnlikelySystem, AbstractUnordered, RejectedCandidate
 from macsylib.solution import Solution
-from macsylib.serialization import TxtSystemSerializer, TsvSystemSerializer, TsvSolutionSerializer, \
-    TxtLikelySystemSerializer, TxtUnikelySystemSerializer, TsvSpecialHitSerializer, TsvRejectedCandidatesSerializer
+from macsylib.serialization import (TxtSystemSerializer, TsvSystemSerializer, TsvSolutionSerializer, \
+    TxtLikelySystemSerializer, TsvLikelySystemSerializer,
+    TxtUnikelySystemSerializer, TsvSpecialHitSerializer, TsvRejectedCandidatesSerializer)
 
 from tests import MacsyTest
 
@@ -302,45 +303,45 @@ neutral genes:
         sys_B.id = "sys_id_B"
 
         sol = Solution([sys_A, sys_B])
-        sol_id = '12'
+        sol_id = 12
 
         hit_multi_sys_tracker = HitSystemTracker([sys_A, sys_B])
         sol_serializer = TsvSolutionSerializer()
 
-        sol_tsv = '\t'.join([sol_id, 'replicon_id', 'hit_sctj', 'sctJ', '1', 'foo/A', 'sys_id_A',
+        sol_tsv = '\t'.join([str(sol_id), 'replicon_id', 'hit_sctj', 'sctJ', '1', 'foo/A', 'sys_id_A',
                             '2', '1', '1.000', '1.850', '2', 'sctJ', 'mandatory',
                             '803', '1.0', '1.000', '1.000', '1.000', '10', '20', '', ''])
         sol_tsv += "\n"
-        sol_tsv += '\t'.join([sol_id, 'replicon_id', 'hit_sctn', 'sctN', '2', 'foo/A', 'sys_id_A',
+        sol_tsv += '\t'.join([str(sol_id), 'replicon_id', 'hit_sctn', 'sctN', '2', 'foo/A', 'sys_id_A',
                              '2', '1', '1.000', '1.850', '2', 'sctN', 'mandatory',
                              '803', '1.0', '1.000', '1.000', '1.000', '10', '20', '', ''])
         sol_tsv += "\n"
-        sol_tsv += '\t'.join([sol_id, 'replicon_id', 'hit_gspd', 'gspD', '3', 'foo/A', 'sys_id_A',
+        sol_tsv += '\t'.join([str(sol_id), 'replicon_id', 'hit_gspd', 'gspD', '3', 'foo/A', 'sys_id_A',
                              '2', '1', '1.000', '1.850', '2', 'gspD', 'accessory',
                              '803', '1.0', '1.000', '1.000', '1.000', '10', '20', '', ''])
         sol_tsv += "\n"
-        sol_tsv += '\t'.join([sol_id, 'replicon_id', 'hit_sctj', 'sctJ', '1', 'foo/A', 'sys_id_A',
+        sol_tsv += '\t'.join([str(sol_id), 'replicon_id', 'hit_sctj', 'sctJ', '1', 'foo/A', 'sys_id_A',
                              '2', '2', '1.000', '1.850', '2', 'sctJ', 'mandatory',
                              '803', '1.0', '1.000', '1.000', '1.000', '10', '20', '', ''])
         sol_tsv += "\n"
-        sol_tsv += '\t'.join([sol_id, 'replicon_id', 'hit_sctn', 'sctN', '2', 'foo/A', 'sys_id_A',
+        sol_tsv += '\t'.join([str(sol_id), 'replicon_id', 'hit_sctn', 'sctN', '2', 'foo/A', 'sys_id_A',
                              '2', '2', '1.000', '1.850', '2', 'sctN', 'mandatory',
                              '803', '1.0', '1.000', '1.000', '1.000', '10', '20', '', ''])
         sol_tsv += "\n"
-        sol_tsv += '\t'.join([sol_id, 'replicon_id', 'hit_abc', 'abc', '20', 'foo/A', 'sys_id_A',
+        sol_tsv += '\t'.join([str(sol_id), 'replicon_id', 'hit_abc', 'abc', '20', 'foo/A', 'sys_id_A',
                              '2', '-1', '1.000', '1.850', '2', 'abc', 'accessory',
                              '803', '1.0', '1.000', '1.000', '1.000', '10', '20', 'hit_abc2', ''])
         sol_tsv += "\n"
         sol_tsv += "\n"
-        sol_tsv += '\t'.join([sol_id, 'replicon_id', 'hit_sctj_flg', 'sctJ_FLG', '10', 'foo/B', 'sys_id_B',
+        sol_tsv += '\t'.join([str(sol_id), 'replicon_id', 'hit_sctj_flg', 'sctJ_FLG', '10', 'foo/B', 'sys_id_B',
                              '1', '1', '0.750', '2.000', '1', 'sctJ_FLG', 'mandatory',
                              '803', '1.0', '1.000', '1.000', '1.000', '10', '20', '', ''])
         sol_tsv += "\n"
-        sol_tsv += '\t'.join([sol_id, 'replicon_id', 'hit_flgB', 'flgB', '11', 'foo/B', 'sys_id_B',
+        sol_tsv += '\t'.join([str(sol_id), 'replicon_id', 'hit_flgB', 'flgB', '11', 'foo/B', 'sys_id_B',
                               '1', '1', '0.750', '2.000', '1', 'flgB', 'accessory',
                               '803', '1.0', '1.000', '1.000', '1.000', '10', '20', '', ''])
         sol_tsv += "\n"
-        sol_tsv += '\t'.join([sol_id, 'replicon_id', 'hit_tadZ', 'tadZ', '40', 'foo/B', 'sys_id_B',
+        sol_tsv += '\t'.join([str(sol_id), 'replicon_id', 'hit_tadZ', 'tadZ', '40', 'foo/B', 'sys_id_B',
                               '1', '1', '0.750', '2.000', '1', 'tadZ', 'accessory',
                               '803', '1.0', '1.000', '1.000', '1.000', '10', '20', '', ''])
         sol_tsv += "\n"
@@ -380,7 +381,7 @@ neutral genes:
 
         txt = ser.serialize(ls_1, hit_multi_sys_tracker)
         expected_txt = """This replicon contains genetic materials needed for system foo/FOO
-WARNING there quorum is reached but there is also some forbidden genes.
+WARNING the quorum is reached but there is also some forbidden genes.
 
 system id = replicon_id_FOO_1
 model = foo/FOO
@@ -403,6 +404,56 @@ forbidden genes:
 Use ordered replicon to have better prediction.
 """
         self.assertEqual(txt, expected_txt)
+
+
+    def test_LikelySystemSerializer_tsv(self):
+        model = Model("foo/FOO", 10)
+        c_gene_gspd = CoreGene(self.model_location, "gspD", self.profile_factory)
+        gene_gspd = ModelGene(c_gene_gspd, model)
+        model.add_mandatory_gene(gene_gspd)
+        c_gene_sctj = CoreGene(self.model_location, "sctJ", self.profile_factory)
+        gene_sctj = ModelGene(c_gene_sctj, model)
+        model.add_accessory_gene(gene_sctj)
+        c_gene_sctn = CoreGene(self.model_location, "sctN", self.profile_factory)
+        gene_sctn = ModelGene(c_gene_sctn, model)
+        model.add_accessory_gene(gene_sctn)
+        c_gene_abc = CoreGene(self.model_location, "abc", self.profile_factory)
+        gene_abc = ModelGene(c_gene_abc, model)
+        model.add_forbidden_gene(gene_abc)
+
+        hit_1 = CoreHit(c_gene_gspd, "hit_1", 803, "replicon_id", 1, 1.0, 1.0, 1.0, 1.0, 10, 20)
+        v_hit_1 = ModelHit(hit_1, gene_gspd, GeneStatus.MANDATORY)
+        hit_2 = CoreHit(c_gene_sctj, "hit_2", 803, "replicon_id", 2, 1.0, 1.0, 1.0, 1.0, 10, 20)
+        v_hit_2 = ModelHit(hit_2, gene_sctj, GeneStatus.ACCESSORY)
+        hit_3 = CoreHit(c_gene_sctn, "hit_3", 803, "replicon_id", 3, 1.0, 1.0, 1.0, 1.0, 10, 20)
+        v_hit_3 = ModelHit(hit_3, gene_sctn, GeneStatus.ACCESSORY)
+        hit_4 = CoreHit(c_gene_abc, "hit_4", 803, "replicon_id", 4, 1.0, 1.0, 1.0, 1.0, 10, 20)
+        v_hit_4 = ModelHit(hit_4, gene_abc, GeneStatus.FORBIDDEN)
+
+        ls_1 = LikelySystem(model, [v_hit_1], [v_hit_2, v_hit_3], [], [v_hit_4])
+        hit_multi_sys_tracker = HitSystemTracker([ls_1])
+        ser = TsvLikelySystemSerializer()
+
+        tsv = ser.serialize(ls_1, hit_multi_sys_tracker)
+        expected_tsv = """# This replicon contains genetic materials needed for system foo/FOO
+# WARNING the quorum is reached but there is also some forbidden genes.
+"""
+
+        expected_tsv += '\t'.join(['replicon_id', 'hit_1', 'gspD', '1', 'foo/FOO', ls_1.id, '1.000',
+                                   'gspD', 'mandatory', '803', '1.0', '1.000', '1.000', '1.000', '10', '20', ''])
+        expected_tsv += '\n'
+        expected_tsv += '\t'.join(['replicon_id', 'hit_2', 'sctJ', '2', 'foo/FOO', ls_1.id, '1.000',
+                                   'sctJ', 'accessory', '803', '1.0', '1.000', '1.000', '1.000', '10', '20', ''])
+        expected_tsv += '\n'
+        expected_tsv += '\t'.join(['replicon_id', 'hit_3', 'sctN', '3', 'foo/FOO', ls_1.id, '1.000',
+                                   'sctN', 'accessory', '803', '1.0', '1.000', '1.000', '1.000', '10', '20', ''])
+        expected_tsv += '\n'
+        expected_tsv += '\t'.join(['replicon_id', 'hit_4', 'abc', '4', 'foo/FOO', ls_1.id, '1.000',
+                                   'abc', 'forbidden', '803', '1.0', '1.000', '1.000', '1.000', '10', '20', ''])
+        expected_tsv += '\n'
+        self.maxDiff = None
+        self.assertEqual(tsv, expected_tsv)
+
 
 
     def test_UnlikelySystemSerializer_txt(self):

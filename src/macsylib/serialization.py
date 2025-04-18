@@ -202,7 +202,7 @@ class TxtLikelySystemSerializer(SystemSerializer):
         """
         hits = ", ".join([str((h.id, h.gene.name, h.position)) for h in system.hits])
         if system.forbidden_hits:
-            warning = "WARNING there quorum is reached but there is also some forbidden genes.\n"
+            warning = "WARNING the quorum is reached but there is also some forbidden genes.\n"
         else:
             warning = '\n'
 
@@ -270,7 +270,13 @@ class TsvLikelySystemSerializer(SystemSerializer):
 
         :rtype: str
         """
-        tsv = ''
+
+        if system.forbidden_hits:
+            warning = "# WARNING the quorum is reached but there is also some forbidden genes.\n"
+        else:
+            warning = '\n'
+        tsv = f"""# This replicon contains genetic materials needed for system {system.model.fqn}
+{warning}"""
         for status in (s.lower() for s in GeneStatus.__members__):
             try:
                 hits = getattr(system, f"{status}_hits")

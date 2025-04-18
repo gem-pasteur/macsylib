@@ -914,7 +914,7 @@ class HitSystemTracker(dict):
     track in which system is implied each hit
     """
 
-    def __init__(self, systems: list[System]) -> None:
+    def __init__(self, systems: list[System|LikelySystem]) -> None:
         super(HitSystemTracker, self).__init__()
         for system in systems:
             m_hits = system.hits

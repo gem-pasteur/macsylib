@@ -34,10 +34,6 @@ from tests import MacsyTest
 
 class Test(MacsyTest):
 
-    def tearDown(self) -> None:
-        logger = logging.getLogger('macsylib')
-        del logger.manager.loggerDict['macsylib']
-
     def test_init_logger_default(self):
         handlers = macsylib.init_logger()
         self.assertEqual(len(handlers), 1)
