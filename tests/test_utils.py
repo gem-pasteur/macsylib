@@ -42,7 +42,7 @@ class TestUtils(MacsyTest):
 
     def test_list_models(self):
         cmd_args = argparse.Namespace()
-        cmd_args.models_dir = os.path.join(self._data_dir, 'fake_model_dir')
+        cmd_args.models_dir = self.find_data('fake_model_dir')
         cmd_args.list_models = True
         rcv_list_models = list_models(cmd_args)
         exp_list_models = """set_1
