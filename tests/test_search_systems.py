@@ -330,7 +330,7 @@ class TestSearchSystems(MacsyTest):
                          ['test_13_T12SS-multisystem_1'])
 
 
-    def test_in_unordered_replicon(self):
+    def test_search_in_unordered_replicon(self):
         logger = logging.getLogger('macsylib')
         macsylib.logger_set_level(level='ERROR')
         defaults = MacsyDefaults()
@@ -442,7 +442,7 @@ class TestSearchSystems(MacsyTest):
         self.assertListEqual(likely_systems[0].hits, [ch_mshm, ch_mshe, ch_mshb, ch_mshc, ch_msha, ch_mshd, ch_mshg, ch_mshl])
         self.assertEqual(unlikely_systems, [])
 
-    def test_in_unordered_replicon_no_systems(self):
+    def test_search_in_unordered_replicon_no_systems(self):
         logger = logging.getLogger('macsylib')
         macsylib.logger_set_level(level='ERROR')
         defaults = MacsyDefaults()
@@ -523,7 +523,7 @@ class TestSearchSystems(MacsyTest):
         self.assertListEqual(unlikely_systems[0].reasons, ['The quorum of mandatory genes required (3) is not reached: 2'])
         self.assertEqual(likely_systems, [])
 
-    def test_in_unordered_replicon_no_hits(self):
+    def test_search_in_unordered_replicon_no_hits(self):
         logger = logging.getLogger('macsylib')
         macsylib.logger_set_level(level='ERROR')
         defaults = MacsyDefaults()
@@ -565,3 +565,189 @@ class TestSearchSystems(MacsyTest):
         likely_systems, unlikely_systems = search_in_unordered_replicon(hits_by_replicon, models_to_detect, logger)
         self.assertEqual(likely_systems, [])
         self.assertEqual(unlikely_systems, [])
+
+
+    def test_search_in_ordered_replicon(self):
+        logger = logging.getLogger('macsylib')
+        macsylib.logger_set_level(level='ERROR')
+        defaults = MacsyDefaults()
+
+        seq_db = self.find_data('base', 'VICH001.B.00001.C001.prt')
+        models_dir = self.find_data('data_set', 'models')
+        args = argparse.Namespace()
+        args.models_dir = models_dir
+        args.sequence_db = seq_db
+        args.db_type = 'unordered'
+        args.models = ['set_1', 'MSH']
+        args.worker = 4
+        args.out_dir = self.tmp_dir
+        args.index_dir = self.tmp_dir
+
+        config = Config(defaults, args)
+
+        model_registry = self._fill_model_registry(config)
+        models_def_to_detect, models_fam_name, models_version = get_def_to_detect(config.models(), model_registry)
+
+        working_dir = config.working_dir()
+        config.save(path_or_buf=os.path.join(working_dir, config.cfg_name))
+
+        # build indexes
+        idx = Indexes(config)
+        idx.build(force=config.idx())
+
+        # create models
+        model_bank = ModelBank()
+        gene_bank = GeneBank()
+        profile_factory = ProfileFactory(config)
+
+        parser = DefinitionParser(config, model_bank, gene_bank, model_registry, profile_factory)
+        parser.parse(models_def_to_detect)
+
+        models_to_detect = [model_bank[model_loc.fqn] for model_loc in models_def_to_detect]
+
+        rep_name = 'VICH001.B.00001.C001'
+        mod_msh = models_to_detect[0]
+        ch_msha = CoreHit(mod_msh.get_gene('MSH_mshA').core_gene ,
+                          'VICH001.B.00001.C001_00416',
+                          178,
+                          rep_name,
+                          300,
+                          4.500e-36, 120.400, 0.948, 0.534,
+                          9, 103)
+        ch_mshe =  CoreHit(mod_msh.get_gene('MSH_mshE').core_gene ,
+                          'VICH001.B.00001.C001_00412',
+                          400,
+                          rep_name,
+                          372,
+                          4.800e-228,753.900,0.998,0.727,
+                          142, 559)
+        ch_mshg = CoreHit(mod_msh.get_gene('MSH_mshG').core_gene,
+                          'VICH001.B.00001.C001_02307',
+                          404,
+                          rep_name,
+                          2204,
+                          7.500e-76, 252.600, 0.994, 0.819,
+                          71, 404
+                          )
+        ch_mshl = CoreHit(mod_msh.get_gene('MSH_mshL').core_gene,
+                          'VICH001.B.00001.C001_02505',
+                          408,
+                          rep_name,
+                          2394,
+                          1.200e-22, 77.300, 0.886, 0.279,
+                          416, 576
+                          )
+        ch_mshm = CoreHit(mod_msh.get_gene('MSH_mshM').core_gene,
+                          'VICH001.B.00001.C001_00410',
+                          412,
+                          rep_name,
+                          370,
+                          1.800e-129, 428.000, 1.000, 0.940,
+                          1, 264
+                          )
+        ch_mshb = CoreHit(mod_msh.get_gene('MSH_mshB').core_gene,
+                          'VICH001.B.00001.C001_00415',
+                          100,
+                          rep_name,
+                          375,
+                          1.600e-35, 118.500,1.000, 0.388,
+                          18,93
+                          )
+        ch_mshc = CoreHit(mod_msh.get_gene('MSH_mshC').core_gene,
+                          'VICH001.B.00001.C001_00415',
+                          104,
+                          rep_name,
+                          375,
+                          5.300e-11, 40.100, 0.553, 0.214,
+                          18, 59
+                          )
+        ch_mshd = CoreHit(mod_msh.get_gene('MSH_mshD').core_gene,
+                          'VICH001.B.00001.C001_00416',
+                          108,
+                          rep_name,
+                          376,
+                          1.200e-07, 28.900, 0.518, 0.163,
+                          9, 37
+                          )
+
+        hits_by_replicon = {rep_name: [ch_msha, ch_mshe, ch_mshg, ch_mshl, ch_mshm, ch_mshb, ch_mshc, ch_mshd]}
+        systems, rej_cand = search_in_unordered_replicon(hits_by_replicon, models_to_detect, logger)
+
+        self.assertEqual(len(systems), 1)
+        self.assertEqual(systems[0].id, 'VICH001.B.00001.C001_MSH_1')
+        self.assertListEqual(systems[0].hits, [ch_msha, ch_mshm, ch_mshe, ch_mshb, ch_mshc, ch_mshd, ch_mshg, ch_mshl])
+        self.assertEqual(rej_cand, [])
+
+
+    def test_search_in_ordered_replicon_rej_cand(self):
+        logger = logging.getLogger('macsylib')
+        macsylib.logger_set_level(level='ERROR')
+        defaults = MacsyDefaults()
+
+        seq_db = self.find_data('base', 'VICH001.B.00001.C001.prt')
+        models_dir = self.find_data('data_set', 'models')
+        args = argparse.Namespace()
+        args.models_dir = models_dir
+        args.sequence_db = seq_db
+        args.db_type = 'unordered'
+        args.models = ['set_1', 'MSH']
+        args.worker = 4
+        args.out_dir = self.tmp_dir
+        args.index_dir = self.tmp_dir
+
+        config = Config(defaults, args)
+
+        model_registry = self._fill_model_registry(config)
+        models_def_to_detect, models_fam_name, models_version = get_def_to_detect(config.models(), model_registry)
+
+        working_dir = config.working_dir()
+        config.save(path_or_buf=os.path.join(working_dir, config.cfg_name))
+
+        # build indexes
+        idx = Indexes(config)
+        idx.build(force=config.idx())
+
+        # create models
+        model_bank = ModelBank()
+        gene_bank = GeneBank()
+        profile_factory = ProfileFactory(config)
+
+        parser = DefinitionParser(config, model_bank, gene_bank, model_registry, profile_factory)
+        parser.parse(models_def_to_detect)
+
+        models_to_detect = [model_bank[model_loc.fqn] for model_loc in models_def_to_detect]
+
+        rep_name = 'VICH001.B.00001.C001'
+        mod_msh = models_to_detect[0]
+
+        ch_mshe =  CoreHit(mod_msh.get_gene('MSH_mshE').core_gene ,
+                          'VICH001.B.00001.C001_00412',
+                          400,
+                          rep_name,
+                          372,
+                          4.800e-228,753.900,0.998,0.727,
+                          142, 559)
+        ch_mshg = CoreHit(mod_msh.get_gene('MSH_mshG').core_gene,
+                          'VICH001.B.00001.C001_02307',
+                          404,
+                          rep_name,
+                          2204,
+                          7.500e-76, 252.600, 0.994, 0.819,
+                          71, 404
+                          )
+        ch_mshb = CoreHit(mod_msh.get_gene('MSH_mshB').core_gene,
+                          'VICH001.B.00001.C001_00415',
+                          100,
+                          rep_name,
+                          375,
+                          1.600e-35, 118.500,1.000, 0.388,
+                          18,93
+                          )
+
+        hits_by_replicon = {rep_name: [ch_mshe, ch_mshg, ch_mshb]}
+        systems, rej_cand = search_in_unordered_replicon(hits_by_replicon, models_to_detect, logger)
+
+        self.assertEqual(len(rej_cand), 1)
+        self.assertEqual(rej_cand[0].id, 'VICH001.B.00001.C001_MSH_1')
+        self.assertListEqual(rej_cand[0].hits, [ch_mshe, ch_mshb, ch_mshg])
+        self.assertEqual(systems, [])
