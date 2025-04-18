@@ -64,10 +64,20 @@ set_2
     @unittest.skipIf(platform.system() == 'Windows' or os.getuid() == 0, 'Skip test on Windows or if run as root')
     def test_list_models_no_permission(self):
         print("\n\n", "###"*20, f"{os.getuid() = }", "###"*20)
+        print("###"*20, f"{platform.system() = }", "###"*20)
+        import shutil
+        import tempfile
+        tmp_dir= tempfile.TemporaryDirectory(prefix='test_msf_Config_')
+        model_dir_name = 'fake_model_dir'
+        src_model_dir = self.find_data(model_dir_name)
+        dst_model_dir = os.path.join(tmp_dir.name, 'fake_model_dir')
+        shutil.copytree(src_model_dir, dst_model_dir)
+
         log = colorlog.getLogger('macsylib')
         log.setLevel(logging.WARNING)
         cmd_args = argparse.Namespace()
-        cmd_args.models_dir = os.path.join(self._data_dir, 'fake_model_dir')
+        #cmd_args.models_dir = os.path.join(self._data_dir, 'fake_model_dir')
+        cmd_args.models_dir = dst_model_dir
         cmd_args.list_models = True
         models_dir_perm = os.stat(cmd_args.models_dir).st_mode
         print(f"####### {os.stat(cmd_args.models_dir) = } ###########")
@@ -81,7 +91,7 @@ set_2
             self.assertEqual(log_msg, f"{cmd_args.models_dir} is not readable: [Errno 13] Permission denied: '{cmd_args.models_dir}' : skip it.")
         finally:
             os.chmod(cmd_args.models_dir, models_dir_perm)
-
+            tmp_dir.cleanup()
 
     def test_get_def_to_detect(self):
         cmd_args = argparse.Namespace()
