@@ -31,7 +31,7 @@ def _preambule(PN: str, authors: str, cr_date: str, cr_holders: str, short_desc:
     :param cr_date: the date of the copyright (year)
     :param cr_holders: the holders of the copyright
     :param short_desc: One line description of the package
-    :return: The preamble of the licence declaration
+    :return: The preamble of the license declaration
     """
     short_desc = f"\n{PN} {short_desc}" if short_desc else ''
 
@@ -50,22 +50,22 @@ See COPYRIGHT file for details."""
     return preambule
 
 
-def licence(licence_name: str, PN: str, authors: str, cr_date: str, cr_holders: str, short_desc: str) -> str:
+def license(license_name: str, PN: str, authors: str, cr_date: str, cr_holders: str, short_desc: str) -> str:
     """
     Create a text to put in the headers of all package file
 
-    :param licence_name: The name of the license (accepted values are acronym for creative commons)
+    :param license_name: The name of the license (accepted values are acronym for creative commons)
     :param PN: The program Name
     :param authors: the authors of the package
     :param cr_date: The date (year) of the copyright
     :param cr_holders: the holders of the copyright
     :param short_desc: One line description of the package
     :return: The text of the license to put on header of each package file
-    :raise KeyError: when licence_name is not managed (not a CC licence)
+    :raise KeyError: when license_name is not managed (not a CC license)
     """
     preambule = _preambule(PN, authors, cr_date, cr_holders, short_desc)
 
-    licence = {
+    license = {
         'cc-by': f"""{preambule}
 
 This work is licensed under the Creative Commons Attribution 4.0 International License.
@@ -98,16 +98,16 @@ or send a letter to Creative Commons, PO Box 1866, Mountain View, CA 94042, USA.
 """
     }
 
-    return licence[licence_name]
+    return license[license_name]
 
 
-def name_2_url(licence_name: str):
+def name_2_url(license_name: str):
     """
 
-    :param licence_name:
-    :type licence_name:
+    :param license_name:
+    :type license_name:
     :return:
     :rtype:
     """
-    acronym = licence_name.strip('cc-')
+    acronym = license_name.strip('cc-')
     return f"http://creativecommons.org/licenses/{acronym}/4.0/"
