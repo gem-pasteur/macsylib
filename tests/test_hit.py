@@ -215,6 +215,21 @@ class ModelHitTest(MacsyTest):
         self.assertEqual(mhit_0, mhit_1)
         self.assertNotEqual(mhit_0, mhit_2)
 
+    def test_gt(self):
+        mhit_1 = ModelHit(self.chit_1, self.mg_gspd, GeneStatus.MANDATORY)
+        mhit_2 = ModelHit(self.chit_2, self.mg_sctj, GeneStatus.ACCESSORY)
+
+        self.assertTrue(mhit_2 > mhit_1)
+        self.assertFalse(mhit_1 > mhit_2)
+
+    def test_lq(self):
+        mhit_1 = ModelHit(self.chit_1, self.mg_gspd, GeneStatus.MANDATORY)
+        mhit_2 = ModelHit(self.chit_2, self.mg_sctj, GeneStatus.ACCESSORY)
+
+        self.assertTrue(mhit_1 < mhit_2)
+        self.assertFalse(mhit_2 < mhit_1)
+
+
     def test_multi_system(self):
         mhit_1 = ModelHit(self.chit_1, self.mg_sctj, GeneStatus.MANDATORY)
         mhit_2 = ModelHit(self.chit_2, self.mg_gspd, GeneStatus.MANDATORY)
@@ -720,6 +735,7 @@ class GetBestHitTest(MacsyTest):
             get_best_hits([l0, l1], key='nimportnaoik')
         self.assertEqual('The criterion for Hits comparison nimportnaoik does not exist or is not available.\n'
                          'It must be either "score", "i_eval" or "profile_coverage".', str(ctx.exception))
+
 
 
     def test_sort_multisystem_hits(self):
