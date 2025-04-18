@@ -21,18 +21,60 @@
 # along with MacSyFinder (COPYING).                                     #
 # If not, see <https://www.gnu.org/licenses/>.                          #
 #########################################################################
+import logging
 
+import colorlog
 import os
 import argparse
+import unittest
+import platform
 
 from macsypy.registries import ModelRegistry, scan_models_dir
-from macsypy.utils import get_def_to_detect, get_replicon_names, threads_available, parse_time
+from macsypy.utils import get_def_to_detect, get_replicon_names, threads_available, parse_time, list_models
 from macsypy.error import MacsypyError
 
 from tests import MacsyTest
 
 
 class TestUtils(MacsyTest):
+
+    def test_list_models(self):
+        cmd_args = argparse.Namespace()
+        cmd_args.models_dir = os.path.join(self._data_dir, 'fake_model_dir')
+        cmd_args.list_models = True
+        rcv_list_models = list_models(cmd_args)
+        exp_list_models = """set_1
+      /def_1_1
+      /def_1_2
+      /def_1_3
+      /def_1_4
+set_2
+      /level_1
+              /def_1_1
+              /def_1_2
+              /level_2
+                      /def_2_3
+                      /def_2_4
+"""
+        self.assertEqual(exp_list_models, rcv_list_models)
+
+    @unittest.skipIf(platform.system() == 'Windows' or os.getuid() == 0, 'Skip test on Windows or if run as root')
+    def test_list_models_no_permission(self):
+        log = colorlog.getLogger('macsypy')
+        log.setLevel(logging.WARNING)
+        cmd_args = argparse.Namespace()
+        cmd_args.models_dir = os.path.join(self._data_dir, 'fake_model_dir')
+        cmd_args.list_models = True
+        models_dir_perm = os.stat(cmd_args.models_dir).st_mode
+        try:
+            os.chmod(cmd_args.models_dir, 0o000)
+            with self.catch_log(log_name='macsypy') as log:
+                rcv_list_models = list_models(cmd_args)
+                log_msg = log.get_value().strip()
+            self.assertEqual(rcv_list_models, '')
+            self.assertEqual(log_msg, f"{cmd_args.models_dir} is not readable: [Errno 13] Permission denied: '{cmd_args.models_dir}' : skip it.")
+        finally:
+            os.chmod(cmd_args.models_dir, models_dir_perm)
 
 
     def test_get_def_to_detect(self):
