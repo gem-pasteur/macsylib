@@ -987,7 +987,7 @@ https://docs.github.com/en/get-started/writing-on-github/getting-started-with-wr
 
     if args.license:
         try:
-            license_text = licenses.licence(args.license, args.pack_name, args.authors, c_date, args.holders, args.desc)
+            license_text = licenses.license(args.license, args.pack_name, args.authors, c_date, args.holders, args.desc)
             add_license(pack_dir, license_text)
         except KeyError:
             _log.error(f"The license {args.license} is not managed by init (see macsydata init help). "
