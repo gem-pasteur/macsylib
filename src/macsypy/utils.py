@@ -30,10 +30,33 @@ import os
 import os.path
 import gzip
 import contextlib
+import argparse
+import logging
 from itertools import groupby
 
-from .registries import DefinitionLocation, ModelRegistry
+from .config import MacsyDefaults, Config
+from .registries import DefinitionLocation, ModelRegistry, scan_models_dir
 from .error import MacsypyError
+
+_log = logging.getLogger(__name__)
+
+
+def list_models(args: argparse.Namespace) -> str:
+    """
+    :param args: The command line argument once parsed
+    :return: a string representation of all models and submodels installed.
+    """
+    defaults = MacsyDefaults()
+    config = Config(defaults, args)
+    model_dirs = config.models_dir()
+    registry = ModelRegistry()
+    for model_dir in model_dirs:
+        try:
+            for model_loc in scan_models_dir(model_dir, profile_suffix=config.profile_suffix()):
+                registry.add(model_loc)
+        except PermissionError as err:
+            _log.warning(f"{model_dir} is not readable: {err} : skip it.")
+    return str(registry)
 
 
 def get_def_to_detect(models: list[tuple[str, tuple[str]]],
