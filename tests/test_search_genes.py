@@ -149,3 +149,24 @@ class TestSearchGenes(MacsyTest):
         report = search_genes([mg_abc_1], self.cfg)
         self.assertEqual(len(report), 1)
         self.assertEqual(expected_hit[0], report[0].hits[0])
+
+
+        # test ordered replicon
+        # the only thing that change is the name of the replicon
+        self.cfg._set_db_type('ordered_replicon')
+        self.profile_factory = ProfileFactory(self.cfg)
+        seq_name = os.path.basename(os.path.splitext(self.cfg.sequence_db())[0])
+        expected_hit[0].replicon_name = seq_name
+        report = search_genes([mg_abc_1], self.cfg)
+        self.assertEqual(len(report), 1)
+        self.assertEqual(expected_hit[0], report[0].hits[0])
+
+        # test ordered replicon
+        # there is no diff with ordered_replicon
+        self.cfg._set_db_type('unordered')
+        self.profile_factory = ProfileFactory(self.cfg)
+        seq_name = os.path.basename(os.path.splitext(self.cfg.sequence_db())[0])
+        expected_hit[0].replicon_name = seq_name
+        report = search_genes([mg_abc_1], self.cfg)
+        self.assertEqual(len(report), 1)
+        self.assertEqual(expected_hit[0], report[0].hits[0])
