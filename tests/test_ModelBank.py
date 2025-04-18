@@ -55,12 +55,12 @@ class TestModelBank(MacsyTest):
     def test_add_get_model(self):
         model_name = 'foo'
         self.assertRaises(KeyError,  self.system_bank.__getitem__, model_name)
-        system_foo = Model(model_name, 10)
-        self.system_bank.add_model(system_foo)
-        self.assertTrue(isinstance(system_foo, Model))
-        self.assertEqual(system_foo,  self.system_bank[model_name])
+        model_foo = Model(model_name, 10)
+        self.system_bank.add_model(model_foo)
+        self.assertTrue(isinstance(model_foo, Model))
+        self.assertEqual(model_foo,  self.system_bank[model_name])
         with self.assertRaises(KeyError) as ctx:
-            self.system_bank.add_model(system_foo)
+            self.system_bank.add_model(model_foo)
         self.assertEqual(str(ctx.exception),
                          '"a model named {0} is already registered in the models\' bank"'.format(model_name))
 
@@ -82,8 +82,8 @@ class TestModelBank(MacsyTest):
         self.assertEqual(i, len(systems))
 
     def test_get_uniq_object(self):
-        system_foo = Model("foo", 10)
-        self.system_bank.add_model(system_foo)
-        system_1 = self.system_bank[system_foo.name]
-        system_2 = self.system_bank[system_foo.name]
+        model_foo = Model("foo", 10)
+        self.system_bank.add_model(model_foo)
+        system_1 = self.system_bank[model_foo.name]
+        system_2 = self.system_bank[model_foo.name]
         self.assertEqual(system_1, system_2)
