@@ -404,6 +404,79 @@ forbidden genes:
 Use ordered replicon to have better prediction.
 """
         self.assertEqual(txt, expected_txt)
+        ###########################
+        # Without forbidden genes #
+        ###########################
+
+        ls_1 = LikelySystem(model, [v_hit_1], [v_hit_2, v_hit_3], [], [])
+
+        hit_multi_sys_tracker = HitSystemTracker([ls_1])
+        ser = TxtLikelySystemSerializer()
+
+        txt = ser.serialize(ls_1, hit_multi_sys_tracker)
+        expected_txt = """This replicon contains genetic materials needed for system foo/FOO
+
+
+system id = replicon_id_FOO_2
+model = foo/FOO
+replicon = replicon_id
+hits = [('hit_1', 'gspD', 1), ('hit_2', 'sctJ', 2), ('hit_3', 'sctN', 3)]
+wholeness = 1.000
+
+mandatory genes:
+\t- gspD: 1 (gspD)
+
+accessory genes:
+\t- sctJ: 1 (sctJ)
+\t- sctN: 1 (sctN)
+
+neutral genes:
+
+forbidden genes:
+\t- abc: 0 ()
+
+Use ordered replicon to have better prediction.
+"""
+        self.assertEqual(txt, expected_txt)
+
+        ###############################
+        # With genes in other systems #
+        ###############################
+        model_bis = Model("foo/BAR", 10)
+        gene_sctj_bis = ModelGene(c_gene_sctj, model_bis)
+        model_bis.add_accessory_gene(gene_sctj_bis)
+        v_hit_bis = ModelHit(hit_2, gene_sctj_bis, GeneStatus.ACCESSORY)
+        ls_1 = LikelySystem(model, [v_hit_1], [v_hit_2, v_hit_3], [], [])
+        ls_2 = LikelySystem(model_bis, [], [v_hit_bis], [], [])
+
+        hit_multi_sys_tracker = HitSystemTracker([ls_1, ls_2])
+        ser = TxtLikelySystemSerializer()
+
+        txt = ser.serialize(ls_1, hit_multi_sys_tracker)
+        expected_txt = """This replicon contains genetic materials needed for system foo/FOO
+
+
+system id = replicon_id_FOO_3
+model = foo/FOO
+replicon = replicon_id
+hits = [('hit_1', 'gspD', 1), ('hit_2', 'sctJ', 2), ('hit_3', 'sctN', 3)]
+wholeness = 1.000
+
+mandatory genes:
+\t- gspD: 1 (gspD)
+
+accessory genes:
+\t- sctJ: 1 (sctJ [replicon_id_BAR_4])
+\t- sctN: 1 (sctN)
+
+neutral genes:
+
+forbidden genes:
+\t- abc: 0 ()
+
+Use ordered replicon to have better prediction.
+"""
+        self.assertEqual(txt, expected_txt)
 
 
     def test_LikelySystemSerializer_tsv(self):
@@ -454,6 +527,28 @@ Use ordered replicon to have better prediction.
         self.maxDiff = None
         self.assertEqual(tsv, expected_tsv)
 
+        ###########################
+        # Without forbidden genes #
+        ###########################
+
+        ls_1 = LikelySystem(model, [v_hit_1], [v_hit_2, v_hit_3], [], [])
+        hit_multi_sys_tracker = HitSystemTracker([ls_1])
+        ser = TsvLikelySystemSerializer()
+
+        tsv = ser.serialize(ls_1, hit_multi_sys_tracker)
+        expected_tsv = """# This replicon contains genetic materials needed for system foo/FOO"""
+        expected_tsv += '\n\n'
+        expected_tsv += '\t'.join(['replicon_id', 'hit_1', 'gspD', '1', 'foo/FOO', ls_1.id, '1.000',
+                                   'gspD', 'mandatory', '803', '1.0', '1.000', '1.000', '1.000', '10', '20', ''])
+        expected_tsv += '\n'
+        expected_tsv += '\t'.join(['replicon_id', 'hit_2', 'sctJ', '2', 'foo/FOO', ls_1.id, '1.000',
+                                   'sctJ', 'accessory', '803', '1.0', '1.000', '1.000', '1.000', '10', '20', ''])
+        expected_tsv += '\n'
+        expected_tsv += '\t'.join(['replicon_id', 'hit_3', 'sctN', '3', 'foo/FOO', ls_1.id, '1.000',
+                                   'sctN', 'accessory', '803', '1.0', '1.000', '1.000', '1.000', '10', '20', ''])
+        expected_tsv += '\n'
+        self.maxDiff = None
+        self.assertEqual(tsv, expected_tsv)
 
 
     def test_UnlikelySystemSerializer_txt(self):
