@@ -118,13 +118,13 @@ class CoreHitTest(MacsyTest):
         self.assertEqual(s, str(hit))
 
 
-    def test_get_position(self):
+    def test_position(self):
         gene_name = "gspD"
         gene = CoreGene(self.model_location, gene_name, self.profile_factory)
 
         h0 = CoreHit(gene, "PSAE001c01_006940", 803, "PSAE001c01", 3450, float(1.2e-234), float(779.2),
                      float(1.000000), (741.0 - 104.0 + 1) / 803, 104, 741)
-        self.assertEqual(h0.get_position(), 3450)
+        self.assertEqual(h0.position, 3450)
 
 
     def test_hash(self):
@@ -201,7 +201,7 @@ class ModelHitTest(MacsyTest):
 
     def test_delegation(self):
         mhit_1 = ModelHit(self.chit_1, self.mg_gspd, GeneStatus.MANDATORY)
-        self.assertEqual(mhit_1.get_position(), 2)
+        self.assertEqual(mhit_1.position, 2)
         with self.assertRaises(AttributeError) as ctx:
             mhit_1.nimportnaoik()
         self.assertEqual(str(ctx.exception),
@@ -214,6 +214,21 @@ class ModelHitTest(MacsyTest):
 
         self.assertEqual(mhit_0, mhit_1)
         self.assertNotEqual(mhit_0, mhit_2)
+
+    def test_gt(self):
+        mhit_1 = ModelHit(self.chit_1, self.mg_gspd, GeneStatus.MANDATORY)
+        mhit_2 = ModelHit(self.chit_2, self.mg_sctj, GeneStatus.ACCESSORY)
+
+        self.assertTrue(mhit_2 > mhit_1)
+        self.assertFalse(mhit_1 > mhit_2)
+
+    def test_lq(self):
+        mhit_1 = ModelHit(self.chit_1, self.mg_gspd, GeneStatus.MANDATORY)
+        mhit_2 = ModelHit(self.chit_2, self.mg_sctj, GeneStatus.ACCESSORY)
+
+        self.assertTrue(mhit_1 < mhit_2)
+        self.assertFalse(mhit_2 < mhit_1)
+
 
     def test_multi_system(self):
         mhit_1 = ModelHit(self.chit_1, self.mg_sctj, GeneStatus.MANDATORY)
@@ -720,6 +735,7 @@ class GetBestHitTest(MacsyTest):
             get_best_hits([l0, l1], key='nimportnaoik')
         self.assertEqual('The criterion for Hits comparison nimportnaoik does not exist or is not available.\n'
                          'It must be either "score", "i_eval" or "profile_coverage".', str(ctx.exception))
+
 
 
     def test_sort_multisystem_hits(self):

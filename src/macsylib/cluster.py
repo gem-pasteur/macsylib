@@ -25,7 +25,6 @@
 #########################################################################
 from __future__ import annotations
 
-
 import itertools
 import logging
 from collections import defaultdict
@@ -57,7 +56,7 @@ def _colocates(h1: ModelHit, h2: ModelHit, rep_info: RepliconInfo) -> bool:
              Managed circularity.
     """
     # compute the number of genes between h1 and h2
-    dist = h2.get_position() - h1.get_position() - 1
+    dist = h2.position - h1.position - 1
     g1 = h1.gene_ref
     g2 = h2.gene_ref
     model = g1.model
@@ -77,7 +76,7 @@ def _colocates(h1: ModelHit, h2: ModelHit, rep_info: RepliconInfo) -> bool:
         return True
     elif dist <= 0 and rep_info.topology == 'circular':
         # h1 and h2 overlap the ori
-        dist = rep_info.max - h1.get_position() + h2.get_position() - rep_info.min
+        dist = rep_info.max - h1.position + h2.position - rep_info.min
         return dist <= inter_gene_max_space
     return False
 
@@ -422,7 +421,7 @@ class Cluster:
         :param model: the model associated to this cluster
         :param hit_weights: the weight of the hit to compute the score
         """
-        self.hits = hits
+        self._hits = hits
         self.model = model
         self._check_replicon_consistency()
         self._score = None
@@ -430,11 +429,32 @@ class Cluster:
         self._hit_weights = hit_weights
         self.id = f"c{next(self._id)}"
 
+
     def __len__(self) -> int:
         return len(self.hits)
 
+
     def __getitem__(self, item: str) -> CoreHit | ModelHit:
         return self.hits[item]
+
+
+    @property
+    def hits(self) -> list[CoreHit | ModelHit]:
+        """
+
+        :return: the hits sorted by the increasing position
+        """
+        return self._hits[:]
+
+
+    @hits.setter
+    def hits(self, hits: list[CoreHit | ModelHit]) -> None:
+        """
+
+        set cluster hits
+        """
+        self._hits = hits
+
 
     @property
     def hit_weights(self) -> HitWeight:
@@ -442,6 +462,7 @@ class Cluster:
         :return: the different weight for the hits used to compute the score
         """
         return self._hit_weights
+
 
     @property
     def loner(self) -> bool:
@@ -546,9 +567,9 @@ class Cluster:
             raise MacsylibError("Try to merge Clusters from different model")
         else:
             if before:
-                self.hits = cluster.hits + self.hits
+                self._hits = cluster.hits + self.hits
             else:
-                self.hits.extend(cluster.hits)
+                self._hits.extend(cluster.hits)
 
     @property
     def replicon_name(self) -> str:
@@ -631,13 +652,16 @@ class Cluster:
 - hits = {', '.join([f"({h.id}, {h.gene.name}, {h.position})" for h in self.hits])}"""
         return rep
 
+
     def replace(self, old: ModelHit, new: ModelHit) -> None:
         """
         replace hit old in this cluster by new one. (do it in place)
+        beware the hits in a cluster are sorted by their position so if old hit and new hit have not same position
+        the order will be changed
 
         :param old: the hit to replace
         :param new: the new hit
         :return: None
         """
-        idx = self.hits.index(old)
-        self.hits[idx] = new
+        idx = self._hits.index(old)
+        self._hits[idx] = new

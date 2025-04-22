@@ -140,13 +140,6 @@ class CoreHit:
                 )
 
 
-    def get_position(self) -> int:
-        """
-        :returns: the position of the hit (rank in the input dataset file)
-        """
-        return self.position
-
-
 class ModelHit:
     """
     Encapsulates a :class:`macsylib.report.CoreHit`
@@ -236,13 +229,13 @@ class ModelHit:
             raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{item}'") from None
 
     def __gt__(self, other: ModelHit) -> bool:
-        return self._hit > other
+        return self._hit > other._hit
 
     def __eq__(self, other: ModelHit) -> bool:
         return self._hit == other and self.gene_ref.name == self.gene_ref.name
 
     def __lt__(self, other: ModelHit) -> bool:
-        return self._hit < other
+        return self._hit < other._hit
 
     @property
     def counterpart(self) -> list:
@@ -328,7 +321,7 @@ class Loner(AbstractCounterpartHit):
                  hit: CoreHit | ModelHit,
                  gene_ref: ModelGene = None,
                  gene_status: GeneStatus = None,
-                 counterpart: Iterable[CoreHit] = None) -> None:
+                 counterpart: Iterable[ModelHit] = None) -> None:
         """
         hit that is outside a cluster, the gene_ref is a loner
 
@@ -366,7 +359,7 @@ class MultiSystem(AbstractCounterpartHit):
                  hit: CoreHit | ModelHit,
                  gene_ref: ModelGene = None,
                  gene_status: GeneStatus = None,
-                 counterpart: Iterable[CoreHit] = None):
+                 counterpart: Iterable[ModelHit] = None):
         """
         hit that is outside a cluster, the gene_ref is a loner
 
@@ -406,7 +399,7 @@ class LonerMultiSystem(Loner, MultiSystem):
     def __init__(self, hit: CoreHit | ModelHit,
                  gene_ref: ModelGene = None,
                  gene_status: GeneStatus = None,
-                 counterpart: Iterable[CoreHit] = None):
+                 counterpart: Iterable[ModelHit] = None):
         """
         hit that is outside a cluster, the gene_ref is loner and multi_system
 
@@ -466,11 +459,13 @@ def get_best_hit_4_func(function: str, hits: Iterable[ModelHit], key: str = 'sco
         * i_evalue
         * profile_coverage
 
-    :param function: the name of the function fulfill by the hits (all hits must have same function)
+    :param function: the name of the function fulfill by the hits (all hits must code for the same gene)
     :param hits: the hits to filter.
     :param key: The criterion used to select the best hit 'score', i_evalue', 'profile_coverage'
     :return: the best hit
     """
+    assert len({h.gene_ref.alternate_of().name for h in hits}) == 1, \
+        f"All hits must fulfill the same function: {', '.join([h.gene_ref.alternate_of().name for h in hits])}"
     originals = []
     exchangeables = []
     for hit in hits:

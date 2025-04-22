@@ -38,21 +38,11 @@ from tests import MacsyTest
 class TestModelConfParser(MacsyTest):
 
     def setUp(self) -> None:
-        # need to do hugly trick with logger
-        # because logger are singleton and
-        # trigger some side effect with othe unit tests
-        # for instance if run the test below after test_macsylib
-        # where I tests loggers model_conf_parser
-        # is not replaced by the logger set in setup
-        # then the catch_log doesn't work anymore
         macsylib.init_logger(name='macsylib')
         macsylib.logger_set_level(name='macsylib', level=logging.INFO)
         logger = colorlog.getLogger('macsylib')
         macsylib.model_conf_parser._log = logger
 
-    def tearDown(self) -> None:
-        logger = colorlog.getLogger('macsylib')
-        del logger.manager.loggerDict['macsylib']
 
 
     def test_parse(self):
