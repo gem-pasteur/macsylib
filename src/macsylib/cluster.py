@@ -29,6 +29,7 @@ from __future__ import annotations
 import itertools
 import logging
 from collections import defaultdict
+from operator import attrgetter
 
 import macsylib.gene
 from .error import MacsylibError
@@ -201,8 +202,14 @@ def closest_hit(hit: ModelHit, ref_hits:list[ModelHit]) -> ModelHit:
     :param hit: the hit
     :param ref_hits: The reference hits. the distance between *hit* and each *ref_hit*
                     will be computed. the closest *ref_hit* will be returned
-    :return: The closests integrase to the hit
+    :return: The closest *ref_hit* to the hit. If two *ref_hits* are equidistant form the *hit*
+             return those with the lowest position.
+             for isnstance:
+             position     40  20  60
+             closest_hit( C, [H1, H2]
+             will return H1
     """
+    ref_hits = sorted(ref_hits, key=attrgetter('position'))
     closest_int = ref_hits[0]
     closest_dist = abs(hit.position - closest_int.position)
     for integrase in ref_hits[1:]:
@@ -216,6 +223,14 @@ def closest_hit(hit: ModelHit, ref_hits:list[ModelHit]) -> ModelHit:
 def split_cluster_on_key_genes(key_genes: set[str], cluster: Cluster) -> list[Cluster]:
     """
     split a Cluster containing several key genes to have one cluster per key genes, with their closest hits
+
+    for instance if a set of gene clusterize as following (we considering that all gene are 10 genea between next one
+    positions  10   20    30   40   50    60     70
+    genes       A   KG1    B    C    D    KG2     E
+    The resulting cluster after split around the 2 KG (key genes)
+    c1 = [A, KG1, B, C], c2 = [D, KG2, E]
+    The question is for gene C which is equidistant from KG1 KG2
+    C will be clustered with the most left cluster
 
     :param key_genes: the gene names which be seed for cluster
     :param cluster: The cluster to split
