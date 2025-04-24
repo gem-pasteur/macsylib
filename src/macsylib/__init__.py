@@ -74,6 +74,7 @@ def init_logger(name: str = 'macsylib', log_file: str = None, out: bool = True) 
     """
     import logging
     import colorlog
+
     logger = colorlog.getLogger(name)
     handlers = []
     if out:
