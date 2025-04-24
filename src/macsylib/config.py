@@ -273,7 +273,7 @@ class Config:
 
     def _set_default_config(self) -> None:
         """
-        set the value comming from MacsyDefaults
+        set the value coming from MacsyDefaults
         """
         # the special methods are not used to fill with defaults values
         self._options = self._defaults.copy()
