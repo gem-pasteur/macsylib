@@ -312,28 +312,73 @@ class ModelGene:
         return id(self)
 
 
-    def is_mandatory(self, model: Model) -> bool:
+    def is_mandatory(self) -> bool:
         """
         :return: True if the gene is within the *mandatory* genes of the model, False otherwise.
-        :param model: the query of the test
+                 Do not take in account the exchangeable
+                 For instance:
+                 .. code-block:: text
+
+                     <gene name="A" presence="mandatory">
+                        <exchangeables>
+                           <gene name="B />
+                        </exchangeables>
+                     </gene>
+
+                gene_A.is_mandatory -> True
+                gene_B.is_mandatory -> False
+                To get the real status of a gene whatever it is a regular or exchangeable gen use instead status property
+                gene_A.status -> <GeneStatus.MANDATORY: 1>
+                gene_B.status -> <GeneStatus.MANDATORY: 1>
         """
-        return self in model.mandatory_genes
+        # used at the end of definition parser to check model consistency
+        return self in self._model.mandatory_genes
 
 
-    def is_accessory(self, model: Model) -> bool:
+    def is_accessory(self) -> bool:
         """
         :return: True if the gene is within the *accessory* genes of the model, False otherwise.
-        :param model: the query of the test
+                 Do not take in account the exchangeable
+                 For instance:
+                 .. code-block:: text
+
+                     <gene name="A" presence="accessory">
+                        <exchangeables>
+                           <gene name="B />
+                        </exchangeables>
+                     </gene>
+
+                gene_A.is_accessory -> True
+                gene_B.is_accessory -> False
+                To get the real status of a gene whatever it is a regular or exchangeable gen use instead status property
+                gene_A.status -> <GeneStatus.ACCESSORY: 2>
+                gene_B.status -> <GeneStatus.ACCESSORY: 2>
         """
-        return self in model.accessory_genes
+        # used at the end of definition parser to check model consistency
+        return self in self._model.accessory_genes
 
 
-    def is_forbidden(self, model: Model) -> bool:
+    def is_forbidden(self) -> bool:
         """
         :return: True if the gene is within the *forbidden* genes of the model, False otherwise.
-        :param model: the query of the test
+                 Do not take in account the exchangeable
+                 For instance:
+                 .. code-block:: text
+
+                     <gene name="A" presence="forbidden">
+                        <exchangeables>
+                           <gene name="B />
+                        </exchangeables>
+                     </gene>
+
+                gene_A.is_forbidden -> True
+                gene_B.is_forbidden -> False
+                To get the real status of a gene whatever it is a regular or exchangeable gen use instead status property
+                gene_A.status -> <GeneStatus.FORBIDDEN: 3>
+                gene_B.status -> <GeneStatus.FORBIDDEN: 3>
         """
-        return self in model.forbidden_genes
+        # used at the end of definition parser to check model consistency
+        return self in self._model.forbidden_genes
 
 
 class Exchangeable(ModelGene):
