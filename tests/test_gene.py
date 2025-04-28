@@ -244,13 +244,13 @@ class TestModelGene(MacsyTest):
         c_gene = CoreGene(self.model_location, gene_name, self.profile_factory)
         sctJ_FLG = ModelGene(c_gene, model_foo)
         model_foo.add_mandatory_gene(sctJ_FLG)
-        self.assertTrue(sctJ_FLG.is_mandatory(model_foo))
+        self.assertTrue(sctJ_FLG.is_mandatory())
 
         gene_name = 'sctJ'
         c_gene = CoreGene(self.model_location, gene_name, self.profile_factory)
         sctJ = ModelGene(c_gene, model_foo)
         model_foo.add_accessory_gene(sctJ)
-        self.assertFalse(sctJ.is_mandatory(model_foo))
+        self.assertFalse(sctJ.is_mandatory())
 
 
     def test_is_accessory(self):
@@ -263,13 +263,13 @@ class TestModelGene(MacsyTest):
         c_gene = CoreGene(self.model_location, gene_name, self.profile_factory)
         sctJ_FLG = ModelGene(c_gene, model_foo)
         model_foo.add_mandatory_gene(sctJ_FLG)
-        self.assertFalse(sctJ_FLG.is_accessory(model_foo))
+        self.assertFalse(sctJ_FLG.is_accessory())
 
         gene_name = 'sctJ'
         c_gene = CoreGene(self.model_location, gene_name, self.profile_factory)
         sctJ = ModelGene(c_gene, model_foo)
         model_foo.add_accessory_gene(sctJ)
-        self.assertTrue(sctJ.is_accessory(model_foo))
+        self.assertTrue(sctJ.is_accessory())
 
 
     def test_is_Forbidden(self):
@@ -281,13 +281,13 @@ class TestModelGene(MacsyTest):
         c_gene = CoreGene(self.model_location, gene_name, self.profile_factory)
         sctJ_FLG = ModelGene(c_gene, model_foo)
         model_foo.add_mandatory_gene(sctJ_FLG)
-        self.assertFalse(sctJ_FLG.is_forbidden(model_foo))
+        self.assertFalse(sctJ_FLG.is_forbidden())
 
         gene_name = 'sctJ'
         c_gene = CoreGene(self.model_location, gene_name, self.profile_factory)
         sctJ = ModelGene(c_gene, model_foo)
         model_foo.add_forbidden_gene(sctJ)
-        self.assertTrue(sctJ.is_forbidden(model_foo))
+        self.assertTrue(sctJ.is_forbidden())
 
 
     def test_multi_system(self):
