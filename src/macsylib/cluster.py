@@ -27,7 +27,7 @@ from __future__ import annotations
 
 import itertools
 import logging
-from collections import defaultdict
+from collections import defaultdict, Counter
 from operator import attrgetter
 
 import macsylib.gene
@@ -186,7 +186,7 @@ def clusterize_hits_on_distance_only(hits: list[ModelHit], model: Model, hit_wei
     return clusters
 
 
-def is_a(hit: ModelHit, ref_hits: set[str]) -> bool:
+def is_a(hit: ModelHit | CoreHit, ref_hits: set[str]) -> bool:
     """
     :param hit: The hit to check
     :param ref_hits: the gene name of the reference hit
@@ -414,7 +414,7 @@ class Cluster:
 
     _id = itertools.count(1)
 
-    def __init__(self, hits: list[CoreHit | ModelHit], model, hit_weights) -> None:
+    def __init__(self, hits: list[CoreHit]|list[ModelHit], model, hit_weights) -> None:
         """
 
         :param hits: the hits constituting this cluster
@@ -434,8 +434,16 @@ class Cluster:
         return len(self.hits)
 
 
-    def __getitem__(self, item: str) -> CoreHit | ModelHit:
-        return self.hits[item]
+    def __getitem__(self, index: str) -> CoreHit | ModelHit | Cluster:
+        if isinstance(index, int):
+            return self.hits[index]
+        elif isinstance(index, slice):
+            start, stop, step = index.indices((len(self._hits)))
+            return self.__class__([self._hits[index] for index in range(start, stop, step)],
+                                  self.model,
+                                  self._hit_weights)
+        else:
+            raise TypeError(f"{self.__class__.__name__} indices must be integers or slices, not {type(index).__name__}")
 
 
     @property
@@ -553,6 +561,8 @@ class Cluster:
             functions.add(function)
         return genes_roles.intersection(functions)
 
+    def count_function(self) -> Counter[str]:
+        return Counter(h.gene_ref.alternate_of().name for h in self.hits)
 
     def merge(self, cluster: Cluster, before: bool = False) -> None:
         """
