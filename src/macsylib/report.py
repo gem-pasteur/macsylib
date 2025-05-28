@@ -130,7 +130,7 @@ class HMMReport(metaclass=abc.ABCMeta):
 # profile length= {len(self.gene.profile):d}
 # i_evalue threshold= {self.cfg.i_evalue_sel():.3f}
 # coverage threshold= {self.cfg.coverage_profile():.3f}
-# hit_id replicon_name position_hit hit_sequence_length gene_name gene_system i_eval score profile_coverage sequence_coverage begin end
+# hit_id\teplicon_name\tposition_hit\thit_sequence_length\tgene_name\ti_eval\tscore\tprofile_coverage\tsequence_coverage\tbegin\tend
 """
 
         for c_hit in self.hits:
