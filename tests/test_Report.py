@@ -126,8 +126,8 @@ class TestHMMReport(TestReport):
         s += f"# profile length= {len(c_gene.profile):d}\n"
         s += f"# i_evalue threshold= {self.cfg.i_evalue_sel():.3f}\n"
         s += f"# coverage threshold= {self.cfg.coverage_profile():.3f}\n"
-        s += "# hit_id replicon_name position_hit hit_sequence_length gene_name gene_system i_eval score " \
-             "profile_coverage sequence_coverage begin end\n"
+        s += "# hit_id\treplicon_name\tposition_hit\thit_sequence_length\tgene_name\ti_eval\tscore\t" \
+             "profile_coverage\tsequence_coverage\tbegin\tend\n"
         for h in hits:
             s += str(h)
         self.assertMultiLineEqual(str(report), s)
@@ -167,7 +167,7 @@ class TestHMMReport(TestReport):
 # profile length= {len_profile:d}
 # i_evalue threshold= {i_evalue:.3f}
 # coverage threshold= {cov:.3f}
-# hit_id replicon_name position_hit hit_sequence_length gene_name gene_system i_eval score profile_coverage sequence_coverage begin end
+# hit_id\treplicon_name\tposition_hit\thit_sequence_length\tgene_name\ti_eval\tscore\tprofile_coverage\tsequence_coverage\tbegin\tend
 """.format(name=gene.name, path=report_path, len_profile=len(gene.profile),
            i_evalue=self.cfg.i_evalue_sel(), cov=self.cfg.coverage_profile())
             expected_extract.write(extract)
