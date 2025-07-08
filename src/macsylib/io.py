@@ -118,7 +118,6 @@ def solutions_to_tsv(models_fam_name: str,
         print(f"# No {system_name.capitalize()}s found", file=sys_file)
 
 
-
 def summary_best_solution(models_fam_name: str,
                           models_version: str,
                           best_solution_path: str,
@@ -150,7 +149,6 @@ def summary_best_solution(models_fam_name: str,
     skipped_replicons = skipped_replicons if skipped_replicons else set()
     print(header(models_fam_name, models_version, skipped_replicons=skipped_replicons),
           file=sys_file)
-
 
     def fill_replicon(summary: pd.DataFrame) -> pd.DataFrame:
         """
