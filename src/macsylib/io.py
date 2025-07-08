@@ -1,25 +1,28 @@
-##############################################################################
-# SatelliteFinder - Detection of phage satellites                            #
-#                   in bacterial protein dataset                             #
-# Authors: Jorge Andre Sousa, Bertrand Neron                                 #
-# Copyright (c) 2025  Institut Pasteur (Paris) and CNRS.                     #
-# See COPYRIGHT file for details.                                            #
-#                                                                            #
-# This file is part of SatelliteFinder package.                              #
-#                                                                            #
-# SatelliteFinder is free software: you can redistribute it and/or modify    #
-# it under the terms of the GNU General Public License as published by       #
-# the Free Software Foundation, either version 3 of the License,             #
-# or (at your option) any later version.                                     #
-#                                                                            #
-# SatelliteFinder is distributed in the hope that it will be useful,         #
-# but WITHOUT ANY WARRANTY; without even the implied warranty of             #
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                       #
-# See the GNU General Public License for more details.                       #
-#                                                                            #
-# You should have received a copy of the GNU General Public License          #
-#  along with Foobar (COPYING). If not, see <https://www.gnu.org/licenses/>. #
-##############################################################################
+#########################################################################
+# MacSyLib - Python library to detect macromolecular systems            #
+#            in prokaryotes protein dataset using systems modelling     #
+#            and similarity search.                                     #
+#                                                                       #
+# Authors: Sophie Abby, Bertrand Neron                                  #
+# Copyright (c) 2014-2025  Institut Pasteur (Paris) and CNRS.           #
+# See the COPYRIGHT file for details                                    #
+#                                                                       #
+# This file is part of MacSyLib package.                                #
+#                                                                       #
+# MacSyLib is free software: you can redistribute it and/or modify      #
+# it under the terms of the GNU General Public License as published by  #
+# the Free Software Foundation, either version 3 of the License, or     #
+# (at your option) any later version.                                   #
+#                                                                       #
+# MacSyLib is distributed in the hope that it will be useful,           #
+# but WITHOUT ANY WARRANTY; without even the implied warranty of        #
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the          #
+# GNU General Public License for more details .                         #
+#                                                                       #
+# You should have received a copy of the GNU General Public License     #
+# along with MacSyLib (COPYING).                                        #
+# If not, see <https://www.gnu.org/licenses/>.                          #
+#########################################################################
 
 """
 module that deals with the satellite_finder outputs
@@ -32,7 +35,8 @@ import pandas as pd
 import macsylib
 from macsylib.system import HitSystemTracker, System, RejectedCandidate
 from macsylib.solution import Solution
-from macsylib.serialization import TsvSystemSerializer, TsvSolutionSerializer,TsvRejectedCandidatesSerializer
+from macsylib.serialization import (TsvSystemSerializer, TsvSolutionSerializer,TsvRejectedCandidatesSerializer,
+                                    TsvSpecialHitSerializer)
 
 
 
@@ -230,3 +234,61 @@ def rejected_candidates_to_tsv(models_fam_name: str, models_version: str,
         print(rej_candidates, file=cand_file, end='')
     else:
         print("# No Rejected candidates", file=cand_file)
+
+
+def loners_to_tsv(models_fam_name: str, models_version: str, systems:list[System], sys_file:typing.IO,
+                  header=outfile_header,
+                  skipped_replicons: list[str] | None = None) -> None:
+    """
+    get loners from valid systems and save them on file
+
+    :param models_fam_name: the family name of the models (Conj, CrisprCAS, ...)
+    :param models_version: the version of the models
+    :param systems: the systems from which the loners are extract
+    :param sys_file: the file where loners are saved
+    :param skipped_replicons: the replicons name for which msf reach the timeout
+    """
+    print(header(models_fam_name, models_version, skipped_replicons=skipped_replicons),
+          file=sys_file)
+    if systems:
+        best_loners = set()
+        for syst in systems:
+            best_loners.update(syst.get_loners())
+        if best_loners:
+            serializer = TsvSpecialHitSerializer()
+            loners = serializer.serialize(best_loners)
+            print("# Loners found:", file=sys_file)
+            print(loners, file=sys_file)
+        else:
+            print("# No Loners found", file=sys_file)
+    else:
+        print("# No Loners found", file=sys_file)
+
+
+def multisystems_to_tsv(models_fam_name:str, models_version:str, systems:list[System], sys_file:typing.IO,
+                        header=outfile_header,
+                        skipped_replicons: list[str] | None = None) -> None:
+    """
+    get multisystems from valid systems and save them on file
+
+    :param models_fam_name: the family name of the models (Conj, CrisprCAS, ...)
+    :param models_version: the version of the models
+    :param systems: the systems from which the loners are extract
+    :param sys_file: the file where multisystems are saved
+    :param skipped_replicons: the replicons name for which msf reach the timeout
+    """
+    print(header(models_fam_name, models_version, skipped_replicons=skipped_replicons),
+          file=sys_file)
+    if systems:
+        best_multisystems = set()
+        for syst in systems:
+            best_multisystems.update(syst.get_multisystems())
+        if best_multisystems:
+            serializer = TsvSpecialHitSerializer()
+            multisystems = serializer.serialize(best_multisystems)
+            print("# Multisystems found:", file=sys_file)
+            print(multisystems, file=sys_file)
+        else:
+            print("# No Multisystems found", file=sys_file)
+    else:
+        print("# No Multisystems found", file=sys_file)
