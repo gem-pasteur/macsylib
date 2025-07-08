@@ -1,0 +1,567 @@
+#########################################################################
+# MacSyLib - Python library to detect macromolecular systems            #
+#            in prokaryotes protein dataset using systems modelling     #
+#            and similarity search.                                     #
+#                                                                       #
+# Authors: Sophie Abby, Bertrand Neron                                  #
+# Copyright (c) 2014-2025  Institut Pasteur (Paris) and CNRS.           #
+# See the COPYRIGHT file for details                                    #
+#                                                                       #
+# This file is part of MacSyLib package.                                #
+#                                                                       #
+# MacSyLib is free software: you can redistribute it and/or modify      #
+# it under the terms of the GNU General Public License as published by  #
+# the Free Software Foundation, either version 3 of the License, or     #
+# (at your option) any later version.                                   #
+#                                                                       #
+# MacSyLib is distributed in the hope that it will be useful,           #
+# but WITHOUT ANY WARRANTY; without even the implied warranty of        #
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the          #
+# GNU General Public License for more details .                         #
+#                                                                       #
+# You should have received a copy of the GNU General Public License     #
+# along with MacSyLib (COPYING).                                        #
+# If not, see <https://www.gnu.org/licenses/>.                          #
+#########################################################################
+import itertools
+import sys
+import os
+import argparse
+from io import StringIO
+
+import macsylib
+from macsylib import io
+from macsylib.config import MacsyDefaults, Config
+from macsylib.io import systems_to_tsv, solutions_to_tsv, rejected_candidates_to_tsv, summary_best_solution
+from macsylib.profile import ProfileFactory
+from macsylib.registries import ModelLocation
+from macsylib.gene import CoreGene, ModelGene, Exchangeable, GeneStatus
+from macsylib.model import Model
+from macsylib.hit import CoreHit, ModelHit, HitWeight
+from macsylib.cluster import Cluster
+from macsylib.system import System, HitSystemTracker, RejectedCandidate, AbstractUnordered
+from macsylib.solution import Solution
+from tests import MacsyTest
+
+
+class IoTest(MacsyTest):
+
+    def setUp(self):
+        self._reset_id()
+        AbstractUnordered._id = itertools.count(1)
+
+
+    def _reset_id(self):
+        """
+        reset System._id and RejectedCluster._id to get predictable ids
+        """
+        System._id = itertools.count(1)
+        RejectedCandidate._id = itertools.count(1)
+
+
+    def test_outfile_header(self):
+        models = 'my_models'
+        model_vers = '0.0a1'
+        prog = 'macsylib'
+        expected_header_begin = f"""# {{prog}} {macsylib.__version__} {macsylib.__commit__}
+# models : {models}-{model_vers}
+# {' '.join(sys.argv)}"""
+        expected_header_end = """#
+# WARNING: The replicon 'rep_1' has been SKIPPED. Cannot be solved before timeout.
+# WARNING: The replicon 'rep_2' has been SKIPPED. Cannot be solved before timeout.
+#"""
+        # base header
+        header = io.outfile_header(models, model_vers)
+        self.assertEqual(header, expected_header_begin.format(prog=prog))
+
+        # header when replicon has been skipped
+        header = io.outfile_header(models, model_vers, skipped_replicons=['rep_1', 'rep_2'])
+        self.assertEqual(header, f"{expected_header_begin.format(prog=prog)}\n{expected_header_end}")
+
+        # header when it's not macsylib
+        prog = 'msf'
+        header = io.outfile_header(models, model_vers, prog_name=prog)
+        self.assertEqual(header, expected_header_begin.format(prog=prog))
+
+    def test_system_to_tsv(self):
+        args = argparse.Namespace()
+        args.sequence_db = self.find_data("base", "test_1.fasta")
+        args.db_type = 'gembase'
+        args.models_dir = self.find_data('models')
+        cfg = Config(MacsyDefaults(), args)
+
+        model_name = 'foo'
+        models_location = ModelLocation(path=os.path.join(args.models_dir, model_name))
+
+        # we need to reset the ProfileFactory
+        # because it's a like a singleton
+        # so other tests are influenced by ProfileFactory and it's configuration
+        # for instance search_genes get profile without hmmer_exe
+        profile_factory = ProfileFactory(cfg)
+
+        model = Model("foo/T2SS", 10)
+        gene_name = "gspD"
+        c_gene_gspd = CoreGene(models_location, gene_name, profile_factory)
+        gene_gspd = ModelGene(c_gene_gspd, model)
+        model.add_mandatory_gene(gene_gspd)
+        gene_name = "sctJ"
+        c_gene_sctj = CoreGene(models_location, gene_name, profile_factory)
+        gene_sctj = ModelGene(c_gene_sctj, model)
+        model.add_accessory_gene(gene_sctj)
+
+        hit_1 = CoreHit(c_gene_gspd, "hit_1", 803, "replicon_id", 1, 1.0, 1.0, 1.0, 1.0, 10, 20)
+        v_hit_1 = ModelHit(hit_1, gene_gspd, GeneStatus.MANDATORY)
+        hit_2 = CoreHit(c_gene_sctj, "hit_2", 803, "replicon_id", 1, 1.0, 1.0, 1.0, 1.0, 10, 20)
+        v_hit_2 = ModelHit(hit_2, gene_sctj, GeneStatus.ACCESSORY)
+        system_1 = System(model,
+                          [Cluster([v_hit_1, v_hit_2], model, HitWeight(**cfg.hit_weights()))],
+                          cfg.redundancy_penalty())
+        model_fam_name = 'foo'
+        model_vers = '0.0b2'
+        system_tsv = f"""# macsylib {macsylib.__version__} {macsylib.__commit__}
+# models : {model_fam_name}-{model_vers}
+# {' '.join(sys.argv)}
+# Systems found:
+"""
+        system_tsv += "\t".join(["replicon", "hit_id", "gene_name", "hit_pos", "model_fqn", "sys_id",
+                                 "sys_loci", "locus_num", "sys_wholeness", "sys_score", "sys_occ",
+                                 "hit_gene_ref", "hit_status", "hit_seq_len", "hit_i_eval", "hit_score",
+                                 "hit_profile_cov", "hit_seq_cov", "hit_begin_match", "hit_end_match", "counterpart",
+                                 "used_in"])
+        system_tsv += "\n"
+        system_tsv += "\t".join(["replicon_id", "hit_1", "gspD", "1", "foo/T2SS", system_1.id,
+                                 "1", "1", "1.000", "1.500", "1", "gspD", "mandatory", "803", "1.0", "1.000",
+                                 "1.000", "1.000", "10", "20", "", ""])
+        system_tsv += "\n"
+        system_tsv += "\t".join(["replicon_id", "hit_2", "sctJ", "1", "foo/T2SS", system_1.id,
+                                 "1", "1", "1.000", "1.500", "1", "sctJ", "accessory", "803", "1.0", "1.000",
+                                 "1.000", "1.000", "10", "20", "", ""])
+        system_tsv += "\n\n"
+
+        f_out = StringIO()
+        track_multi_systems_hit = HitSystemTracker([system_1])
+        systems_to_tsv(model_fam_name, model_vers, [system_1], track_multi_systems_hit, f_out)
+        self.assertMultiLineEqual(system_tsv, f_out.getvalue())
+
+        # test No system found
+        system_str = f"""# macsylib {macsylib.__version__} {macsylib.__commit__}
+# models : {model_fam_name}-{model_vers}
+# {' '.join(sys.argv)}
+# No System found
+"""
+        f_out = StringIO()
+        track_multi_systems_hit = HitSystemTracker([])
+        systems_to_tsv(model_fam_name, model_vers, [], track_multi_systems_hit, f_out)
+        self.assertMultiLineEqual(system_str, f_out.getvalue())
+
+        # test No system found replicon skipped
+        system_str = f"""# macsylib {macsylib.__version__} {macsylib.__commit__}
+# models : {model_fam_name}-{model_vers}
+# {' '.join(sys.argv)}
+#
+# WARNING: The replicon 'rep_1' has been SKIPPED. Cannot be solved before timeout.
+# WARNING: The replicon 'rep_2' has been SKIPPED. Cannot be solved before timeout.
+#
+# No System found
+"""
+        f_out = StringIO()
+        track_multi_systems_hit = HitSystemTracker([])
+        systems_to_tsv(model_fam_name, model_vers, [], track_multi_systems_hit, f_out, skipped_replicons=['rep_1', 'rep_2'])
+        self.assertMultiLineEqual(system_str, f_out.getvalue())
+
+
+    def test_solution_to_tsv(self):
+        args = argparse.Namespace()
+        args.sequence_db = self.find_data("base", "test_1.fasta")
+        args.db_type = 'gembase'
+        args.models_dir = self.find_data('models')
+        cfg = Config(MacsyDefaults(), args)
+        model_name = 'foo'
+        models_location = ModelLocation(path=os.path.join(args.models_dir, model_name))
+
+        # we need to reset the ProfileFactory
+        # because it's a like a singleton
+        # so other tests are influenced by ProfileFactory and it's configuration
+        # for instance search_genes get profile without hmmer_exe
+        profile_factory = ProfileFactory(cfg)
+
+        model_A = Model("foo/A", 10)
+        model_B = Model("foo/B", 10)
+        model_C = Model("foo/C", 10)
+
+        c_gene_sctn_flg = CoreGene(models_location, "sctN_FLG", profile_factory)
+        gene_sctn_flg = ModelGene(c_gene_sctn_flg, model_B)
+        c_gene_sctj_flg = CoreGene(models_location, "sctJ_FLG", profile_factory)
+        gene_sctj_flg = ModelGene(c_gene_sctj_flg, model_B)
+        c_gene_flgB = CoreGene(models_location, "flgB", profile_factory)
+        gene_flgB = ModelGene(c_gene_flgB, model_B)
+        c_gene_tadZ = CoreGene(models_location, "tadZ", profile_factory)
+        gene_tadZ = ModelGene(c_gene_tadZ, model_B)
+
+        c_gene_sctn = CoreGene(models_location, "sctN", profile_factory)
+        gene_sctn = ModelGene(c_gene_sctn, model_A)
+        gene_sctn_hom = Exchangeable(c_gene_sctn_flg, gene_sctn)
+        gene_sctn.add_exchangeable(gene_sctn_hom)
+
+        c_gene_sctj = CoreGene(models_location, "sctJ", profile_factory)
+        gene_sctj = ModelGene(c_gene_sctj, model_A)
+        gene_sctj_an = Exchangeable(c_gene_sctj_flg, gene_sctj)
+        gene_sctj.add_exchangeable(gene_sctj_an)
+
+        c_gene_gspd = CoreGene(models_location, "gspD", profile_factory)
+        gene_gspd = ModelGene(c_gene_gspd, model_A)
+        gene_gspd_an = Exchangeable(c_gene_flgB, gene_gspd)
+        gene_gspd.add_exchangeable(gene_gspd_an)
+
+        c_gene_abc = CoreGene(models_location, "abc", profile_factory)
+        gene_abc = ModelGene(c_gene_abc, model_A)
+        gene_abc_ho = Exchangeable(c_gene_tadZ, gene_abc)
+        gene_abc.add_exchangeable(gene_abc_ho)
+
+        model_A.add_mandatory_gene(gene_sctn)
+        model_A.add_mandatory_gene(gene_sctj)
+        model_A.add_accessory_gene(gene_gspd)
+        model_A.add_forbidden_gene(gene_abc)
+
+        model_B.add_mandatory_gene(gene_sctn_flg)
+        model_B.add_mandatory_gene(gene_sctj_flg)
+        model_B.add_accessory_gene(gene_flgB)
+        model_B.add_accessory_gene(gene_tadZ)
+
+        model_C.add_mandatory_gene(gene_sctn_flg)
+        model_C.add_mandatory_gene(gene_sctj_flg)
+        model_C.add_mandatory_gene(gene_flgB)
+        model_C.add_accessory_gene(gene_tadZ)
+        model_C.add_accessory_gene(gene_gspd)
+
+        #                    gene,     hit_id, hit_seq_len, rep_name, pos, i_eval
+        h_sctj = CoreHit(c_gene_sctj, "hit_sctj", 803, "replicon_id", 1, 1.0, 1.0, 1.0, 1.0, 10, 20)
+        h_sctn = CoreHit(c_gene_sctn, "hit_sctn", 803, "replicon_id", 2, 1.0, 1.0, 1.0, 1.0, 10, 20)
+        h_gspd = CoreHit(c_gene_gspd, "hit_gspd", 803, "replicon_id", 3, 1.0, 1.0, 1.0, 1.0, 10, 20)
+        h_sctj2 = CoreHit(c_gene_sctj, "hit_sctj2", 803, "replicon_id", 4, 1.0, 1.0, 1.0, 1.0, 10, 20)
+        h_sctn2 = CoreHit(c_gene_sctn, "hit_sctn2", 803, "replicon_id", 5, 1.0, 1.0, 1.0, 1.0, 10, 20)
+
+        h_sctj_flg = CoreHit(c_gene_sctj_flg, "hit_sctj_flg", 803, "replicon_id", 6, 1.0, 1.0, 1.0, 1.0, 10, 20)
+        h_tadZ = CoreHit(c_gene_tadZ, "hit_tadZ", 803, "replicon_id", 7, 1.0, 1.0, 1.0, 1.0, 10, 20)
+        h_flgB = CoreHit(c_gene_flgB, "hit_flgB", 803, "replicon_id", 8, 1.0, 1.0, 1.0, 1.0, 10, 20)
+        h_sctj_flg2 = CoreHit(c_gene_sctj_flg, "hit_sctj_flg2", 803, "replicon_id", 14, 1.0, 1.0, 1.0, 1.0, 10, 20)
+        h_tadZ2 = CoreHit(c_gene_tadZ, "hit_tadZ2", 803, "replicon_id", 15, 1.0, 1.0, 1.0, 1.0, 10, 20)
+        h_flgB2 = CoreHit(c_gene_flgB, "hit_flgB2", 803, "replicon_id", 16, 1.0, 1.0, 1.0, 1.0, 10, 20)
+        h_gspd2 = CoreHit(c_gene_gspd, "hit_gspd2", 803, "replicon_id", 17, 1.0, 1.0, 1.0, 1.0, 10, 20)
+
+        model_A._min_mandatory_genes_required = 2
+        model_A._min_genes_required = 2
+        hit_weights = HitWeight(**cfg.hit_weights())
+        c1 = Cluster([ModelHit(h_sctj, gene_sctj, GeneStatus.MANDATORY),
+                      ModelHit(h_sctn, gene_sctn, GeneStatus.MANDATORY),
+                      ModelHit(h_gspd, gene_gspd, GeneStatus.ACCESSORY)
+                      ],
+                     model_A, hit_weights)
+
+        c2 = Cluster([ModelHit(h_sctj2, gene_sctj, GeneStatus.MANDATORY),
+                      ModelHit(h_sctn2, gene_sctn, GeneStatus.MANDATORY)],
+                     model_A, hit_weights)
+
+        model_B._min_mandatory_genes_required = 1
+        model_B._min_genes_required = 2
+        c3 = Cluster([ModelHit(h_sctj_flg, gene_sctj_flg, GeneStatus.MANDATORY),
+                      ModelHit(h_tadZ, gene_tadZ, GeneStatus.ACCESSORY),
+                      ModelHit(h_flgB, gene_flgB, GeneStatus.ACCESSORY)],
+                     model_B, hit_weights)
+
+        model_C._min_mandatory_genes_required = 1
+        model_C._min_genes_required = 2
+        c4 = Cluster([ModelHit(h_sctj_flg2, gene_sctj_flg, GeneStatus.MANDATORY),
+                      ModelHit(h_tadZ2, gene_tadZ, GeneStatus.ACCESSORY),
+                      ModelHit(h_flgB2, gene_flgB, GeneStatus.MANDATORY),
+                      ModelHit(h_gspd2, gene_gspd, GeneStatus.ACCESSORY)],
+                     model_C, hit_weights)
+
+        sys_A = System(model_A, [c1, c2], cfg.redundancy_penalty())
+        sys_A.id = "sys_id_A"
+        sys_B = System(model_B, [c3], cfg.redundancy_penalty())
+        sys_B.id = "sys_id_B"
+        sys_C = System(model_C, [c4], cfg.redundancy_penalty())
+        sys_C.id = "sys_id_C"
+
+        sol_1 = Solution([sys_A, sys_C])
+        sol_2 = Solution([sys_A, sys_B])
+        sol_id_1 = '1'
+        sol_id_2 = '2'
+
+        model_fam_name = 'foo'
+        model_vers = '0.0b2'
+        sol_tsv = f"""# macsylib {macsylib.__version__} {macsylib.__commit__}
+# models : {model_fam_name}-{model_vers}
+# {' '.join(sys.argv)}
+# Systems found:
+"""
+        sol_tsv += "\t".join(["sol_id", "replicon", "hit_id", "gene_name", "hit_pos", "model_fqn", "sys_id",
+                              "sys_loci", "locus_num",
+                              "sys_wholeness", "sys_score", "sys_occ", "hit_gene_ref", "hit_status",
+                              "hit_seq_len", "hit_i_eval", "hit_score", "hit_profile_cov", "hit_seq_cov",
+                              "hit_begin_match", "hit_end_match", "counterpart", "used_in"])
+        sol_tsv += "\n"
+        sol_tsv += '\t'.join([sol_id_1, 'replicon_id', 'hit_sctj', 'sctJ', '1', 'foo/A', 'sys_id_A',
+                              '2', '1', '1.000', '1.500', '2', 'sctJ', 'mandatory',
+                              '803', '1.0', '1.000', '1.000', '1.000', '10', '20', '', ''])
+        sol_tsv += "\n"
+        sol_tsv += '\t'.join([sol_id_1, 'replicon_id', 'hit_sctn', 'sctN', '2', 'foo/A', 'sys_id_A',
+                              '2', '1', '1.000', '1.500', '2', 'sctN', 'mandatory',
+                              '803', '1.0', '1.000', '1.000', '1.000', '10', '20', '', ''])
+        sol_tsv += "\n"
+        sol_tsv += '\t'.join([sol_id_1, 'replicon_id', 'hit_gspd', 'gspD', '3', 'foo/A', 'sys_id_A',
+                              '2', '1', '1.000', '1.500', '2', 'gspD', 'accessory',
+                              '803', '1.0', '1.000', '1.000', '1.000', '10', '20', '', ''])
+        sol_tsv += "\n"
+        sol_tsv += '\t'.join([sol_id_1, 'replicon_id', 'hit_sctj2', 'sctJ', '4', 'foo/A', 'sys_id_A',
+                              '2', '2', '1.000', '1.500', '2', 'sctJ', 'mandatory',
+                              '803', '1.0', '1.000', '1.000', '1.000', '10', '20', '', ''])
+        sol_tsv += "\n"
+        sol_tsv += '\t'.join([sol_id_1, 'replicon_id', 'hit_sctn2', 'sctN', '5', 'foo/A', 'sys_id_A',
+                              '2', '2', '1.000', '1.500', '2', 'sctN', 'mandatory',
+                              '803', '1.0', '1.000', '1.000', '1.000', '10', '20', '', ''])
+        sol_tsv += "\n"
+        sol_tsv += "\n"
+        sol_tsv += '\t'.join([sol_id_1, 'replicon_id', 'hit_sctj_flg2', 'sctJ_FLG', '14', 'foo/C', 'sys_id_C',
+                              '1', '1', '0.800', '3.000', '1', 'sctJ_FLG', 'mandatory',
+                              '803', '1.0', '1.000', '1.000', '1.000', '10', '20', '', ''])
+        sol_tsv += "\n"
+        sol_tsv += '\t'.join([sol_id_1, 'replicon_id', 'hit_tadZ2', 'tadZ', '15', 'foo/C', 'sys_id_C',
+                              '1', '1', '0.800', '3.000', '1', 'tadZ', 'accessory',
+                              '803', '1.0', '1.000', '1.000', '1.000', '10', '20', '', ''])
+        sol_tsv += "\n"
+        sol_tsv += '\t'.join([sol_id_1, 'replicon_id', 'hit_flgB2', 'flgB', '16', 'foo/C', 'sys_id_C',
+                              '1', '1', '0.800', '3.000', '1', 'flgB', 'mandatory',
+                              '803', '1.0', '1.000', '1.000', '1.000', '10', '20', '', ''])
+        sol_tsv += "\n"
+        sol_tsv += '\t'.join([sol_id_1, 'replicon_id', 'hit_gspd2', 'gspD', '17', 'foo/C', 'sys_id_C',
+                              '1', '1', '0.800', '3.000', '1', 'gspD', 'accessory',
+                              '803', '1.0', '1.000', '1.000', '1.000', '10', '20', '', ''])
+        sol_tsv += "\n"
+        sol_tsv += "\n"
+        sol_tsv += '\t'.join([sol_id_2, 'replicon_id', 'hit_sctj', 'sctJ', '1', 'foo/A', 'sys_id_A',
+                              '2', '1', '1.000', '1.500', '2', 'sctJ', 'mandatory',
+                              '803', '1.0', '1.000', '1.000', '1.000', '10', '20', '', ''])
+        sol_tsv += "\n"
+        sol_tsv += '\t'.join([sol_id_2, 'replicon_id', 'hit_sctn', 'sctN', '2', 'foo/A', 'sys_id_A',
+                              '2', '1', '1.000', '1.500', '2', 'sctN', 'mandatory',
+                              '803', '1.0', '1.000', '1.000', '1.000', '10', '20', '', ''])
+        sol_tsv += "\n"
+        sol_tsv += '\t'.join([sol_id_2, 'replicon_id', 'hit_gspd', 'gspD', '3', 'foo/A', 'sys_id_A',
+                              '2', '1', '1.000', '1.500', '2', 'gspD', 'accessory',
+                              '803', '1.0', '1.000', '1.000', '1.000', '10', '20', '', ''])
+        sol_tsv += "\n"
+        sol_tsv += '\t'.join([sol_id_2, 'replicon_id', 'hit_sctj2', 'sctJ', '4', 'foo/A', 'sys_id_A',
+                              '2', '2', '1.000', '1.500', '2', 'sctJ', 'mandatory',
+                              '803', '1.0', '1.000', '1.000', '1.000', '10', '20', '', ''])
+        sol_tsv += "\n"
+        sol_tsv += '\t'.join([sol_id_2, 'replicon_id', 'hit_sctn2', 'sctN', '5', 'foo/A', 'sys_id_A',
+                              '2', '2', '1.000', '1.500', '2', 'sctN', 'mandatory',
+                              '803', '1.0', '1.000', '1.000', '1.000', '10', '20', '', ''])
+        sol_tsv += "\n"
+        sol_tsv += "\n"
+        sol_tsv += '\t'.join([sol_id_2, 'replicon_id', 'hit_sctj_flg', 'sctJ_FLG', '6', 'foo/B', 'sys_id_B',
+                              '1', '1', '0.750', '2.000', '1', 'sctJ_FLG', 'mandatory',
+                              '803', '1.0', '1.000', '1.000', '1.000', '10', '20', '', ''])
+        sol_tsv += "\n"
+        sol_tsv += '\t'.join([sol_id_2, 'replicon_id', 'hit_tadZ', 'tadZ', '7', 'foo/B', 'sys_id_B',
+                              '1', '1', '0.750', '2.000', '1', 'tadZ', 'accessory',
+                              '803', '1.0', '1.000', '1.000', '1.000', '10', '20', '', ''])
+        sol_tsv += "\n"
+        sol_tsv += '\t'.join([sol_id_2, 'replicon_id', 'hit_flgB', 'flgB', '8', 'foo/B', 'sys_id_B',
+                              '1', '1', '0.750', '2.000', '1', 'flgB', 'accessory',
+                              '803', '1.0', '1.000', '1.000', '1.000', '10', '20', '', ''])
+        sol_tsv += "\n"
+        sol_tsv += "\n"
+
+        f_out = StringIO()
+        hit_multi_sys_tracker = HitSystemTracker([sys_A, sys_B, sys_C])
+        solutions_to_tsv(model_fam_name, model_vers, [sol_1, sol_2], hit_multi_sys_tracker, f_out)
+        self.maxDiff = None
+        self.assertMultiLineEqual(sol_tsv, f_out.getvalue())
+
+        # No solutions
+        solution_file = StringIO()
+        solutions_to_tsv(model_fam_name, model_vers, [], hit_multi_sys_tracker, solution_file)
+        solution_file.seek(0)
+        self.assertMultiLineEqual(sol_tsv, f_out.getvalue())
+
+
+    def test_summary_best_solution(self):
+        best_solution_path = self.find_data('best_solution.tsv')
+        expected_summary_path = self.find_data('best_solution_summary.tsv')
+        model_fam_name = 'set_1'
+        model_vers = '0.0b2'
+        f_out = StringIO()
+        models_fqn = ['set_1/MSH', 'set_1/T2SS', 'set_1/T4P', 'set_1/T4bP']
+        replicon_names= ['VICH001.B.00001.C001']
+        summary_best_solution(model_fam_name,
+                              model_vers,
+                              best_solution_path,
+                              f_out,
+                              models_fqn,
+                              replicon_names)
+        f_out.seek(0) # have to put cursor at the beginning before testing the content
+        self.assertTsvEqual(expected_summary_path, f_out, tsv_type='best_solution_summary.tsv')
+
+
+    def test_summary_best_solution_empty(self):
+        best_solution_path = self.find_data('best_solution_empty.tsv')
+        model_fam_name = 'set_1'
+        model_vers = '0.0b2'
+        expected_summary_file = StringIO()
+        expected_summary_file.write("# macsyfinder vers\n")
+        expected_summary_file.write("# models: set_1-0.0b2\n")
+        expected_summary_file.write("# msf command line\n")
+        expected_summary_file.write('\t'.join(['replicon', 'set_1/MSH', 'set_1/T2SS', 'set_1/T4P', 'set_1/T4bP']) + '\n')
+        expected_summary_file.write('\t'.join(['VICH001.B.00001.C001',	'0', '0', '0', '0']) + '\n')
+        expected_summary_file.seek(0)
+
+        computed_summary_file = StringIO()
+        models_fqn = ['set_1/MSH', 'set_1/T2SS', 'set_1/T4P', 'set_1/T4bP']
+        replicon_names = ['VICH001.B.00001.C001']
+        summary_best_solution(model_fam_name,
+                              model_vers,
+                              best_solution_path,
+                              computed_summary_file,
+                              models_fqn,
+                              replicon_names)
+        computed_summary_file.seek(0)
+        self.assertTsvEqual(expected_summary_file, computed_summary_file, tsv_type='best_solution_summary.tsv')
+
+
+    def test_summary_best_solution_lack_models(self):
+        best_solution_path = self.find_data('best_solution.tsv')
+        expected_summary_path = self.find_data('summary_best_solution_lack_models.tsv')
+        model_fam_name = 'set_1'
+        model_vers = '0.0b2'
+        computed_summary_file = StringIO()
+        models_fqn = ['set_1/MSH', 'set_1/T2SS', 'set_1/T4P', 'set_1/T4bP', "empty/model"]
+        replicon_names = ['VICH001.B.00001.C001']
+        summary_best_solution(model_fam_name,
+                              model_vers,
+                              best_solution_path,
+                              computed_summary_file,
+                              models_fqn,
+                              replicon_names)
+        computed_summary_file.seek(0)
+        self.assertTsvEqual(expected_summary_path, computed_summary_file, tsv_type='best_solution_summary.tsv')
+
+
+    def test_summary_best_solution_lack_replicon(self):
+        best_solution_path = self.find_data('best_solution.tsv')
+        expected_summary_path = self.find_data('summary_best_solution_lack_replicon.tsv')
+        model_fam_name = 'set_1'
+        model_vers = '0.0b2'
+        computed_summary_file = StringIO()
+        models_fqn = ['set_1/MSH', 'set_1/T2SS', 'set_1/T4P', 'set_1/T4bP']
+        replicon_names = ['VICH001.B.00001.C001', 'added_replicon']
+        summary_best_solution(model_fam_name, model_vers, best_solution_path, computed_summary_file, models_fqn, replicon_names)
+        computed_summary_file.seek(0)
+        self.assertTsvEqual(expected_summary_path, computed_summary_file, tsv_type='best_solution_summary.tsv')
+
+
+    def test_summary_best_solution_lack_models_replicons(self):
+        best_solution_path = self.find_data('best_solution.tsv')
+        expected_summary_path = self.find_data('summary_best_solution_lack_models_replicons.tsv')
+        model_fam_name = 'set_1'
+        model_vers = '0.0b2'
+        computed_summary_file = StringIO()
+        models_fqn = ['set_1/MSH', 'set_1/T2SS', 'set_1/T4P', 'set_1/T4bP', "empty/model"]
+        replicon_names = ['VICH001.B.00001.C001', 'added_replicon']
+        summary_best_solution(model_fam_name, model_vers, best_solution_path, computed_summary_file, models_fqn, replicon_names)
+        computed_summary_file.seek(0)
+        self.assertTsvEqual(expected_summary_path, computed_summary_file, tsv_type='best_solution_summary.tsv')
+
+
+    def test_rejected_candidates_to_tsv(self):
+        args = argparse.Namespace()
+        args.sequence_db = self.find_data("base", "test_1.fasta")
+        args.db_type = 'gembase'
+        args.models_dir = self.find_data('models')
+        args.res_search_dir = "blabla"
+
+        cfg = Config(MacsyDefaults(), args)
+        model_name = 'foo'
+        models_location = ModelLocation(path=os.path.join(args.models_dir, model_name))
+        profile_factory = ProfileFactory(cfg)
+
+        model = Model("foo/T2SS", 11)
+
+        gene_name = "gspD"
+        c_gene_gspd = CoreGene(models_location, gene_name, profile_factory)
+        gene_1 = ModelGene(c_gene_gspd, model)
+        gene_name = "sctC"
+        c_gene_sctc = CoreGene(models_location, gene_name, profile_factory)
+        gene_2 = ModelGene(c_gene_sctc, model)
+        model.add_mandatory_gene(gene_1)
+        model.add_accessory_gene(gene_2)
+
+        #     CoreHit(gene, model, hit_id, hit_seq_length, replicon_name, position, i_eval, score,
+        #         profile_coverage, sequence_coverage, begin_match, end_match
+        h10 = CoreHit(c_gene_gspd, "h10", 10, "replicon_1", 10, 1.0, 10.0, 1.0, 1.0, 10, 20)
+        v_h10 = ModelHit(h10, gene_1, GeneStatus.MANDATORY)
+        h20 = CoreHit(c_gene_sctc, "h20", 10, "replicon_1", 20, 1.0, 20.0, 1.0, 1.0, 10, 20)
+        v_h20 = ModelHit(h20, gene_2, GeneStatus.ACCESSORY)
+        h40 = CoreHit(c_gene_gspd, "h10", 10, "replicon_1", 40, 1.0, 10.0, 1.0, 1.0, 10, 20)
+        v_h40 = ModelHit(h40, gene_1, GeneStatus.MANDATORY)
+        h50 = CoreHit(c_gene_sctc, "h20", 10, "replicon_1", 50, 1.0, 20.0, 1.0, 1.0, 10, 20)
+        v_h50 = ModelHit(h50, gene_2, GeneStatus.ACCESSORY)
+        hit_weights = HitWeight(**cfg.hit_weights())
+        c1 = Cluster([v_h10, v_h20], model, hit_weights)
+        c2 = Cluster([v_h40, v_h50], model, hit_weights)
+        r_c = RejectedCandidate(model, [c1, c2], ["The reasons to reject these candidate"])
+
+        model_fam_name = 'foo'
+        model_vers = '0.0b2'
+        rej_cand_str = f"""# macsylib {macsylib.__version__} {macsylib.__commit__}
+# models : {model_fam_name}-{model_vers}
+# {' '.join(sys.argv)}
+# Rejected candidates found:
+"""
+        rej_cand_str += '\t'.join(
+            ['candidate_id', 'replicon', 'model_fqn', 'cluster_id', 'hit_id', 'hit_pos', 'gene_name', 'function',
+             'reasons'])
+        rej_cand_str += '\n'
+        rej_cand_str += '\t'.join(['replicon_1_T2SS_1', 'replicon_1', 'foo/T2SS', c1.id, 'h10', '10', 'gspD', 'gspD',
+                                   'The reasons to reject these candidate'])
+        rej_cand_str += '\n'
+        rej_cand_str += '\t'.join(['replicon_1_T2SS_1', 'replicon_1', 'foo/T2SS', c1.id, 'h20', '20', 'sctC', 'sctC',
+                                   'The reasons to reject these candidate'])
+        rej_cand_str += '\n'
+        rej_cand_str += '\t'.join(['replicon_1_T2SS_1', 'replicon_1', 'foo/T2SS', c2.id, 'h10', '40', 'gspD', 'gspD',
+                                   'The reasons to reject these candidate'])
+        rej_cand_str += '\n'
+        rej_cand_str += '\t'.join(['replicon_1_T2SS_1', 'replicon_1', 'foo/T2SS', c2.id, 'h20', '50', 'sctC', 'sctC',
+                                   'The reasons to reject these candidate'])
+        rej_cand_str += '\n'
+        rej_cand_str += '\n'
+
+        f_out = StringIO()
+        rejected_candidates_to_tsv(model_fam_name, model_vers, [r_c], f_out)
+        self.maxDiff = None
+        self.assertMultiLineEqual(rej_cand_str, f_out.getvalue())
+
+        rej_cand_str = f"""# macsylib {macsylib.__version__} {macsylib.__commit__}
+# models : {model_fam_name}-{model_vers}
+# {' '.join(sys.argv)}
+# No Rejected candidates
+"""
+        f_out = StringIO()
+        rejected_candidates_to_tsv(model_fam_name, model_vers, [], f_out)
+        self.assertMultiLineEqual(rej_cand_str, f_out.getvalue())
+
+        rej_cand_str = f"""# macsylib {macsylib.__version__} {macsylib.__commit__}
+# models : {model_fam_name}-{model_vers}
+# {' '.join(sys.argv)}
+#
+# WARNING: The replicon 'rep_1' has been SKIPPED. Cannot be solved before timeout.
+# WARNING: The replicon 'rep_2' has been SKIPPED. Cannot be solved before timeout.
+#
+# No Rejected candidates
+"""
+        f_out = StringIO()
+        rejected_candidates_to_tsv(model_fam_name, model_vers, [], f_out, skipped_replicons=['rep_1', 'rep_2'])
+        self.maxDiff = None
+        self.assertMultiLineEqual(rej_cand_str, f_out.getvalue())
