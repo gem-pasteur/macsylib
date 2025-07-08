@@ -5,7 +5,7 @@ repos:
     rev: v3.2.0
     hooks:
     -   id: trailing-whitespace
-        files: \.(py|rst|md|yml)$
+        files: \.(py|rst|yml)$
         exclude: ^(doc/build|dist)
     -   id: end-of-file-fixer
         files: \.(py|rst|md)$
@@ -14,7 +14,7 @@ repos:
     -   id: check-added-large-files
 - repo: https://github.com/astral-sh/ruff-pre-commit
   # Ruff version.
-  rev: v0.5.2
+  rev: v0.12.2
   hooks:
     # Run the linter.
     - id: ruff
