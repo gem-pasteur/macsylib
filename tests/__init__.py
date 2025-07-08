@@ -167,9 +167,14 @@ class MacsyTest(unittest.TestCase):
         # the StringIO does not support context in python2.7
         # so we can use the following statement only in python3
         from itertools import zip_longest
+        if isinstance(f1, StringIO):
+            f1.name = f"{f1.__class__} f1"
+        if isinstance(f2, StringIO):
+            f2.name = f"{f2.__class__} f2"
         with open(f1) if isinstance(f1, str) else f1 as fh1, open(f2) if isinstance(f2, str) else f2 as fh2:
             header = None
             for i, grp in enumerate(zip_longest(fh1, fh2), 1):
+
                 l1, l2 = grp
                 if l1.startswith(comment) and l2.startswith(comment):
                     continue
