@@ -32,12 +32,13 @@ from io import StringIO
 import macsylib
 from macsylib import io
 from macsylib.config import MacsyDefaults, Config
-from macsylib.io import systems_to_tsv, solutions_to_tsv, rejected_candidates_to_tsv, summary_best_solution
+from macsylib.io import systems_to_tsv, solutions_to_tsv, rejected_candidates_to_tsv, summary_best_solution, \
+    loners_to_tsv, multisystems_to_tsv
 from macsylib.profile import ProfileFactory
 from macsylib.registries import ModelLocation
 from macsylib.gene import CoreGene, ModelGene, Exchangeable, GeneStatus
 from macsylib.model import Model
-from macsylib.hit import CoreHit, ModelHit, HitWeight
+from macsylib.hit import CoreHit, ModelHit, HitWeight, Loner, MultiSystem
 from macsylib.cluster import Cluster
 from macsylib.system import System, HitSystemTracker, RejectedCandidate, AbstractUnordered
 from macsylib.solution import Solution
@@ -565,3 +566,191 @@ class IoTest(MacsyTest):
         rejected_candidates_to_tsv(model_fam_name, model_vers, [], f_out, skipped_replicons=['rep_1', 'rep_2'])
         self.maxDiff = None
         self.assertMultiLineEqual(rej_cand_str, f_out.getvalue())
+
+
+    def test_loners_to_tsv(self):
+        args = argparse.Namespace()
+        args.sequence_db = self.find_data("base", "test_1.fasta")
+        args.db_type = 'gembase'
+        args.models_dir = self.find_data('models')
+        cfg = Config(MacsyDefaults(), args)
+
+        model_name = 'foo'
+        models_location = ModelLocation(path=os.path.join(args.models_dir, model_name))
+
+        # we need to reset the ProfileFactory
+        # because it's a like a singleton
+        # so other tests are influenced by ProfileFactory and it's configuration
+        # for instance search_genes get profile without hmmer_exe
+        profile_factory = ProfileFactory(cfg)
+        model = Model("foo/T2SS", 10)
+
+        gene_name = "gspD"
+        cg_gspd = CoreGene(models_location, gene_name, profile_factory)
+        mg_gspd = ModelGene(cg_gspd, model, loner=True)
+
+        gene_name = "sctJ"
+        cg_sctj = CoreGene(models_location, gene_name, profile_factory)
+        mg_sctj = ModelGene(cg_sctj, model)
+
+        gene_name = "abc"
+        cg_abc = CoreGene(models_location, gene_name, profile_factory)
+        mg_abc = ModelGene(cg_abc, model)
+
+        model.add_mandatory_gene(mg_gspd)
+        model.add_accessory_gene(mg_sctj)
+        model.add_accessory_gene(mg_abc)
+
+        chit_abc = CoreHit(cg_abc, "hit_abc", 803, "replicon_id", 3, 1.0, 1.0, 1.0, 1.0, 10, 20)
+        chit_sctj = CoreHit(cg_sctj, "hit_sctj", 803, "replicon_id", 4, 1.0, 1.0, 1.0, 1.0, 10, 20)
+        chit_gspd1 = CoreHit(cg_gspd, "hit_gspd1", 803, "replicon_id", 20, 1.0, 2.0, 1.0, 1.0, 10, 20)
+        chit_gspd2 = CoreHit(cg_gspd, "hit_gspd2", 803, "replicon_id", 30, 1.0, 3.0, 1.0, 1.0, 10, 20)
+        mhit_abc = ModelHit(chit_abc, mg_abc, GeneStatus.ACCESSORY)
+        mhit_sctj = ModelHit(chit_sctj, mg_sctj, GeneStatus.ACCESSORY)
+        mhit_gspd1 = ModelHit(chit_gspd1, mg_gspd, GeneStatus.MANDATORY)
+        mhit_gspd2 = ModelHit(chit_gspd2, mg_gspd, GeneStatus.MANDATORY)
+        l_gspd1 = Loner(mhit_gspd1, counterpart=[mhit_gspd2])
+        system_1 = System(model,
+                          [Cluster([mhit_abc, mhit_sctj], model, HitWeight(**cfg.hit_weights())),
+                           Cluster([l_gspd1], model, HitWeight(**cfg.hit_weights()))],
+                          cfg.redundancy_penalty())
+        model_fam_name = 'foo'
+        model_vers = '0.0b2'
+        loner_tsv = f"""# macsylib {macsylib.__version__} {macsylib.__commit__}
+# models : {model_fam_name}-{model_vers}
+# {' '.join(sys.argv)}
+# Loners found:
+"""
+        loner_tsv += "\t".join(['replicon', 'model_fqn', 'function', 'gene_name', 'hit_id', 'hit_pos', 'hit_status',
+                                 'hit_seq_len', 'hit_i_eval', 'hit_score', 'hit_profile_cov',
+                                 'hit_seq_cov', 'hit_begin_match', 'hit_end_match'])
+        loner_tsv += "\n"
+        loner_tsv += "\t".join(['replicon_id', 'foo/T2SS', 'gspD', 'gspD', 'hit_gspd1', '20', 'mandatory', '803',
+                                 '1.000e+00', '2.000', '1.000', '1.000', '10', '20'])
+        loner_tsv += "\n"
+        loner_tsv += "\t".join(['replicon_id', 'foo/T2SS', 'gspD', 'gspD', 'hit_gspd2', '30', 'mandatory', '803',
+                                 '1.000e+00', '3.000', '1.000', '1.000', '10', '20'])
+        loner_tsv += "\n\n"
+
+        f_out = StringIO()
+        loners_to_tsv(model_fam_name, model_vers, [system_1], f_out)
+        self.assertMultiLineEqual(loner_tsv, f_out.getvalue())
+
+        # test No system found
+        system_str = f"""# macsylib {macsylib.__version__} {macsylib.__commit__}
+# models : {model_fam_name}-{model_vers}
+# {' '.join(sys.argv)}
+# No Loners found
+"""
+        f_out = StringIO()
+        loners_to_tsv(model_fam_name, model_vers, [], f_out)
+        self.assertMultiLineEqual(system_str, f_out.getvalue())
+
+        # test No loners
+        loner_tsv = f"""# macsylib {macsylib.__version__} {macsylib.__commit__}
+# models : {model_fam_name}-{model_vers}
+# {' '.join(sys.argv)}
+# No Loners found
+"""
+        system_2 = System(model,
+                          [Cluster([mhit_abc, mhit_sctj], model, HitWeight(**cfg.hit_weights()))],
+                          cfg.redundancy_penalty())
+        f_out = StringIO()
+        loners_to_tsv(model_fam_name, model_vers, [system_2], f_out)
+        self.assertMultiLineEqual(loner_tsv, f_out.getvalue())
+
+
+    def test_multisystem_to_tsv(self):
+        args = argparse.Namespace()
+        args.sequence_db = self.find_data("base", "test_1.fasta")
+        args.db_type = 'gembase'
+        args.models_dir = self.find_data('models')
+        cfg = Config(MacsyDefaults(), args)
+
+        model_name = 'foo'
+        models_location = ModelLocation(path=os.path.join(args.models_dir, model_name))
+
+        # we need to reset the ProfileFactory
+        # because it's a like a singleton
+        # so other tests are influenced by ProfileFactory and it's configuration
+        # for instance search_genes get profile without hmmer_exe
+        profile_factory = ProfileFactory(cfg)
+        model = Model("foo/T2SS", 10)
+
+        gene_name = "gspD"
+        cg_gspd = CoreGene(models_location, gene_name, profile_factory)
+        mg_gspd = ModelGene(cg_gspd, model, multi_system=True)
+
+        gene_name = "sctJ"
+        cg_sctj = CoreGene(models_location, gene_name, profile_factory)
+        mg_sctj = ModelGene(cg_sctj, model)
+
+        gene_name = "abc"
+        cg_abc = CoreGene(models_location, gene_name, profile_factory)
+        mg_abc = ModelGene(cg_abc, model)
+
+        model.add_mandatory_gene(mg_gspd)
+        model.add_accessory_gene(mg_sctj)
+        model.add_accessory_gene(mg_abc)
+
+        chit_abc = CoreHit(cg_abc, "hit_abc", 803, "replicon_id", 3, 1.0, 1.0, 1.0, 1.0, 10, 20)
+        chit_sctj = CoreHit(cg_sctj, "hit_sctj", 803, "replicon_id", 4, 1.0, 1.0, 1.0, 1.0, 10, 20)
+        chit_gspd1 = CoreHit(cg_gspd, "hit_gspd1", 803, "replicon_id", 20, 1.0, 2.0, 1.0, 1.0, 10, 20)
+        chit_gspd2 = CoreHit(cg_gspd, "hit_gspd2", 803, "replicon_id", 30, 1.0, 3.0, 1.0, 1.0, 10, 20)
+        mhit_abc = ModelHit(chit_abc, mg_abc, GeneStatus.ACCESSORY)
+        mhit_sctj = ModelHit(chit_sctj, mg_sctj, GeneStatus.ACCESSORY)
+        mhit_gspd1 = ModelHit(chit_gspd1, mg_gspd, GeneStatus.MANDATORY)
+        mhit_gspd2 = ModelHit(chit_gspd2, mg_gspd, GeneStatus.MANDATORY)
+        l_gspd1 = MultiSystem(mhit_gspd1, counterpart=[mhit_gspd2])
+        system_1 = System(model,
+                          [Cluster([mhit_abc, mhit_sctj], model, HitWeight(**cfg.hit_weights())),
+                           Cluster([l_gspd1], model, HitWeight(**cfg.hit_weights()))],
+                          cfg.redundancy_penalty())
+        model_fam_name = 'foo'
+        model_vers = '0.0b2'
+        multisystem_tsv = f"""# macsylib {macsylib.__version__} {macsylib.__commit__}
+# models : {model_fam_name}-{model_vers}
+# {' '.join(sys.argv)}
+# Multisystems found:
+"""
+        multisystem_tsv += "\t".join(
+            ['replicon', 'model_fqn', 'function', 'gene_name', 'hit_id', 'hit_pos', 'hit_status',
+             'hit_seq_len', 'hit_i_eval', 'hit_score', 'hit_profile_cov',
+             'hit_seq_cov', 'hit_begin_match', 'hit_end_match'])
+        multisystem_tsv += "\n"
+        multisystem_tsv += "\t".join(
+            ['replicon_id', 'foo/T2SS', 'gspD', 'gspD', 'hit_gspd1', '20', 'mandatory', '803',
+             '1.000e+00', '2.000', '1.000', '1.000', '10', '20'])
+        multisystem_tsv += "\n"
+        multisystem_tsv += "\t".join(
+            ['replicon_id', 'foo/T2SS', 'gspD', 'gspD', 'hit_gspd2', '30', 'mandatory', '803',
+             '1.000e+00', '3.000', '1.000', '1.000', '10', '20'])
+        multisystem_tsv += "\n\n"
+
+        f_out = StringIO()
+        multisystems_to_tsv(model_fam_name, model_vers, [system_1], f_out)
+        self.assertMultiLineEqual(multisystem_tsv,
+                                  f_out.getvalue())
+
+        # test No system found
+        system_str = f"""# macsylib {macsylib.__version__} {macsylib.__commit__}
+# models : {model_fam_name}-{model_vers}
+# {' '.join(sys.argv)}
+# No Multisystems found
+"""
+        f_out = StringIO()
+        multisystems_to_tsv(model_fam_name, model_vers, [], f_out)
+        self.assertMultiLineEqual(system_str, f_out.getvalue())
+
+        # test No multisystem found
+        system_2 = System(model,
+                          [Cluster([mhit_abc, mhit_sctj], model, HitWeight(**cfg.hit_weights()))],
+                          cfg.redundancy_penalty())
+        system_str = f"""# macsylib {macsylib.__version__} {macsylib.__commit__}
+# models : {model_fam_name}-{model_vers}
+# {' '.join(sys.argv)}
+# No Multisystems found
+"""
+        f_out = StringIO()
+        multisystems_to_tsv(model_fam_name, model_vers, [system_2], f_out)
+        self.assertMultiLineEqual(system_str, f_out.getvalue())
