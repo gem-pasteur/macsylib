@@ -33,14 +33,15 @@ import macsylib
 from macsylib import io
 from macsylib.config import MacsyDefaults, Config
 from macsylib.io import systems_to_tsv, solutions_to_tsv, rejected_candidates_to_tsv, summary_best_solution, \
-    loners_to_tsv, multisystems_to_tsv
+    loners_to_tsv, multisystems_to_tsv, rejected_candidates_to_txt, likely_systems_to_txt, likely_systems_to_tsv, \
+    unlikely_systems_to_txt
 from macsylib.profile import ProfileFactory
 from macsylib.registries import ModelLocation
 from macsylib.gene import CoreGene, ModelGene, Exchangeable, GeneStatus
 from macsylib.model import Model
 from macsylib.hit import CoreHit, ModelHit, HitWeight, Loner, MultiSystem
 from macsylib.cluster import Cluster
-from macsylib.system import System, HitSystemTracker, RejectedCandidate, AbstractUnordered
+from macsylib.system import System, HitSystemTracker, RejectedCandidate, AbstractUnordered, LikelySystem, UnlikelySystem
 from macsylib.solution import Solution
 from tests import MacsyTest
 
@@ -412,7 +413,7 @@ class IoTest(MacsyTest):
         model_fam_name = 'set_1'
         model_vers = '0.0b2'
         expected_summary_file = StringIO()
-        expected_summary_file.write("# macsyfinder vers\n")
+        expected_summary_file.write("# macsylib vers\n")
         expected_summary_file.write("# models: set_1-0.0b2\n")
         expected_summary_file.write("# msf command line\n")
         expected_summary_file.write('\t'.join(['replicon', 'set_1/MSH', 'set_1/T2SS', 'set_1/T4P', 'set_1/T4bP']) + '\n')
@@ -553,6 +554,7 @@ class IoTest(MacsyTest):
         rejected_candidates_to_tsv(model_fam_name, model_vers, [], f_out)
         self.assertMultiLineEqual(rej_cand_str, f_out.getvalue())
 
+        # test with skipped replicons
         rej_cand_str = f"""# macsylib {macsylib.__version__} {macsylib.__commit__}
 # models : {model_fam_name}-{model_vers}
 # {' '.join(sys.argv)}
@@ -564,6 +566,94 @@ class IoTest(MacsyTest):
 """
         f_out = StringIO()
         rejected_candidates_to_tsv(model_fam_name, model_vers, [], f_out, skipped_replicons=['rep_1', 'rep_2'])
+        self.maxDiff = None
+        self.assertMultiLineEqual(rej_cand_str, f_out.getvalue())
+
+
+    def test_rejected_candidates_to_txt(self):
+        args = argparse.Namespace()
+        args.sequence_db = self.find_data("base", "test_1.fasta")
+        args.db_type = 'gembase'
+        args.models_dir = self.find_data('models')
+        args.res_search_dir = "blabla"
+
+        cfg = Config(MacsyDefaults(), args)
+        model_name = 'foo'
+        models_location = ModelLocation(path=os.path.join(args.models_dir, model_name))
+        profile_factory = ProfileFactory(cfg)
+
+        model = Model("foo/T2SS", 11)
+
+        gene_name = "gspD"
+        c_gene_gspd = CoreGene(models_location, gene_name, profile_factory)
+        gene_1 = ModelGene(c_gene_gspd, model)
+        gene_name = "sctC"
+        c_gene_sctc = CoreGene(models_location, gene_name, profile_factory)
+        gene_2 = ModelGene(c_gene_sctc, model)
+        model.add_mandatory_gene(gene_1)
+        model.add_accessory_gene(gene_2)
+
+        #     CoreHit(gene, model, hit_id, hit_seq_length, replicon_name, position, i_eval, score,
+        #         profile_coverage, sequence_coverage, begin_match, end_match
+        h10 = CoreHit(c_gene_gspd, "h10", 10, "replicon_1", 10, 1.0, 10.0, 1.0, 1.0, 10, 20)
+        v_h10 = ModelHit(h10, gene_1, GeneStatus.MANDATORY)
+        h20 = CoreHit(c_gene_sctc, "h20", 10, "replicon_1", 20, 1.0, 20.0, 1.0, 1.0, 10, 20)
+        v_h20 = ModelHit(h20, gene_2, GeneStatus.ACCESSORY)
+        h40 = CoreHit(c_gene_gspd, "h10", 10, "replicon_1", 40, 1.0, 10.0, 1.0, 1.0, 10, 20)
+        v_h40 = ModelHit(h40, gene_1, GeneStatus.MANDATORY)
+        h50 = CoreHit(c_gene_sctc, "h20", 10, "replicon_1", 50, 1.0, 20.0, 1.0, 1.0, 10, 20)
+        v_h50 = ModelHit(h50, gene_2, GeneStatus.ACCESSORY)
+        hit_weights = HitWeight(**cfg.hit_weights())
+        c1 = Cluster([v_h10, v_h20], model, hit_weights)
+        c2 = Cluster([v_h40, v_h50], model, hit_weights)
+        r_c = RejectedCandidate(model, [c1, c2], ["The reasons to reject this candidate"])
+
+        model_fam_name = 'foo'
+        model_vers = '0.0b2'
+        rej_cand_str = f"""# macsylib {macsylib.__version__} {macsylib.__commit__}
+# models : {model_fam_name}-{model_vers}
+# {' '.join(sys.argv)}
+# Rejected candidates:
+
+Cluster:
+- model = T2SS
+- replicon = replicon_1
+- hits = (h10, gspD, 10), (h20, sctC, 20)
+Cluster:
+- model = T2SS
+- replicon = replicon_1
+- hits = (h10, gspD, 40), (h20, sctC, 50)
+This candidate has been rejected because:
+\t- The reasons to reject this candidate
+============================================================
+"""
+
+        f_out = StringIO()
+        rejected_candidates_to_txt(model_fam_name, model_vers, [r_c], f_out)
+        self.maxDiff = None
+        self.assertMultiLineEqual(rej_cand_str, f_out.getvalue())
+
+        rej_cand_str = f"""# macsylib {macsylib.__version__} {macsylib.__commit__}
+# models : {model_fam_name}-{model_vers}
+# {' '.join(sys.argv)}
+# No Rejected candidates
+"""
+        f_out = StringIO()
+        rejected_candidates_to_txt(model_fam_name, model_vers, [], f_out)
+        self.assertMultiLineEqual(rej_cand_str, f_out.getvalue())
+
+        # test with skipped replicons
+        rej_cand_str = f"""# macsylib {macsylib.__version__} {macsylib.__commit__}
+# models : {model_fam_name}-{model_vers}
+# {' '.join(sys.argv)}
+#
+# WARNING: The replicon 'rep_1' has been SKIPPED. Cannot be solved before timeout.
+# WARNING: The replicon 'rep_2' has been SKIPPED. Cannot be solved before timeout.
+#
+# No Rejected candidates
+"""
+        f_out = StringIO()
+        rejected_candidates_to_txt(model_fam_name, model_vers, [], f_out, skipped_replicons=['rep_1', 'rep_2'])
         self.maxDiff = None
         self.assertMultiLineEqual(rej_cand_str, f_out.getvalue())
 
@@ -754,3 +844,278 @@ class IoTest(MacsyTest):
         f_out = StringIO()
         multisystems_to_tsv(model_fam_name, model_vers, [system_2], f_out)
         self.assertMultiLineEqual(system_str, f_out.getvalue())
+
+    def test_likely_systems_to_txt(self):
+        args = argparse.Namespace()
+        args.sequence_db = self.find_data("base", "test_1.fasta")
+        args.db_type = 'unordered'
+        args.models_dir = self.find_data('models')
+        cfg = Config(MacsyDefaults(), args)
+
+        model_name = 'foo'
+        models_location = ModelLocation(path=os.path.join(args.models_dir, model_name))
+
+        # we need to reset the ProfileFactory
+        # because it's a like a singleton
+        # so other tests are influenced by ProfileFactory and it's configuration
+        # for instance search_genes get profile without hmmer_exe
+        profile_factory = ProfileFactory(cfg)
+
+        model = Model("foo/T2SS", 10)
+        # test if id is well incremented
+        gene_name = "gspD"
+        c_gene_gspd = CoreGene(models_location, gene_name, profile_factory)
+        gene_gspd = ModelGene(c_gene_gspd, model)
+        model.add_mandatory_gene(gene_gspd)
+        gene_name = "sctJ"
+        c_gene_sctj = CoreGene(models_location, gene_name, profile_factory)
+        gene_sctj = ModelGene(c_gene_sctj, model)
+        model.add_accessory_gene(gene_sctj)
+        gene_name = "sctC"
+        c_gene_sctc = CoreGene(models_location, gene_name, profile_factory)
+        gene_sctc = ModelGene(c_gene_sctc, model)
+        model.add_neutral_gene(gene_sctc)
+        gene_name = "tadZ"
+        c_gene_tadz = CoreGene(models_location, gene_name, profile_factory)
+        gene_tadz = ModelGene(c_gene_tadz, model)
+        model.add_forbidden_gene(gene_tadz)
+
+        hit_1 = CoreHit(c_gene_gspd, "hit_1", 803, "replicon_id", 1, 1.0, 1.0, 1.0, 1.0, 10, 20)
+        v_hit_1 = ModelHit(hit_1, gene_gspd, GeneStatus.MANDATORY)
+        hit_2 = CoreHit(c_gene_sctj, "hit_2", 804, "replicon_id", 1, 1.0, 1.0, 1.0, 1.0, 10, 20)
+        v_hit_2 = ModelHit(hit_2, gene_sctj, GeneStatus.ACCESSORY)
+        hit_3 = CoreHit(c_gene_sctc, "hit_3", 805, "replicon_id", 1, 1.0, 1.0, 1.0, 1.0, 10, 20)
+        v_hit_3 = ModelHit(hit_3, gene_sctc, GeneStatus.NEUTRAL)
+        hit_4 = CoreHit(c_gene_tadz, "hit_4", 806, "replicon_id", 1, 1.0, 1.0, 1.0, 1.0, 10, 20)
+        v_hit_4 = ModelHit(hit_4, gene_tadz, GeneStatus.FORBIDDEN)
+
+        system_1 = LikelySystem(model, [v_hit_1], [v_hit_2], [v_hit_3], [v_hit_4])
+
+        model_fam_name = 'foo'
+        model_vers = '0.0b2'
+        system_str = f"""# macsylib {macsylib.__version__} {macsylib.__commit__}
+# models : {model_fam_name}-{model_vers}
+# {' '.join(sys.argv)}
+# Systems found:
+
+This replicon contains genetic materials needed for system foo/T2SS
+WARNING the quorum is reached but there is also some forbidden genes.
+
+system id = replicon_id_T2SS_1
+model = foo/T2SS
+replicon = replicon_id
+hits = [('hit_1', 'gspD', 1), ('hit_2', 'sctJ', 1), ('hit_3', 'sctC', 1), ('hit_4', 'tadZ', 1)]
+wholeness = 1.000
+
+mandatory genes:
+\t- gspD: 1 (gspD)
+
+accessory genes:
+\t- sctJ: 1 (sctJ)
+
+neutral genes:
+\t- sctC: 1 (sctC)
+
+forbidden genes:
+\t- tadZ: 1 (tadZ)
+
+Use ordered replicon to have better prediction.
+
+"""
+
+        f_out = StringIO()
+        track_multi_systems_hit = HitSystemTracker([system_1])
+        likely_systems_to_txt(model_fam_name, model_vers, [system_1], track_multi_systems_hit, f_out)
+        self.assertMultiLineEqual(system_str, f_out.getvalue())
+
+        f_out = StringIO()
+        likely_systems_to_txt(model_fam_name, model_vers, [], track_multi_systems_hit, f_out)
+        expected_out = f"""# macsylib {macsylib.__version__} {macsylib.__commit__}
+# models : {model_fam_name}-{model_vers}
+# {' '.join(sys.argv)}
+# No Likely Systems found
+"""
+        self.assertEqual(expected_out, f_out.getvalue())
+
+
+    def test_likely_systems_to_tsv(self):
+        args = argparse.Namespace()
+        args.sequence_db = self.find_data("base", "test_1.fasta")
+        args.db_type = 'unordered'
+        args.models_dir = self.find_data('models')
+        cfg = Config(MacsyDefaults(), args)
+
+        model_name = 'foo'
+        models_location = ModelLocation(path=os.path.join(args.models_dir, model_name))
+
+        # we need to reset the ProfileFactory
+        # because it's a like a singleton
+        # so other tests are influenced by ProfileFactory and it's configuration
+        # for instance search_genes get profile without hmmer_exe
+        profile_factory = ProfileFactory(cfg)
+
+        model = Model("foo/T2SS", 10)
+        # test if id is well incremented
+        gene_name = "gspD"
+        c_gene_gspd = CoreGene(models_location, gene_name, profile_factory)
+        gene_gspd = ModelGene(c_gene_gspd, model)
+        model.add_mandatory_gene(gene_gspd)
+        gene_name = "sctJ"
+        c_gene_sctj = CoreGene(models_location, gene_name, profile_factory)
+        gene_sctj = ModelGene(c_gene_sctj, model)
+        model.add_accessory_gene(gene_sctj)
+        gene_name = "sctC"
+        c_gene_sctc = CoreGene(models_location, gene_name, profile_factory)
+        gene_sctc = ModelGene(c_gene_sctc, model)
+        model.add_neutral_gene(gene_sctc)
+        gene_name = "tadZ"
+        c_gene_tadz = CoreGene(models_location, gene_name, profile_factory)
+        gene_tadz = ModelGene(c_gene_tadz, model)
+        model.add_forbidden_gene(gene_tadz)
+
+        hit_1 = CoreHit(c_gene_gspd, "hit_1", 803, "replicon_id", 1, 1.0, 1.0, 1.0, 1.0, 10, 20)
+        v_hit_1 = ModelHit(hit_1, gene_gspd, GeneStatus.MANDATORY)
+        hit_2 = CoreHit(c_gene_sctj, "hit_2", 804, "replicon_id", 1, 1.0, 1.0, 1.0, 1.0, 10, 20)
+        v_hit_2 = ModelHit(hit_2, gene_sctj, GeneStatus.ACCESSORY)
+        hit_3 = CoreHit(c_gene_sctc, "hit_3", 805, "replicon_id", 1, 1.0, 1.0, 1.0, 1.0, 10, 20)
+        v_hit_3 = ModelHit(hit_3, gene_sctc, GeneStatus.NEUTRAL)
+        hit_4 = CoreHit(c_gene_tadz, "hit_4", 806, "replicon_id", 1, 1.0, 1.0, 1.0, 1.0, 10, 20)
+        v_hit_4 = ModelHit(hit_4, gene_tadz, GeneStatus.FORBIDDEN)
+
+        system_1 = LikelySystem(model, [v_hit_1], [v_hit_2], [v_hit_3], [v_hit_4])
+
+        model_fam_name = 'foo'
+        model_vers = '0.0b2'
+        sol_tsv = f"""# macsylib {macsylib.__version__} {macsylib.__commit__}
+# models : {model_fam_name}-{model_vers}
+# {' '.join(sys.argv)}
+# Likely Systems found:"""
+        sol_tsv += "\n\n"
+        sol_tsv += "\t".join(["replicon", "hit_id", "gene_name", "hit_pos", "model_fqn", "sys_id", "sys_wholeness",
+                              "hit_gene_ref", "hit_status", "hit_seq_len", "hit_i_eval", "hit_score",
+                              "hit_profile_cov", "hit_seq_cov", "hit_begin_match", "hit_end_match", "used_in"])
+        sol_tsv += "\n"
+        sol_tsv += "# This replicon contains genetic materials needed for system foo/T2SS\n"
+        sol_tsv += "# WARNING the quorum is reached but there is also some forbidden genes."
+        sol_tsv += "\n"
+        sol_tsv += '\t'.join(["replicon_id", "hit_1", "gspD", "1", "foo/T2SS", "replicon_id_T2SS_1", "1.000",
+                              "gspD", "mandatory", "803", "1.0", "1.000", "1.000", "1.000", "10", "20", ""])
+        sol_tsv += "\n"
+        sol_tsv += '\t'.join(["replicon_id", "hit_2", "sctJ", "1", "foo/T2SS", "replicon_id_T2SS_1", "1.000",
+                              "sctJ", "accessory", "804", "1.0", "1.000", "1.000", "1.000", "10", "20", ""])
+        sol_tsv += "\n"
+        sol_tsv += '\t'.join(["replicon_id", "hit_4", "tadZ", "1", "foo/T2SS", "replicon_id_T2SS_1", "1.000",
+                              "tadZ", "forbidden", "806", "1.0", "1.000", "1.000", "1.000", "10", "20", ""])
+        sol_tsv += "\n"
+        sol_tsv += '\t'.join(["replicon_id", "hit_3", "sctC", "1", "foo/T2SS", "replicon_id_T2SS_1", "1.000",
+                              "sctC", "neutral", "805", "1.0", "1.000", "1.000", "1.000", "10", "20", ""])
+        sol_tsv += "\n"
+        sol_tsv += "\n"
+
+        f_out = StringIO()
+        track_multi_systems_hit = HitSystemTracker([system_1])
+        likely_systems_to_tsv(model_fam_name, model_vers, [system_1], track_multi_systems_hit, f_out)
+        self.assertMultiLineEqual(sol_tsv, f_out.getvalue())
+
+        f_out = StringIO()
+        likely_systems_to_tsv(model_fam_name, model_vers, [], track_multi_systems_hit, f_out)
+        expected_out = f"""# macsylib {macsylib.__version__} {macsylib.__commit__}
+# models : {model_fam_name}-{model_vers}
+# {' '.join(sys.argv)}
+# No Likely Systems found
+"""
+        self.assertEqual(expected_out, f_out.getvalue())
+
+
+    def test_unnlikely_systems_to_txt(self):
+        args = argparse.Namespace()
+        args.sequence_db = self.find_data("base", "test_1.fasta")
+        args.db_type = 'unordered'
+        args.models_dir = self.find_data('models')
+        cfg = Config(MacsyDefaults(), args)
+
+        model_name = 'foo'
+        models_location = ModelLocation(path=os.path.join(args.models_dir, model_name))
+
+        # we need to reset the ProfileFactory
+        # because it's a like a singleton
+        # so other tests are influenced by ProfileFactory and it's configuration
+        # for instance search_genes get profile without hmmer_exe
+        profile_factory = ProfileFactory(cfg)
+
+        model = Model("foo/T2SS", 10)
+        # test if id is well incremented
+        gene_name = "gspD"
+        c_gene_gspd = CoreGene(models_location, gene_name, profile_factory)
+        gene_gspd = ModelGene(c_gene_gspd, model)
+        model.add_mandatory_gene(gene_gspd)
+        gene_name = "sctJ"
+        c_gene_sctj = CoreGene(models_location, gene_name, profile_factory)
+        gene_sctj = ModelGene(c_gene_sctj, model)
+        model.add_accessory_gene(gene_sctj)
+        gene_name = "sctC"
+        c_gene_sctc = CoreGene(models_location, gene_name, profile_factory)
+        gene_sctc = ModelGene(c_gene_sctc, model)
+        model.add_neutral_gene(gene_sctc)
+        gene_name = "tadZ"
+        c_gene_tadz = CoreGene(models_location, gene_name, profile_factory)
+        gene_tadz = ModelGene(c_gene_tadz, model)
+        model.add_forbidden_gene(gene_tadz)
+
+        hit_1 = CoreHit(c_gene_gspd, "hit_1", 803, "replicon_id", 1, 1.0, 1.0, 1.0, 1.0, 10, 20)
+        v_hit_1 = ModelHit(hit_1, gene_gspd, GeneStatus.MANDATORY)
+        hit_2 = CoreHit(c_gene_sctj, "hit_2", 804, "replicon_id", 1, 1.0, 1.0, 1.0, 1.0, 10, 20)
+        v_hit_2 = ModelHit(hit_2, gene_sctj, GeneStatus.ACCESSORY)
+        hit_3 = CoreHit(c_gene_sctc, "hit_3", 805, "replicon_id", 1, 1.0, 1.0, 1.0, 1.0, 10, 20)
+        v_hit_3 = ModelHit(hit_3, gene_sctc, GeneStatus.NEUTRAL)
+        hit_4 = CoreHit(c_gene_tadz, "hit_4", 806, "replicon_id", 1, 1.0, 1.0, 1.0, 1.0, 10, 20)
+        v_hit_4 = ModelHit(hit_4, gene_tadz, GeneStatus.FORBIDDEN)
+        reason = "why it not a system"
+        system_1 = UnlikelySystem(model, [v_hit_1], [v_hit_2], [v_hit_3], [v_hit_4], reason)
+
+        model_fam_name = 'foo'
+        model_vers = '0.0b2'
+
+        exp_txt = f"""# macsylib {macsylib.__version__} {macsylib.__commit__}
+# models : {model_fam_name}-{model_vers}
+# {' '.join(sys.argv)}
+# Unlikely Systems found:
+
+This replicon probably not contains a system foo/T2SS:
+{reason}
+
+system id = replicon_id_T2SS_1
+model = foo/T2SS
+replicon = replicon_id
+hits = [('hit_1', 'gspD', 1), ('hit_2', 'sctJ', 1), ('hit_3', 'sctC', 1), ('hit_4', 'tadZ', 1)]
+wholeness = 1.000
+
+mandatory genes:
+\t- gspD: 1 (gspD)
+
+accessory genes:
+\t- sctJ: 1 (sctJ)
+
+neutral genes:
+\t- sctC: 1 (sctC)
+
+forbidden genes:
+\t- tadZ: 1 (tadZ)
+
+Use ordered replicon to have better prediction.
+
+============================================================
+"""
+
+        f_out = StringIO()
+        unlikely_systems_to_txt(model_fam_name, model_vers, [system_1], f_out)
+        self.assertMultiLineEqual(exp_txt, f_out.getvalue())
+
+        f_out = StringIO()
+        unlikely_systems_to_txt(model_fam_name, model_vers, [], f_out)
+        expected_out = f"""# macsylib {macsylib.__version__} {macsylib.__commit__}
+# models : {model_fam_name}-{model_vers}
+# {' '.join(sys.argv)}
+# No Unlikely Systems found
+"""
+        self.assertEqual(expected_out, f_out.getvalue())
