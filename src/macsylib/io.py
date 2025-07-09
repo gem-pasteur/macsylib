@@ -41,7 +41,7 @@ from macsylib.serialization import (TsvSystemSerializer,
                                     TsvRejectedCandidatesSerializer,
                                     TsvSpecialHitSerializer,
                                     TsvLikelySystemSerializer,
-                                    TxtLikelySystemSerializer, TxtUnikelySystemSerializer)
+                                    TxtLikelySystemSerializer, TxtUnikelySystemSerializer, TxtSystemSerializer)
 
 
 
@@ -95,6 +95,43 @@ def systems_to_tsv(models_fam_name: str, models_version: str, systems: list[Syst
         print(f"# No {system_name.capitalize()} found", file=sys_file)
 
 
+def systems_to_txt(models_fam_name: str, models_version: str,
+                   systems: list[System],
+                   hit_system_tracker: HitSystemTracker,
+                   sys_file: typing.IO,
+                   skipped_replicons: list[str] | None = None,
+                   header: Callable[[str, str, list[str], str], str] = outfile_header,
+                   ) -> None:
+    """
+    print systems occurrences in a file in human-readable format
+
+    :param models_fam_name: the family name of the models (Conj, CrisprCAS, ...)
+    :param models_version: the version of the models
+    :param systems: list of systems found
+    :param hit_system_tracker: a filled HitSystemTracker.
+    :param sys_file: The file where to write down the systems occurrences
+    :param skipped_replicons: the replicons name for which msf reach the timeout
+    :param header: A function that generate the string which will be place on the head of the results
+    :return: None
+    """
+
+    print(header(models_fam_name, models_version, skipped_replicons=skipped_replicons), file=sys_file)
+    if skipped_replicons:
+        systems = [s for s in systems if s.replicon_name not in skipped_replicons]
+    if systems:
+        print("# Systems found:\n", file=sys_file)
+        for system in systems:
+            sys_serializer = TxtSystemSerializer()
+            print(sys_serializer.serialize(system, hit_system_tracker), file=sys_file)
+            print("=" * 60, file=sys_file)
+
+        warnings = loner_warning(systems)
+        if warnings:
+            print("\n".join(warnings), file=sys_file)
+    else:
+        print("# No Systems found", file=sys_file)
+
+
 def solutions_to_tsv(models_fam_name: str,
                      models_version: str,
                      solutions: list[Solution],
@@ -125,6 +162,8 @@ def solutions_to_tsv(models_fam_name: str,
 
         for sol_id, solution in enumerate(solutions, 1):
             print(sol_serializer.serialize(solution, sol_id, hit_system_tracker), file=sys_file, end='')
+            if warnings := loner_warning(solution.systems):
+                print("\n".join(warnings) + "\n", file=sys_file)
     else:
         print(f"# No {system_name.capitalize()}s found", file=sys_file)
 
@@ -418,3 +457,30 @@ def unlikely_systems_to_txt(models_fam_name: str, models_version: str,
             print("=" * 60, file=sys_file)
     else:
         print("# No Unlikely Systems found", file=sys_file)
+
+
+def loner_warning(systems: list[System]) -> list[str]:
+    """
+    :param systems: sequence of systems
+    :return: warning for loner which have less occurrences than systems occurrences in which this lone is used
+             except if the loner is also multi system
+    """
+    warnings = []
+    loner_tracker = {}
+    for syst in systems:
+        loners = syst.get_loners()
+        for loner in loners:
+            if loner.multi_system:
+                # the loner multi_systems can appear in several systems
+                continue
+            elif loner in loner_tracker:
+                loner_tracker[loner].append(syst)
+            else:
+                loner_tracker[loner] = [syst]
+    for loner, systs in loner_tracker.items():
+        if len(loner) < len(systs):
+            # len(loners) count the number of loner occurrence the loner and its counterpart
+            warnings.append(f"# WARNING Loner: there is only {len(loner)} occurrence(s) of loner '{loner.gene.name}' "
+                            f"and {len(systs)} potential systems [{', '.join([s.id for s in systs])}]")
+
+    return warnings
