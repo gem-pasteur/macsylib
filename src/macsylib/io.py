@@ -30,13 +30,18 @@ module that deals with the satellite_finder outputs
 
 import sys
 import typing
+from collections.abc import Callable
 import pandas as pd
 
 import macsylib
-from macsylib.system import HitSystemTracker, System, RejectedCandidate
+from macsylib.system import HitSystemTracker, System, RejectedCandidate, LikelySystem, UnlikelySystem
 from macsylib.solution import Solution
-from macsylib.serialization import (TsvSystemSerializer, TsvSolutionSerializer,TsvRejectedCandidatesSerializer,
-                                    TsvSpecialHitSerializer)
+from macsylib.serialization import (TsvSystemSerializer,
+                                    TsvSolutionSerializer,
+                                    TsvRejectedCandidatesSerializer,
+                                    TsvSpecialHitSerializer,
+                                    TsvLikelySystemSerializer,
+                                    TxtLikelySystemSerializer, TxtUnikelySystemSerializer)
 
 
 
@@ -62,7 +67,7 @@ def systems_to_tsv(models_fam_name: str, models_version: str, systems: list[Syst
                    hit_system_tracker: HitSystemTracker,
                    sys_file: typing.IO,
                    skipped_replicons: list[str] | None = None,
-                   header=outfile_header,
+                   header: Callable[[str, str, list[str], str],str]=outfile_header,
                    system_name:str = 'System') -> None:
     """
     print systems occurrences in a file in tabulated  format
@@ -73,6 +78,7 @@ def systems_to_tsv(models_fam_name: str, models_version: str, systems: list[Syst
     :param hit_system_tracker: a filled HitSystemTracker.
     :param sys_file: The file where to write down the systems occurrences
     :param skipped_replicons: the replicons name for which msf reach the timeout
+    :param header: A function that generate the string which will be place on the head of the results
     :return: None
     """
     print(header(models_fam_name, models_version, skipped_replicons=skipped_replicons),
@@ -94,7 +100,7 @@ def solutions_to_tsv(models_fam_name: str,
                      solutions: list[Solution],
                      hit_system_tracker: HitSystemTracker,
                      sys_file: typing.IO, skipped_replicons: list[str] | None = None,
-                     header=outfile_header,
+                     header: Callable[[str, str, list[str], str],str]=outfile_header,
                      system_name: str = 'system') -> None:
     """
     print solution in a file in tabulated format
@@ -106,6 +112,7 @@ def solutions_to_tsv(models_fam_name: str,
     :param solutions: list of systems found
     :param hit_system_tracker: a filled HitSystemTracker.
     :param sys_file: The file where to write down the systems occurrences
+    :param header: A function that generate the string which will be place on the head of the results
     :param skipped_replicons: the replicons name for which msf reach the timeout
     :return: None
     """
@@ -128,7 +135,7 @@ def summary_best_solution(models_fam_name: str,
                           sys_file: typing.IO,
                           models_fqn: list[str],
                           replicon_names: list[str],
-                          header=outfile_header,
+                          header: Callable[[str, str, list[str], str],str]=outfile_header,
                           skipped_replicons: list[str] | None = None) -> None:
     """
     do a summary of best_solution in best_solution_path and write it on out_path
@@ -148,6 +155,7 @@ def summary_best_solution(models_fam_name: str,
     :param sys_file: the file where to save the summary
     :param models_fqn: the fully qualified names of the models
     :param replicon_names: the names of the replicons used
+    :param header: A function that generate the string which will be place on the head of the results
     :param skipped_replicons: the replicons name for which msf reach the timeout
     """
     skipped_replicons = skipped_replicons if skipped_replicons else set()
@@ -208,10 +216,38 @@ def summary_best_solution(models_fam_name: str,
     summary.to_csv(sys_file, sep='\t')
 
 
+def rejected_candidates_to_txt(models_fam_name: str, models_version: str,
+                               rejected_candidates: list[RejectedCandidate],
+                               cand_file: typing.IO,
+                               header: Callable[[str, str, list[str], str],str]=outfile_header,
+                               skipped_replicons: list[str] | None = None):
+    """
+    print rejected clusters in a file
+
+    :param models_fam_name: the family name of the models (Conj, CrisprCAS, ...)
+    :param models_version: the version of the models
+    :param rejected_candidates: list of candidates which does not contitute a system
+    :param cand_file: The file where to write down the rejected candidates
+    :param header: A function that generate the string which will be place on the head of the results
+    :param skipped_replicons: the replicons name for which msf reach the timeout
+    :return: None
+    """
+    print(header(models_fam_name, models_version, skipped_replicons=skipped_replicons), file=cand_file)
+    if skipped_replicons:
+        rejected_candidates = [rc for rc in rejected_candidates if rc.replicon_name not in skipped_replicons]
+    if rejected_candidates:
+        print("# Rejected candidates:\n", file=cand_file)
+        for rej_cand in rejected_candidates:
+            print(rej_cand, file=cand_file, end='')
+            print("=" * 60, file=cand_file)
+    else:
+        print("# No Rejected candidates", file=cand_file)
+
+
 def rejected_candidates_to_tsv(models_fam_name: str, models_version: str,
                                rejected_candidates: list[RejectedCandidate],
                                cand_file: typing.IO,
-                               header=outfile_header,
+                               header: Callable[[str, str, list[str], str],str]=outfile_header,
                                skipped_replicons: list[str] | None = None):
     """
     print rejected clusters in a file
@@ -220,6 +256,7 @@ def rejected_candidates_to_tsv(models_fam_name: str, models_version: str,
     :param models_version: the version of the models
     :param rejected_candidates: list of candidates which does not contitute a system
     :param cand_file: The file where to write down the rejected candidates
+    :param header: A function that generate the string which will be place on the head of the results
     :param skipped_replicons: the replicons name for which msf reach the timeout
     :return: None
     """
@@ -237,7 +274,7 @@ def rejected_candidates_to_tsv(models_fam_name: str, models_version: str,
 
 
 def loners_to_tsv(models_fam_name: str, models_version: str, systems:list[System], sys_file:typing.IO,
-                  header=outfile_header,
+                  header: Callable[[str, str, list[str], str],str]=outfile_header,
                   skipped_replicons: list[str] | None = None) -> None:
     """
     get loners from valid systems and save them on file
@@ -246,6 +283,7 @@ def loners_to_tsv(models_fam_name: str, models_version: str, systems:list[System
     :param models_version: the version of the models
     :param systems: the systems from which the loners are extract
     :param sys_file: the file where loners are saved
+    :param header: A function that generate the string which will be place on the head of the results
     :param skipped_replicons: the replicons name for which msf reach the timeout
     """
     print(header(models_fam_name, models_version, skipped_replicons=skipped_replicons),
@@ -266,7 +304,7 @@ def loners_to_tsv(models_fam_name: str, models_version: str, systems:list[System
 
 
 def multisystems_to_tsv(models_fam_name:str, models_version:str, systems:list[System], sys_file:typing.IO,
-                        header=outfile_header,
+                        header:Callable[[str, str, list[str], str],str]=outfile_header,
                         skipped_replicons: list[str] | None = None) -> None:
     """
     get multisystems from valid systems and save them on file
@@ -275,6 +313,7 @@ def multisystems_to_tsv(models_fam_name:str, models_version:str, systems:list[Sy
     :param models_version: the version of the models
     :param systems: the systems from which the loners are extract
     :param sys_file: the file where multisystems are saved
+    :param header: A function that generate the string which will be place on the head of the results
     :param skipped_replicons: the replicons name for which msf reach the timeout
     """
     print(header(models_fam_name, models_version, skipped_replicons=skipped_replicons),
@@ -292,3 +331,90 @@ def multisystems_to_tsv(models_fam_name:str, models_version:str, systems:list[Sy
             print("# No Multisystems found", file=sys_file)
     else:
         print("# No Multisystems found", file=sys_file)
+
+
+def likely_systems_to_txt(models_fam_name: str, models_version: str,
+                          likely_systems: list[LikelySystem],
+                          hit_system_tracker: HitSystemTracker,
+                          sys_file: typing.IO,
+                          header: Callable[[str, str, list[str], str],str]=outfile_header,
+                          skipped_replicons: list[str] | None = None) -> None:
+    """
+    print likely systems occurrences (from unordered replicon)
+    in a file in text human readable format
+
+    :param models_fam_name: the family name of the models (Conj, CrisprCAS, ...)
+    :param models_version: the version of the models
+    :param likely_systems: list of systems found
+    :param hit_system_tracker: a filled HitSystemTracker.
+    :param sys_file: file object
+    :param header: A function that generate the string which will be place on the head of the results
+    :param skipped_replicons: the replicons name for which msf reach the timeout
+    :return: None
+    """
+    print(header(models_fam_name, models_version, skipped_replicons=skipped_replicons), file=sys_file)
+    if likely_systems:
+        print("# Systems found:\n", file=sys_file)
+        for system in likely_systems:
+            sys_serializer = TxtLikelySystemSerializer()
+            print(sys_serializer.serialize(system, hit_system_tracker), file=sys_file)
+    else:
+        print("# No Likely Systems found", file=sys_file)
+
+
+def likely_systems_to_tsv(models_fam_name: str, models_version: str,
+                          likely_systems: list[LikelySystem],
+                          hit_system_tracker: HitSystemTracker,
+                          sys_file: typing.IO,
+                          header: Callable[[str, str, list[str], str],str]=outfile_header,
+                          skipped_replicons: list[str] | None = None) -> None:
+    """
+    print likely systems occurrences (from unordered replicon)
+    in a file in tabulated separeted value (tsv) format
+
+    :param models_fam_name: the family name of the models (Conj, CrisprCAS, ...)
+    :param models_version: the version of the models
+    :param likely_systems: list of systems found
+    :param hit_system_tracker: a filled HitSystemTracker.
+    :param sys_file: The file where to write down the systems occurrences
+    :param header: A function that generate the string which will be place on the head of the results
+    :param skipped_replicons: the replicons name for which msf reach the timeout
+    :return: None
+    """
+    print(header(models_fam_name, models_version, skipped_replicons=skipped_replicons), file=sys_file)
+    if likely_systems:
+        print("# Likely Systems found:\n", file=sys_file)
+        print(TsvLikelySystemSerializer.header, file=sys_file)
+        for l_system in likely_systems:
+            sys_serializer = TsvLikelySystemSerializer()
+            print(sys_serializer.serialize(l_system, hit_system_tracker), file=sys_file)
+    else:
+        print("# No Likely Systems found", file=sys_file)
+
+
+def unlikely_systems_to_txt(models_fam_name: str, models_version: str,
+                            unlikely_systems: list[UnlikelySystem],
+                            sys_file: typing.IO,
+                            header: Callable[[str, str, list[str], str],str]=outfile_header,
+                            skipped_replicons: list[str]|None = None) -> None:
+    """
+    print hits (from unordered replicon) which probably does not make a system occurrences
+    in a file in human readable format
+
+    :param models_fam_name: the family name of the models (Conj, CrisprCAS, ...)
+    :param models_version: the version of the models
+    :param unlikely_systems: list of :class:`macsypy.system.UnLikelySystem` objects
+    :param sys_file: The file where to write down the systems occurrences
+    :param header: A function that generate the string which will be place on the head of the results
+    :param skipped_replicons: the replicons name for which msf reach the timeout
+    :return: None
+    """
+    print(header(models_fam_name, models_version, skipped_replicons=skipped_replicons), file=sys_file)
+    if unlikely_systems:
+        print("# Unlikely Systems found:\n", file=sys_file)
+        for system in unlikely_systems:
+            sys_serializer = TxtUnikelySystemSerializer()
+            print(sys_serializer.serialize(system), file=sys_file)
+            print("=" * 60, file=sys_file)
+    else:
+        print("# No Unlikely Systems found", file=sys_file)
