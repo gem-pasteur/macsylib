@@ -277,6 +277,8 @@ class TsvLikelySystemSerializer(SystemSerializer):
             warning = '\n'
         tsv = f"""# This replicon contains genetic materials needed for system {system.model.fqn}
 {warning}"""
+        tsv += self.header
+        tsv += '\n'
         for status in (s.lower() for s in GeneStatus.__members__):
             try:
                 hits = getattr(system, f"{status}_hits")
