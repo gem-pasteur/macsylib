@@ -34,7 +34,7 @@ from macsylib import io
 from macsylib.config import MacsyDefaults, Config
 from macsylib.io import systems_to_tsv, solutions_to_tsv, rejected_candidates_to_tsv, summary_best_solution, \
     loners_to_tsv, multisystems_to_tsv, rejected_candidates_to_txt, likely_systems_to_txt, likely_systems_to_tsv, \
-    unlikely_systems_to_txt
+    unlikely_systems_to_txt, systems_to_txt
 from macsylib.profile import ProfileFactory
 from macsylib.registries import ModelLocation
 from macsylib.gene import CoreGene, ModelGene, Exchangeable, GeneStatus
@@ -169,6 +169,102 @@ class IoTest(MacsyTest):
         f_out = StringIO()
         track_multi_systems_hit = HitSystemTracker([])
         systems_to_tsv(model_fam_name, model_vers, [], track_multi_systems_hit, f_out, skipped_replicons=['rep_1', 'rep_2'])
+        self.assertMultiLineEqual(system_str, f_out.getvalue())
+
+
+    def test_system_to_txt(self):
+        args = argparse.Namespace()
+        args.sequence_db = self.find_data("base", "test_1.fasta")
+        args.db_type = 'gembase'
+        args.models_dir = self.find_data('models')
+        cfg = Config(MacsyDefaults(), args)
+
+        model_name = 'foo'
+        models_location = ModelLocation(path=os.path.join(args.models_dir, model_name))
+
+        # we need to reset the ProfileFactory
+        # because it's a like a singleton
+        # so other tests are influenced by ProfileFactory and it's configuration
+        # for instance search_genes get profile without hmmer_exe
+        profile_factory = ProfileFactory(cfg)
+
+        model = Model("foo/T2SS", 10)
+        gene_name = "gspD"
+        c_gene_gspd = CoreGene(models_location, gene_name, profile_factory)
+        gene_gspd = ModelGene(c_gene_gspd, model)
+        model.add_mandatory_gene(gene_gspd)
+        gene_name = "sctJ"
+        c_gene_sctj = CoreGene(models_location, gene_name, profile_factory)
+        gene_sctj = ModelGene(c_gene_sctj, model)
+        model.add_accessory_gene(gene_sctj)
+
+        hit_1 = CoreHit(c_gene_gspd, "hit_1", 803, "replicon_id", 1, 1.0, 1.0, 1.0, 1.0, 10, 20)
+        v_hit_1 = ModelHit(hit_1, gene_gspd, GeneStatus.MANDATORY)
+        hit_2 = CoreHit(c_gene_sctj, "hit_2", 803, "replicon_id", 1, 1.0, 1.0, 1.0, 1.0, 10, 20)
+        v_hit_2 = ModelHit(hit_2, gene_sctj, GeneStatus.ACCESSORY)
+        system_1 = System(model,
+                          [Cluster([v_hit_1, v_hit_2], model, HitWeight(**cfg.hit_weights()))],
+                          cfg.redundancy_penalty())
+        model_fam_name = 'foo'
+        model_vers = '0.0b2'
+        system_txt = f"""# macsylib {macsylib.__version__} {macsylib.__commit__}
+# models : {model_fam_name}-{model_vers}
+# {' '.join(sys.argv)}
+# Systems found:
+
+system id = replicon_id_T2SS_1
+model = foo/T2SS
+replicon = replicon_id
+clusters = [('hit_1', 'gspD', 1), ('hit_2', 'sctJ', 1)]
+occ = 1
+wholeness = 1.000
+loci nb = 1
+score = 1.500
+
+mandatory genes:
+\t- gspD: 1 (gspD)
+
+accessory genes:
+\t- sctJ: 1 (sctJ)
+
+neutral genes:
+
+{"=" * 60}
+"""
+
+        f_out = StringIO()
+        track_multi_systems_hit = HitSystemTracker([system_1])
+        systems_to_txt(model_fam_name, model_vers,
+                       [system_1], track_multi_systems_hit, f_out)
+
+        self.assertMultiLineEqual(system_txt, f_out.getvalue())
+
+        # test No system found
+        system_str = f"""# macsylib {macsylib.__version__} {macsylib.__commit__}
+# models : {model_fam_name}-{model_vers}
+# {' '.join(sys.argv)}
+# No System found
+"""
+        f_out = StringIO()
+        track_multi_systems_hit = HitSystemTracker([])
+        systems_to_txt(model_fam_name, model_vers,
+                       [], track_multi_systems_hit, f_out)
+        self.assertMultiLineEqual(system_str, f_out.getvalue())
+
+        # test No system found replicon skipped
+        system_str = f"""# macsylib {macsylib.__version__} {macsylib.__commit__}
+# models : {model_fam_name}-{model_vers}
+# {' '.join(sys.argv)}
+#
+# WARNING: The replicon 'rep_1' has been SKIPPED. Cannot be solved before timeout.
+# WARNING: The replicon 'rep_2' has been SKIPPED. Cannot be solved before timeout.
+#
+# No System found
+"""
+        f_out = StringIO()
+        track_multi_systems_hit = HitSystemTracker([])
+        systems_to_tsv(model_fam_name, model_vers, [], track_multi_systems_hit, f_out,
+                       skipped_replicons=['rep_1', 'rep_2'])
         self.assertMultiLineEqual(system_str, f_out.getvalue())
 
 
@@ -989,14 +1085,15 @@ Use ordered replicon to have better prediction.
         sol_tsv = f"""# macsylib {macsylib.__version__} {macsylib.__commit__}
 # models : {model_fam_name}-{model_vers}
 # {' '.join(sys.argv)}
-# Likely Systems found:"""
-        sol_tsv += "\n\n"
-        sol_tsv += "\t".join(["replicon", "hit_id", "gene_name", "hit_pos", "model_fqn", "sys_id", "sys_wholeness",
-                              "hit_gene_ref", "hit_status", "hit_seq_len", "hit_i_eval", "hit_score",
-                              "hit_profile_cov", "hit_seq_cov", "hit_begin_match", "hit_end_match", "used_in"])
+# Likely Systems found:
+"""
         sol_tsv += "\n"
         sol_tsv += "# This replicon contains genetic materials needed for system foo/T2SS\n"
         sol_tsv += "# WARNING the quorum is reached but there is also some forbidden genes."
+        sol_tsv += "\n"
+        sol_tsv += "\t".join(["replicon", "hit_id", "gene_name", "hit_pos", "model_fqn", "sys_id", "sys_wholeness",
+                              "hit_gene_ref", "hit_status", "hit_seq_len", "hit_i_eval", "hit_score",
+                              "hit_profile_cov", "hit_seq_cov", "hit_begin_match", "hit_end_match", "used_in"])
         sol_tsv += "\n"
         sol_tsv += '\t'.join(["replicon_id", "hit_1", "gspD", "1", "foo/T2SS", "replicon_id_T2SS_1", "1.000",
                               "gspD", "mandatory", "803", "1.0", "1.000", "1.000", "1.000", "10", "20", ""])
@@ -1025,6 +1122,96 @@ Use ordered replicon to have better prediction.
 # No Likely Systems found
 """
         self.assertEqual(expected_out, f_out.getvalue())
+
+
+        def test_likely_systems_to_tsv(self):
+            args = argparse.Namespace()
+            args.sequence_db = self.find_data("base", "test_1.fasta")
+            args.db_type = 'unordered'
+            args.models_dir = self.find_data('models')
+            cfg = Config(MacsyDefaults(), args)
+
+            model_name = 'foo'
+            models_location = ModelLocation(path=os.path.join(args.models_dir, model_name))
+
+            # we need to reset the ProfileFactory
+            # because it's a like a singleton
+            # so other tests are influenced by ProfileFactory and it's configuration
+            # for instance search_genes get profile without hmmer_exe
+            profile_factory = ProfileFactory(cfg)
+
+            model = Model("foo/T2SS", 10)
+            # test if id is well incremented
+            gene_name = "gspD"
+            c_gene_gspd = CoreGene(models_location, gene_name, profile_factory)
+            gene_gspd = ModelGene(c_gene_gspd, model)
+            model.add_mandatory_gene(gene_gspd)
+            gene_name = "sctJ"
+            c_gene_sctj = CoreGene(models_location, gene_name, profile_factory)
+            gene_sctj = ModelGene(c_gene_sctj, model)
+            model.add_accessory_gene(gene_sctj)
+            gene_name = "sctC"
+            c_gene_sctc = CoreGene(models_location, gene_name, profile_factory)
+            gene_sctc = ModelGene(c_gene_sctc, model)
+            model.add_neutral_gene(gene_sctc)
+            gene_name = "tadZ"
+            c_gene_tadz = CoreGene(models_location, gene_name, profile_factory)
+            gene_tadz = ModelGene(c_gene_tadz, model)
+            model.add_forbidden_gene(gene_tadz)
+
+            hit_1 = CoreHit(c_gene_gspd, "hit_1", 803, "replicon_id", 1, 1.0, 1.0, 1.0, 1.0, 10, 20)
+            v_hit_1 = ModelHit(hit_1, gene_gspd, GeneStatus.MANDATORY)
+            hit_2 = CoreHit(c_gene_sctj, "hit_2", 804, "replicon_id", 1, 1.0, 1.0, 1.0, 1.0, 10, 20)
+            v_hit_2 = ModelHit(hit_2, gene_sctj, GeneStatus.ACCESSORY)
+            hit_3 = CoreHit(c_gene_sctc, "hit_3", 805, "replicon_id", 1, 1.0, 1.0, 1.0, 1.0, 10, 20)
+            v_hit_3 = ModelHit(hit_3, gene_sctc, GeneStatus.NEUTRAL)
+            hit_4 = CoreHit(c_gene_tadz, "hit_4", 806, "replicon_id", 1, 1.0, 1.0, 1.0, 1.0, 10, 20)
+            v_hit_4 = ModelHit(hit_4, gene_tadz, GeneStatus.FORBIDDEN)
+
+            system_1 = LikelySystem(model, [v_hit_1], [v_hit_2], [v_hit_3], [v_hit_4])
+
+            model_fam_name = 'foo'
+            model_vers = '0.0b2'
+            sol_tsv = f"""# macsylib {macsylib.__version__} {macsylib.__commit__}
+    # models : {model_fam_name}-{model_vers}
+    # {' '.join(sys.argv)}
+    # Likely Systems found:
+    """
+            sol_tsv += "\n"
+            sol_tsv += "# This replicon contains genetic materials needed for system foo/T2SS\n"
+            sol_tsv += "# WARNING the quorum is reached but there is also some forbidden genes."
+            sol_tsv += "\n"
+            sol_tsv += "\t".join(["replicon", "hit_id", "gene_name", "hit_pos", "model_fqn", "sys_id", "sys_wholeness",
+                                  "hit_gene_ref", "hit_status", "hit_seq_len", "hit_i_eval", "hit_score",
+                                  "hit_profile_cov", "hit_seq_cov", "hit_begin_match", "hit_end_match", "used_in"])
+            sol_tsv += "\n"
+            sol_tsv += '\t'.join(["replicon_id", "hit_1", "gspD", "1", "foo/T2SS", "replicon_id_T2SS_1", "1.000",
+                                  "gspD", "mandatory", "803", "1.0", "1.000", "1.000", "1.000", "10", "20", ""])
+            sol_tsv += "\n"
+            sol_tsv += '\t'.join(["replicon_id", "hit_2", "sctJ", "1", "foo/T2SS", "replicon_id_T2SS_1", "1.000",
+                                  "sctJ", "accessory", "804", "1.0", "1.000", "1.000", "1.000", "10", "20", ""])
+            sol_tsv += "\n"
+            sol_tsv += '\t'.join(["replicon_id", "hit_4", "tadZ", "1", "foo/T2SS", "replicon_id_T2SS_1", "1.000",
+                                  "tadZ", "forbidden", "806", "1.0", "1.000", "1.000", "1.000", "10", "20", ""])
+            sol_tsv += "\n"
+            sol_tsv += '\t'.join(["replicon_id", "hit_3", "sctC", "1", "foo/T2SS", "replicon_id_T2SS_1", "1.000",
+                                  "sctC", "neutral", "805", "1.0", "1.000", "1.000", "1.000", "10", "20", ""])
+            sol_tsv += "\n"
+            sol_tsv += "\n"
+
+            f_out = StringIO()
+            track_multi_systems_hit = HitSystemTracker([system_1])
+            likely_systems_to_tsv(model_fam_name, model_vers, [system_1], track_multi_systems_hit, f_out)
+            self.assertMultiLineEqual(sol_tsv, f_out.getvalue())
+
+            f_out = StringIO()
+            likely_systems_to_tsv(model_fam_name, model_vers, [], track_multi_systems_hit, f_out)
+            expected_out = f"""# macsylib {macsylib.__version__} {macsylib.__commit__}
+    # models : {model_fam_name}-{model_vers}
+    # {' '.join(sys.argv)}
+    # No Likely Systems found
+    """
+            self.assertEqual(expected_out, f_out.getvalue())
 
 
     def test_unnlikely_systems_to_txt(self):
