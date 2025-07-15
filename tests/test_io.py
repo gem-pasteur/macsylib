@@ -39,10 +39,12 @@ from macsylib.profile import ProfileFactory
 from macsylib.registries import ModelLocation
 from macsylib.gene import CoreGene, ModelGene, Exchangeable, GeneStatus
 from macsylib.model import Model
-from macsylib.hit import CoreHit, ModelHit, HitWeight, Loner, MultiSystem
+from macsylib.hit import CoreHit, ModelHit, HitWeight, Loner, MultiSystem, LonerMultiSystem
 from macsylib.cluster import Cluster
 from macsylib.system import System, HitSystemTracker, RejectedCandidate, AbstractUnordered, LikelySystem, UnlikelySystem
 from macsylib.solution import Solution
+
+from src.macsylib.io import loner_warning
 from tests import MacsyTest
 
 
@@ -171,6 +173,46 @@ class IoTest(MacsyTest):
         systems_to_tsv(model_fam_name, model_vers, [], track_multi_systems_hit, f_out, skipped_replicons=['rep_1', 'rep_2'])
         self.assertMultiLineEqual(system_str, f_out.getvalue())
 
+        gene_name = "tadZ"
+        c_gene_tadz = CoreGene(models_location, gene_name, profile_factory)
+        gene_tadz = ModelGene(c_gene_tadz, model, loner=True)
+        model.add_accessory_gene(gene_tadz)
+        hit_3 = CoreHit(c_gene_tadz, "hit_3", 803, "replicon_id", 30, 1.0, 1.0, 1.0, 1.0, 10, 20)
+        loner_1 = Loner(hit_3, gene_tadz, GeneStatus.ACCESSORY)
+        system_2 = System(model,
+                          [Cluster([v_hit_1, v_hit_2], model, HitWeight(**cfg.hit_weights())),
+                           Cluster([loner_1], model, HitWeight(**cfg.hit_weights()))],
+                          cfg.redundancy_penalty())
+        hit_4 = CoreHit(c_gene_gspd, "hit_4", 803, "replicon_id", 40, 1.0, 1.0, 1.0, 1.0, 10, 20)
+        mhit_4 = ModelHit(hit_4, gene_gspd, GeneStatus.MANDATORY)
+        hit_5 = CoreHit(c_gene_sctj, "hit_5", 803, "replicon_id", 41, 1.0, 1.0, 1.0, 1.0, 10, 20)
+        mhit_5 = ModelHit(hit_5, gene_sctj, GeneStatus.ACCESSORY)
+        system_3 = System(model,
+                          [Cluster([mhit_4, mhit_5], model, HitWeight(**cfg.hit_weights())),
+                           Cluster([loner_1], model, HitWeight(**cfg.hit_weights()))],
+                          cfg.redundancy_penalty())
+        f_out = StringIO()
+        track_multi_systems_hit = HitSystemTracker([system_2, system_3])
+        systems_to_tsv(model_fam_name, model_vers, [system_2, system_3], track_multi_systems_hit, f_out)
+
+        system_tsv = f"""# macsylib {macsylib.__version__} {macsylib.__commit__}
+# models : {model_fam_name}-{model_vers}
+# {' '.join(sys.argv)}
+# Systems found:
+replicon\thit_id\tgene_name\thit_pos\tmodel_fqn\tsys_id\tsys_loci\tlocus_num\tsys_wholeness\tsys_score\tsys_occ\thit_gene_ref\thit_status\thit_seq_len\thit_i_eval\thit_score\thit_profile_cov\thit_seq_cov\thit_begin_match\thit_end_match\tcounterpart\tused_in
+replicon_id\thit_1\tgspD\t1\tfoo/T2SS\treplicon_id_T2SS_2\t1\t1\t1.000\t1.850\t1\tgspD\tmandatory\t803\t1.0\t1.000\t1.000\t1.000\t10\t20\t\t
+replicon_id\thit_2\tsctJ\t1\tfoo/T2SS\treplicon_id_T2SS_2\t1\t1\t1.000\t1.850\t1\tsctJ\taccessory\t803\t1.0\t1.000\t1.000\t1.000\t10\t20\t\t
+replicon_id\thit_3\ttadZ\t30\tfoo/T2SS\treplicon_id_T2SS_2\t1\t-1\t1.000\t1.850\t1\ttadZ\taccessory\t803\t1.0\t1.000\t1.000\t1.000\t10\t20\t\t
+
+replicon_id\thit_4\tgspD\t40\tfoo/T2SS\treplicon_id_T2SS_3\t1\t1\t1.000\t1.850\t1\tgspD\tmandatory\t803\t1.0\t1.000\t1.000\t1.000\t10\t20\t\t
+replicon_id\thit_5\tsctJ\t41\tfoo/T2SS\treplicon_id_T2SS_3\t1\t1\t1.000\t1.850\t1\tsctJ\taccessory\t803\t1.0\t1.000\t1.000\t1.000\t10\t20\t\t
+replicon_id\thit_3\ttadZ\t30\tfoo/T2SS\treplicon_id_T2SS_3\t1\t-1\t1.000\t1.850\t1\ttadZ\taccessory\t803\t1.0\t1.000\t1.000\t1.000\t10\t20\t\t
+
+# WARNING Loner: there is only 1 occurrence(s) of loner 'tadZ' and 2 potential systems [replicon_id_T2SS_2, replicon_id_T2SS_3]
+"""
+        self.assertMultiLineEqual(system_tsv, f_out.getvalue())
+
+
 
     def test_system_to_txt(self):
         args = argparse.Namespace()
@@ -263,8 +305,77 @@ neutral genes:
 """
         f_out = StringIO()
         track_multi_systems_hit = HitSystemTracker([])
-        systems_to_tsv(model_fam_name, model_vers, [], track_multi_systems_hit, f_out,
+        systems_to_txt(model_fam_name, model_vers, [], track_multi_systems_hit, f_out,
                        skipped_replicons=['rep_1', 'rep_2'])
+        self.assertMultiLineEqual(system_str, f_out.getvalue())
+
+        gene_name = "tadZ"
+        c_gene_tadz = CoreGene(models_location, gene_name, profile_factory)
+        gene_tadz = ModelGene(c_gene_tadz, model, loner=True)
+        model.add_accessory_gene(gene_tadz)
+        hit_3 = CoreHit(c_gene_tadz, "hit_3", 803, "replicon_id", 30, 1.0, 1.0, 1.0, 1.0, 10, 20)
+        loner_1 = Loner(hit_3, gene_tadz, GeneStatus.ACCESSORY)
+        system_2 = System(model,
+                          [Cluster([v_hit_1, v_hit_2], model, HitWeight(**cfg.hit_weights())),
+                           Cluster([loner_1], model, HitWeight(**cfg.hit_weights()))],
+                          cfg.redundancy_penalty())
+        hit_4 = CoreHit(c_gene_gspd, "hit_4", 803, "replicon_id", 40, 1.0, 1.0, 1.0, 1.0, 10, 20)
+        mhit_4 = ModelHit(hit_4, gene_gspd, GeneStatus.MANDATORY)
+        hit_5 = CoreHit(c_gene_sctj, "hit_5", 803, "replicon_id", 41, 1.0, 1.0, 1.0, 1.0, 10, 20)
+        mhit_5 = ModelHit(hit_5, gene_sctj, GeneStatus.ACCESSORY)
+        system_3 = System(model,
+                          [Cluster([mhit_4, mhit_5], model, HitWeight(**cfg.hit_weights())),
+                           Cluster([loner_1], model, HitWeight(**cfg.hit_weights()))],
+                          cfg.redundancy_penalty())
+
+        system_str = f"""# macsylib {macsylib.__version__} {macsylib.__commit__}
+# models : {model_fam_name}-{model_vers}
+# {' '.join(sys.argv)}
+# Systems found:
+
+system id = replicon_id_T2SS_2
+model = foo/T2SS
+replicon = replicon_id
+clusters = [('hit_1', 'gspD', 1), ('hit_2', 'sctJ', 1)], [('hit_3', 'tadZ', 30)]
+occ = 1
+wholeness = 1.000
+loci nb = 1
+score = 1.850
+
+mandatory genes:
+\t- gspD: 1 (gspD)
+
+accessory genes:
+\t- sctJ: 1 (sctJ)
+\t- tadZ: 1 (tadZ)
+
+neutral genes:
+
+============================================================
+system id = replicon_id_T2SS_3
+model = foo/T2SS
+replicon = replicon_id
+clusters = [('hit_4', 'gspD', 40), ('hit_5', 'sctJ', 41)], [('hit_3', 'tadZ', 30)]
+occ = 1
+wholeness = 1.000
+loci nb = 1
+score = 1.850
+
+mandatory genes:
+\t- gspD: 1 (gspD)
+
+accessory genes:
+\t- sctJ: 1 (sctJ)
+\t- tadZ: 1 (tadZ)
+
+neutral genes:
+
+============================================================
+# WARNING Loner: there is only 1 occurrence(s) of loner 'tadZ' and 2 potential systems [replicon_id_T2SS_2, replicon_id_T2SS_3]
+"""
+        f_out = StringIO()
+        track_multi_systems_hit = HitSystemTracker([system_2, system_3])
+        systems_to_txt(model_fam_name, model_vers, [system_2, system_3], track_multi_systems_hit, f_out)
         self.assertMultiLineEqual(system_str, f_out.getvalue())
 
 
@@ -1306,3 +1417,83 @@ Use ordered replicon to have better prediction.
 # No Unlikely Systems found
 """
         self.assertEqual(expected_out, f_out.getvalue())
+
+
+    def test_loner_warning(self):
+        args = argparse.Namespace()
+        args.sequence_db = self.find_data("base", "test_1.fasta")
+        args.db_type = 'gembase'
+        args.models_dir = self.find_data('models')
+        cfg = Config(MacsyDefaults(), args)
+
+        model_name = 'foo'
+        models_location = ModelLocation(path=os.path.join(args.models_dir, model_name))
+
+        # we need to reset the ProfileFactory
+        # because it's a like a singleton
+        # so other tests are influenced by ProfileFactory and it's configuration
+        # for instance search_genes get profile without hmmer_exe
+        profile_factory = ProfileFactory(cfg)
+
+        model = Model("foo/T2SS", 10)
+        c_gene_gspd = CoreGene(models_location, 'gspD', profile_factory)
+        c_gene_sctj = CoreGene(models_location, 'sctJ', profile_factory)
+        c_gene_tadz = CoreGene(models_location, 'tadZ', profile_factory)
+
+        gene_gspd = ModelGene(c_gene_gspd, model)
+        gene_sctj = ModelGene(c_gene_sctj, model)
+        gene_tadz = ModelGene(c_gene_tadz, model, loner=True)
+
+        model.add_mandatory_gene(gene_gspd)
+        model.add_accessory_gene(gene_sctj)
+        model.add_accessory_gene(gene_tadz)
+
+        hit_1 = CoreHit(c_gene_gspd, "hit_1", 803, "replicon_id", 1, 1.0, 1.0, 1.0, 1.0, 10, 20)
+        v_hit_1 = ModelHit(hit_1, gene_gspd, GeneStatus.MANDATORY)
+        hit_2 = CoreHit(c_gene_sctj, "hit_2", 803, "replicon_id", 1, 1.0, 1.0, 1.0, 1.0, 10, 20)
+        v_hit_2 = ModelHit(hit_2, gene_sctj, GeneStatus.ACCESSORY)
+        hit_3 = CoreHit(c_gene_tadz, "hit_3", 803, "replicon_id", 30, 1.0, 1.0, 1.0, 1.0, 10, 20)
+        loner_1 = Loner(hit_3, gene_tadz, GeneStatus.ACCESSORY)
+        hit_4 = CoreHit(c_gene_gspd, "hit_4", 803, "replicon_id", 40, 1.0, 1.0, 1.0, 1.0, 10, 20)
+        mhit_4 = ModelHit(hit_4, gene_gspd, GeneStatus.MANDATORY)
+        hit_5 = CoreHit(c_gene_sctj, "hit_5", 803, "replicon_id", 41, 1.0, 1.0, 1.0, 1.0, 10, 20)
+        mhit_5 = ModelHit(hit_5, gene_sctj, GeneStatus.ACCESSORY)
+
+        system_1 = System(model,
+                  [Cluster([v_hit_1, v_hit_2], model, HitWeight(**cfg.hit_weights())),
+                           Cluster([loner_1], model, HitWeight(**cfg.hit_weights()))],
+                          cfg.redundancy_penalty())
+
+        system_2 = System(model,
+                          [Cluster([mhit_4, mhit_5], model, HitWeight(**cfg.hit_weights())),
+                           Cluster([loner_1], model, HitWeight(**cfg.hit_weights()))],
+                          cfg.redundancy_penalty())
+        warnings = loner_warning([system_1, system_2])
+        self.assertListEqual(warnings,
+                             ["# WARNING Loner: there is only 1 occurrence(s) of loner 'tadZ' and 2 potential systems [replicon_id_T2SS_1, replicon_id_T2SS_2]"])
+
+        # The loner is also multisystem -> no warning
+        model = Model("foo/T2SS", 10)
+        gene_gspd = ModelGene(c_gene_gspd, model)
+        gene_sctj = ModelGene(c_gene_sctj, model)
+        gene_tadz = ModelGene(c_gene_tadz, model, loner=True, multi_system=True)
+        model.add_mandatory_gene(gene_gspd)
+        model.add_accessory_gene(gene_sctj)
+        model.add_accessory_gene(gene_tadz)
+
+        loner_ms_1 = LonerMultiSystem(hit_3, gene_tadz, GeneStatus.ACCESSORY)
+        system_3 = System(model,
+                          [Cluster([v_hit_1, v_hit_2], model, HitWeight(**cfg.hit_weights())),
+                           Cluster([loner_ms_1], model, HitWeight(**cfg.hit_weights()))],
+                          cfg.redundancy_penalty())
+
+        system_4 = System(model,
+                          [Cluster([mhit_4, mhit_5], model, HitWeight(**cfg.hit_weights())),
+                           Cluster([loner_ms_1], model, HitWeight(**cfg.hit_weights()))],
+                          cfg.redundancy_penalty())
+        warnings = loner_warning([system_3, system_4])
+        self.assertListEqual(warnings, [])
+
+        # there is one loner and one system -> no warning
+        warnings = loner_warning([system_1])
+        self.assertListEqual(warnings, [])
