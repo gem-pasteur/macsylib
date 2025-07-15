@@ -139,7 +139,7 @@ class TestModelGene(MacsyTest):
         self.assertEqual(gene_ref.exchangeables[0], homolog)
 
 
-    def test_exhangeables(self):
+    def test_exchangeables(self):
         model_foo = Model("foo", 10)
 
         gene_name = 'sctN'
@@ -157,6 +157,19 @@ class TestModelGene(MacsyTest):
         homolog_2 = Exchangeable(c_sctJ_FLG, sctn)
         sctn.add_exchangeable(homolog_2)
         self.assertEqual(sctn.exchangeables, [homolog_1, homolog_2])
+
+        gene_name = 'flgB'
+        c_flgb = CoreGene(self.model_location, gene_name, self.profile_factory)
+        flgb = ModelGene(c_flgb, model_foo)
+        gene_name = 'flgC'
+        c_flgc = CoreGene(self.model_location, gene_name, self.profile_factory)
+        exch_1 = Exchangeable(c_flgc, flgb)
+        flgb.add_exchangeable(exch_1)
+        model_foo.add_mandatory_gene(flgb)
+        self.assertEqual(flgb.status, GeneStatus.MANDATORY)
+        self.assertEqual(exch_1.status, GeneStatus.MANDATORY)
+        # test the cache
+        self.assertEqual(exch_1.status, GeneStatus.MANDATORY)
 
 
     def test_is_exchangeable(self):
@@ -324,6 +337,26 @@ class TestModelGene(MacsyTest):
         self.assertTrue(sctJ.multi_model)
 
 
+    def test_status(self):
+        """
+        test getter for multi_modelproperty
+        """
+        model_foo = Model("foo", 10)
+
+        gene_name = 'sctJ_FLG'
+        c_gene = CoreGene(self.model_location, gene_name, self.profile_factory)
+        sctJ_FLG = ModelGene(c_gene, model_foo)
+        self.assertFalse(sctJ_FLG.multi_model)
+
+        gene_name = 'sctJ'
+        c_gene = CoreGene(self.model_location, gene_name, self.profile_factory)
+        sctJ = ModelGene(c_gene, model_foo)
+        self.assertIsNone(sctJ.status)
+
+        sctJ.set_status(GeneStatus.MANDATORY)
+        self.assertEqual(sctJ.status, GeneStatus.MANDATORY)
+
+
     def test_inter_gene_max_space(self):
         """
         test getter for inter_gene_max_space property
@@ -374,6 +407,15 @@ inter_gene_max_space: 10
 loner
 multi_system"""
         self.assertEqual(str(sctJ_FLG), s)
+
+        gene_name = 'tadZ'
+        c_gene = CoreGene(self.model_location, gene_name, self.profile_factory)
+        tadZ = ModelGene(c_gene, model_foo, loner=True, multi_system=False, multi_model=True, inter_gene_max_space=10)
+        s = """name : tadZ
+inter_gene_max_space: 10
+loner
+multi_model"""
+        self.assertEqual(str(tadZ), s)
 
 
 class TestGeneStatus(MacsyTest):
