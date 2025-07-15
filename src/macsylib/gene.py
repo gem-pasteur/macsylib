@@ -438,8 +438,9 @@ class Exchangeable(ModelGene):
                  return the status of the reference gene.
         """
         if self._status:
-            return self.status
-        return self._ref.status
+            return self._status
+        self._status = self._ref.status
+        return self._status
 
 
 class GeneStatus(Enum):
