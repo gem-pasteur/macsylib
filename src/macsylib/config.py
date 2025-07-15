@@ -215,7 +215,7 @@ class Config:
             prev_config = os.path.normpath(os.path.join(parsed_args.previous_run, self.cfg_name))
             previous_run = True
             if not os.path.exists(prev_config):
-                raise ValueError(f"No config file found in dir {parsed_args.previous_run}")
+                raise ValueError(f"Previous run: No config file ({self.cfg_name}) found in dir {parsed_args.previous_run}")
             self._set_previous_run_config(prev_config)
 
         if previous_run:

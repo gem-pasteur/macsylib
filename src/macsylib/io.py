@@ -91,6 +91,9 @@ def systems_to_tsv(models_fam_name: str, models_version: str, systems: list[Syst
         for system in systems:
             sys_serializer = TsvSystemSerializer()
             print(sys_serializer.serialize(system, hit_system_tracker), file=sys_file)
+        warnings = loner_warning(systems)
+        if warnings:
+            print("\n".join(warnings), file=sys_file)
     else:
         print(f"# No {system_name.capitalize()} found", file=sys_file)
 
@@ -129,7 +132,7 @@ def systems_to_txt(models_fam_name: str, models_version: str,
         if warnings:
             print("\n".join(warnings), file=sys_file)
     else:
-        print("# No Systems found", file=sys_file)
+        print("# No System found", file=sys_file)
 
 
 def solutions_to_tsv(models_fam_name: str,
@@ -423,7 +426,6 @@ def likely_systems_to_tsv(models_fam_name: str, models_version: str,
     print(header(models_fam_name, models_version, skipped_replicons=skipped_replicons), file=sys_file)
     if likely_systems:
         print("# Likely Systems found:\n", file=sys_file)
-        print(TsvLikelySystemSerializer.header, file=sys_file)
         for l_system in likely_systems:
             sys_serializer = TsvLikelySystemSerializer()
             print(sys_serializer.serialize(l_system, hit_system_tracker), file=sys_file)

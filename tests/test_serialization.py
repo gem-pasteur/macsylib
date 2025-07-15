@@ -511,7 +511,7 @@ Use ordered replicon to have better prediction.
         expected_tsv = """# This replicon contains genetic materials needed for system foo/FOO
 # WARNING the quorum is reached but there is also some forbidden genes.
 """
-
+        expected_tsv += ser.header + '\n'
         expected_tsv += '\t'.join(['replicon_id', 'hit_1', 'gspD', '1', 'foo/FOO', ls_1.id, '1.000',
                                    'gspD', 'mandatory', '803', '1.0', '1.000', '1.000', '1.000', '10', '20', ''])
         expected_tsv += '\n'
@@ -538,6 +538,7 @@ Use ordered replicon to have better prediction.
         tsv = ser.serialize(ls_1, hit_multi_sys_tracker)
         expected_tsv = """# This replicon contains genetic materials needed for system foo/FOO"""
         expected_tsv += '\n\n'
+        expected_tsv += ser.header + '\n'
         expected_tsv += '\t'.join(['replicon_id', 'hit_1', 'gspD', '1', 'foo/FOO', ls_1.id, '1.000',
                                    'gspD', 'mandatory', '803', '1.0', '1.000', '1.000', '1.000', '10', '20', ''])
         expected_tsv += '\n'

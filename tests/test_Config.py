@@ -556,7 +556,7 @@ class TestConfig(MacsyTest):
         with self.assertRaises(ValueError) as ctx:
             Config(self.defaults, self.parsed_args)
         self.assertEqual(str(ctx.exception),
-                         f"No config file found in dir {self.parsed_args.previous_run}")
+                         f"Previous run: No config file (macsylib.conf) found in dir {self.parsed_args.previous_run}")
 
     def test_cut_ga(self):
         # default value
