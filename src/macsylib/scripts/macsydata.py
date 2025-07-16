@@ -52,15 +52,6 @@ from macsylib.registries import ModelRegistry, ModelLocation, scan_models_dir
 from macsylib.package import RemoteModelIndex, LocalModelIndex, Package, parse_arch_path
 from macsylib.metadata import Metadata, Maintainer
 from macsylib import licenses
-try:
-    import git
-except ModuleNotFoundError:
-    import warnings
-    warnings.warn("GitPython is not installed, `macsydata init` is disabled ()\n"
-                  "To turn this feature ON:\n"
-                  "  - install git\n"
-                  "  - then run `python -m pip install macsyfinder[model]` in your activated environment.")
-    git = None
 
 # _log is set in main func
 _log = None
@@ -708,21 +699,15 @@ def do_init_package(args: argparse.Namespace) -> None:
     :param args: The parsed commandline subcommand arguments
     :return: None
     """
-
-    def create_package_dir(package_name: str, models_dir: str | None = None) -> str:
-        """
-
-        :param str package_name:
-        :param models_dir: the path where to create the new package
-        :return: the path of the package directory
-        """
-        pack_path = package_name if not models_dir else os.path.join(models_dir, package_name)
-        if not os.path.exists(pack_path):
-            os.makedirs(pack_path)
-        else:
-            _log.warning(f"The '{pack_path}' already exists.")
-        return pack_path
-
+    try:
+        import git
+    except ModuleNotFoundError:
+        import warnings
+        warnings.warn("GitPython is not installed, `macsydata init` is disabled.\n"
+                      "To turn this feature ON:\n"
+                      "  - install git\n"
+                      "  - then run `python -m pip install macsyfinder[model]` in your activated environment.")
+        sys.exit(1)
 
     def add_metadata(pack_dir: str, maintainer: str, email: str,
                      desc: str | None = None, license: str | None = None,
@@ -1304,34 +1289,33 @@ def build_arg_parser() -> argparse.ArgumentParser:
     ########
     # init #
     ########
-    if git is not None:
-        init_subparser = subparsers.add_parser('init',
-                                               help='Create a template for a new data package')
-        init_subparser.set_defaults(func=do_init_package)
-        init_subparser.add_argument('--pack-name',
-                                    required=True,
-                                    help='The name of the data package.')
-        init_subparser.add_argument('--maintainer',
-                                    required=True,
-                                    help='The name of the package maintainer.')
-        init_subparser.add_argument('--email',
-                                    required=True,
-                                    help='The email of the package maintainer.')
-        init_subparser.add_argument('--authors',
-                                    required=True,
-                                    help="The authors of the package. Could be different that the maintainer."
-                                         "Could be several persons. Surround the names by quotes 'John Doe, Richard Miles'")
-        init_subparser.add_argument('--license',
-                                    choices=['cc-by', 'cc-by-sa', 'cc-by-nc', 'cc-by-nc-sa', 'cc-by-nc-nd'],
-                                    help="""The license under this work will be released.
-    if the license you choice is not in the list, you can do it manually
-    by adding the license file in package and add suitable headers in model definitions.""")
-        init_subparser.add_argument('--holders',
-                                    help="The holders of the copyright")
-        init_subparser.add_argument('--desc',
-                                    help="A short description (one line) of the package")
-        init_subparser.add_argument('--models-dir',
-                                    help='The path of an alternative models directory by default the package will be created here.' )
+    init_subparser = subparsers.add_parser('init',
+                                           help='Create a template for a new data package (REQUIRE git/GitPython installation)')
+    init_subparser.set_defaults(func=do_init_package)
+    init_subparser.add_argument('--pack-name',
+                                required=True,
+                                help='The name of the data package.')
+    init_subparser.add_argument('--maintainer',
+                                required=True,
+                                help='The name of the package maintainer.')
+    init_subparser.add_argument('--email',
+                                required=True,
+                                help='The email of the package maintainer.')
+    init_subparser.add_argument('--authors',
+                                required=True,
+                                help="The authors of the package. Could be different that the maintainer."
+                                     "Could be several persons. Surround the names by quotes 'John Doe, Richard Miles'")
+    init_subparser.add_argument('--license',
+                                choices=['cc-by', 'cc-by-sa', 'cc-by-nc', 'cc-by-nc-sa', 'cc-by-nc-nd'],
+                                help="""The license under this work will be released.
+if the license you choice is not in the list, you can do it manually
+by adding the license file in package and add suitable headers in model definitions.""")
+    init_subparser.add_argument('--holders',
+                                help="The holders of the copyright")
+    init_subparser.add_argument('--desc',
+                                help="A short description (one line) of the package")
+    init_subparser.add_argument('--models-dir',
+                                help='The path of an alternative models directory by default the package will be created here.' )
 
     return parser
 
