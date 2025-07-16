@@ -381,36 +381,30 @@ class TestModelGene(MacsyTest):
         """
         model_foo = Model("foo", 10)
 
-        gene_name = 'sctJ_FLG'
-        c_gene = CoreGene(self.model_location, gene_name, self.profile_factory)
-        sctJ_FLG = ModelGene(c_gene, model_foo)
+        c_sctJ_FLG = CoreGene(self.model_location, 'sctJ_FLG', self.profile_factory)
+        c_sctJ = CoreGene(self.model_location, 'sctJ', self.profile_factory)
+        c_sctN = CoreGene(self.model_location, 'sctN', self.profile_factory)
+        c_tadZ = CoreGene(self.model_location, 'tadZ', self.profile_factory)
 
-        gene_name = 'sctJ'
-        c_sctJ = CoreGene(self.model_location, gene_name, self.profile_factory)
+        sctJ_FLG = ModelGene(c_sctJ_FLG, model_foo)
         homolog = Exchangeable(c_sctJ, sctJ_FLG)
         sctJ_FLG.add_exchangeable(homolog)
-
-        gene_name = 'sctN'
-        c_sctN = CoreGene(self.model_location, gene_name, self.profile_factory)
         analog = Exchangeable(c_sctN, sctJ_FLG)
         sctJ_FLG.add_exchangeable(analog)
+
         s = """name : sctJ_FLG
 inter_gene_max_space: None
     exchangeables: sctJ, sctN"""
         self.assertEqual(str(sctJ_FLG), s)
 
-        gene_name = 'sctJ_FLG'
-        c_gene = CoreGene(self.model_location, gene_name, self.profile_factory)
-        sctJ_FLG = ModelGene(c_gene, model_foo, loner=True, multi_system=True, inter_gene_max_space=10)
+        sctJ_FLG = ModelGene(c_sctJ_FLG, model_foo, loner=True, multi_system=True, inter_gene_max_space=10)
         s = """name : sctJ_FLG
 inter_gene_max_space: 10
 loner
 multi_system"""
         self.assertEqual(str(sctJ_FLG), s)
 
-        gene_name = 'tadZ'
-        c_gene = CoreGene(self.model_location, gene_name, self.profile_factory)
-        tadZ = ModelGene(c_gene, model_foo, loner=True, multi_system=False, multi_model=True, inter_gene_max_space=10)
+        tadZ = ModelGene(c_tadZ, model_foo, loner=True, multi_system=False, multi_model=True, inter_gene_max_space=10)
         s = """name : tadZ
 inter_gene_max_space: 10
 loner
