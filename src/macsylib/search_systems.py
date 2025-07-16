@@ -62,13 +62,16 @@ def search_systems(config: Config,
     Do the job, this function is the orchestrator of all the macromolecular mechanics
     at the end several files are produced containing the results
 
-      - macsyfinder.conf: The set of variables used to runt this job
-      - macsyfinder.systems: The list of the potential systems
-      - macsyfinder.rejected_cluster: The list of all clusters and clusters combination
+      - <macsylib>.conf: The set of variables used to runt this job
+      - <macsylib>.systems: The list of the potential systems
+      - <macsylib>.rejected_cluster: The list of all clusters and clusters combination
                                       which has been rejected and the reason
-      - macsyfinder.log: the copy of the standard output
+      - <macsylib>.log: the copy of the standard output
 
-    :param config: The MacSyFinder Configuration
+    <macsylib> can be replaced by the program name when the macsylib is used by a higher python scripts
+    (for instance macsyfinder). The program name can be set in :class:`macsylib.config.MacSyDefaults`
+
+    :param config: The MacSyLib Configuration
     :type config: :class:`macsylib.config.Config` object
     :param model_registry: the registry of all models
     :type model_registry: :class:`macsylib.registries.ModelRegistry` object
@@ -95,7 +98,7 @@ def search_systems(config: Config,
     parser = DefinitionParser(config, model_bank, gene_bank, model_registry, profile_factory)
     parser.parse(models_def_to_detect)
 
-    logger.info(f"MacSyFinder's results will be stored in working_dir{working_dir}")
+    logger.info(f"{config.prog_name() }'s results will be stored in working_dir{working_dir}")
     logger.info(f"Analysis launched on {config.sequence_db()} for model(s):")
 
     for model in models_def_to_detect:
