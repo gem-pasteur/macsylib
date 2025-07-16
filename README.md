@@ -3,7 +3,7 @@
 
 # MacSyLib
 
-MacSyLib is a package library that help to model and detect macromolecular systems, genetic pathways…
+MacSyLib is a package library that allow to model and detect macromolecular systems, genetic pathways…
 by similarity search in prokaryotes datasets.
 
 [![Open Source License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://opensource.org/licenses/GPL-3.0)
@@ -19,19 +19,19 @@ https://peercommunityjournal.org/articles/10.24072/pcjournal.250/
 
 ## Licence:
 
-MacSyPy is developed and released under [![Open Source License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://opensource.org/licenses/GPL-3.0)
+MacSyLib is developed and released under [![Open Source License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://opensource.org/licenses/GPL-3.0)
 
 ## Installation
 
 > [!IMPORTANT]
-> MacSyFinder requires hmmer >= 3.1 (http://hmmer.org/).
+> MacSyLib requires hmmer >= 3.1 (http://hmmer.org/).
 > You need to install hmmer by yourself (except if you install macsyfinder via *conda/mamba*).
 > If you are a modeler, you will need also `git`
 > The other dependencies are managed by the python package manager *pip*.
 
 ### Installation from distribution
 
-We encourage to install macsyfinder in a [virtualenv](https://virtualenv.pypa.io/en/latest/)
+We encourage to install macsylib in a [virtualenv](https://virtualenv.pypa.io/en/latest/)
 
 After creating a virtualenv dedicated to MacSyLib and activating it
 
@@ -45,7 +45,7 @@ We distinguish 3 kind of MacSyLib users:
 
 - The **end user**, who want to analyse it's data with the library
 - The **modeler**, who want to modelize new macromolecular systems
-- The **developer** who want to add or fix method in the macsylib code
+- The **developer** who want to add or fix methods in the macsylib code
 
 By default the installation is for the end user, if you are modeler or developper there is a specific pip target.
 
@@ -75,7 +75,7 @@ pre-commit install
 ## Models installation
 
 Models are no longer shipped along macsyfinder nor macsylib packages.
-To install Models you can use `macsydata`.
+To install Models you can use `macsydata` (shipped with MacSyLib).
 *macsydata* allow to manage models stored in [macsy-models](https://github.com/macsy-models).
 Below some most useful commands.
 
