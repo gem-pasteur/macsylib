@@ -188,6 +188,7 @@ def clusterize_hits_on_distance_only(hits: list[ModelHit], model: Model, hit_wei
 
 def is_a(hit: ModelHit | CoreHit, ref_hits: set[str]) -> bool:
     """
+
     :param hit: The hit to check
     :param ref_hits: the gene name of the reference hit
     :return: True if the *hit* belong to the reference hits, False otherwise
@@ -203,10 +204,12 @@ def closest_hit(hit: ModelHit, ref_hits:list[ModelHit]) -> ModelHit:
                     will be computed. the closest *ref_hit* will be returned
     :return: The closest *ref_hit* to the hit. If two *ref_hits* are equidistant form the *hit*
              return those with the lowest position.
-             for isnstance:
-             position     40  20  60
-             closest_hit( C, [H1, H2]
-             will return H1
+             for isnstance::
+
+                position     40  20  60
+                closest_hit( ref_hit, [H1, H2]
+
+            will return *H1*
     """
     ref_hits = sorted(ref_hits, key=attrgetter('position'))
     closest_int = ref_hits[0]
@@ -223,11 +226,15 @@ def split_cluster_on_key_genes(key_genes: set[str], cluster: Cluster) -> list[Cl
     """
     split a Cluster containing several key genes to have one cluster per key genes, with their closest hits
 
-    for instance if a set of gene clusterize as following (we considering that all gene are 10 genea between next one
-    positions  10   20    30   40   50    60     70
-    genes       A   KG1    B    C    D    KG2     E
-    The resulting cluster after split around the 2 KG (key genes)
-    c1 = [A, KG1, B, C], c2 = [D, KG2, E]
+    For instance if a set of gene clusterize as following (we considering that all gene are 10 genea between next one::
+
+        positions  10   20    30   40   50    60     70
+        genes       A   KG1    B    C    D    KG2     E
+
+    The resulting cluster after split around the 2 KG (key genes)::
+
+        c1 = [A, KG1, B, C], c2 = [D, KG2, E]
+
     The question is for gene C which is equidistant from KG1 KG2
     C will be clustered with the most left cluster
 
@@ -467,6 +474,7 @@ class Cluster:
     @property
     def hit_weights(self) -> HitWeight:
         """
+
         :return: the different weight for the hits used to compute the score
         """
         return self._hit_weights
@@ -475,6 +483,7 @@ class Cluster:
     @property
     def loner(self) -> bool:
         """
+
         :return: True if this cluster is made of only some hits representing the same gene and this gene is tag as loner
                  False otherwise:
 
@@ -513,6 +522,7 @@ class Cluster:
 
     def __contains__(self, m_hit: ModelHit) -> bool:
         """
+
         :param m_hit: The hit to test
         :return: True if the hit is in the cluster hits, False otherwise
         """
@@ -525,16 +535,16 @@ class Cluster:
 
         :return: The set of functions encoded by this cluster
                  *function* mean gene name or reference gene name for exchangeables genes
-                 for instance
+                 for instance ::
 
-                 <model vers="2.0">
-                     <gene a presence="mandatory"/>
-                     <gene b presence="accessory"/>
-                        <exchangeable>
-                            <gene c />
-                        </exchangeable>
-                     <gene/>
-                 </model>
+                     <model vers="2.0">
+                         <gene a presence="mandatory"/>
+                         <gene b presence="accessory"/>
+                            <exchangeable>
+                                <gene c />
+                            </exchangeable>
+                         <gene/>
+                     </model>
 
                  the functions for a cluster corresponding to this model wil be {'a' , 'b'}
         """
@@ -584,6 +594,7 @@ class Cluster:
     @property
     def replicon_name(self) -> str:
         """
+
         :return: The name of the replicon where this cluster is located
         :rtype: str
         """
@@ -593,6 +604,7 @@ class Cluster:
     @property
     def score(self) -> float:
         """
+
         :return: The score for this cluster
         """
         if self._score is not None:
