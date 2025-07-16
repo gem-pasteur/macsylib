@@ -473,7 +473,7 @@ def loner_warning(systems: list[System]) -> list[str]:
         loners = syst.get_loners()
         for loner in loners:
             if loner.multi_system:
-                # the loner multi_systems can appear in several systems
+                # the loner multi_systems are allowed to appear in several systems
                 continue
             elif loner in loner_tracker:
                 loner_tracker[loner].append(syst)
