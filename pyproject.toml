@@ -60,9 +60,8 @@ model = [
 ]
 
 [project.scripts]
-macsydata = "macsylib.scripts.macsydata:main"
-macsyprofile = "macslib.scripts.macsyprofile:main"
-macsyconfig = "macsylib.scripts.macsyconfig:main"
+msl_data = "macsylib.scripts.macsydata:main"
+msl_profile = "macslib.scripts.macsyprofile:main"
 
 [project.urls]
 Homepage = "https://github.com/gem-pasteur/macsyfinder/"
