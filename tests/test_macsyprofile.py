@@ -65,7 +65,7 @@ class TestMacsyprofile(MacsyTest):
 
 
     def test_pasre_args(self):
-        cmd = f"macsyprofile {self.previous_run}"
+        cmd = f"msl_profile {self.previous_run}"
         args = macsyprofile.parse_args(cmd.split()[1:])
         self.assertEqual(args.previous_run, self.previous_run)
         self.assertEqual(args.coverage_profile, -1.)
@@ -77,32 +77,32 @@ class TestMacsyprofile(MacsyTest):
         self.assertEqual(args.verbosity, 0)
         self.assertFalse(args.mute)
 
-        cmd = f"macsyprofile -vv {self.previous_run}"
+        cmd = f"msl_profile -vv {self.previous_run}"
         args = macsyprofile.parse_args(cmd.split()[1:])
         self.assertEqual(args.verbosity, 2)
 
-        cmd = f"macsyprofile -f {self.previous_run}"
+        cmd = f"msl_profile -f {self.previous_run}"
         args = macsyprofile.parse_args(cmd.split()[1:])
         self.assertTrue(args.force)
 
-        cmd = f"macsyprofile --out toto {self.previous_run}"
+        cmd = f"msl_profile --out toto {self.previous_run}"
         args = macsyprofile.parse_args(cmd.split()[1:])
         self.assertEqual(args.out, 'toto')
 
         pattern = '?toto'
-        cmd = f"macsyprofile --pattern {pattern} {self.previous_run}"
+        cmd = f"msl_profile --pattern {pattern} {self.previous_run}"
         args = macsyprofile.parse_args(cmd.split()[1:])
         self.assertEqual(args.pattern, pattern)
 
-        cmd = f"macsyprofile --best-hits score {self.previous_run}"
+        cmd = f"msl_profile --best-hits score {self.previous_run}"
         args = macsyprofile.parse_args(cmd.split()[1:])
         self.assertEqual(args.best_hits, 'score')
 
-        cmd = f"macsyprofile --i-evalue-sel 1.0 {self.previous_run}"
+        cmd = f"msl_profile --i-evalue-sel 1.0 {self.previous_run}"
         args = macsyprofile.parse_args(cmd.split()[1:])
         self.assertEqual(args.i_evalue_sel, 1.0)
 
-        cmd = f"macsyprofile --coverage-profile 1.0 {self.previous_run}"
+        cmd = f"msl_profile --coverage-profile 1.0 {self.previous_run}"
         args = macsyprofile.parse_args(cmd.split()[1:])
         self.assertEqual(args.coverage_profile, 1.0)
 
@@ -118,14 +118,18 @@ class TestMacsyprofile(MacsyTest):
         out = "FOO"
         coverage_profile = 0.1
         version = macsylib.__version__
-        cmd = f"macsyprofile --coverage-profile {coverage_profile} --out {out} --index-dir {self.tmpdir} {self.previous_run}"
+        prog_name = 'mytool_profile'
+        cmd = f"{prog_name} --coverage-profile {coverage_profile} --out {out} --index-dir {self.tmpdir} {self.previous_run}"
         model_name = 'TFF-SF'
         model_vers = '0.0b2'
-        expected_header = f"""# macsyprofile {version}
+        expected_header = f"""# {prog_name} {version}
 # models: {model_name}-{model_vers}
-# macsyprofile {' '.join(cmd.split()[1:])}
+# {prog_name} {' '.join(cmd.split()[1:])}
 hit_id\treplicon_name\tposition_hit\thit_sequence_length\tgene_name\ti_eval\tscore\tprofile_coverage\tsequence_coverage\tbegin\tend"""
-        got_header = macsyprofile.header(cmd.split()[1:], 'TFF-SF', '0.0b2')
+        got_header = macsyprofile.header(cmd.split()[1:],
+                                         'TFF-SF',
+                                         '0.0b2',
+                                         prog_name=prog_name)
         self.assertEqual(expected_header, got_header)
 
 
@@ -360,7 +364,7 @@ hit_id\treplicon_name\tposition_hit\thit_sequence_length\tgene_name\ti_eval\tsco
         out = os.path.join(self.tmpdir, 'test_macsyprofile')
         previous_run = self.find_data('functional_test_degenerated_systems')
         expected_result = self.find_data('results_macsyprofile.tsv')
-        cmd = f"macsyprofile -o {out} --index-dir {self.tmpdir} {previous_run} "
+        cmd = f"msl_profile -o {out} --index-dir {self.tmpdir} {previous_run} "
         macsyprofile.main(cmd.split()[1:], log_level='WARNING')
         self.assertFileEqual(expected_result, out, comment='#')
 
@@ -371,7 +375,7 @@ hit_id\treplicon_name\tposition_hit\thit_sequence_length\tgene_name\ti_eval\tsco
         expected_result = self.find_data('results_macsyprofile_pattern.tsv')
         # the argument do not need to be protected (we do not use shell)
         # as on real command line so '*mpf' => *mpf
-        cmd = f"macsyprofile -o {out} --index-dir {self.tmpdir} -p *mfp {previous_run} "
+        cmd = f"msl_profile -o {out} --index-dir {self.tmpdir} -p *mfp {previous_run} "
         macsyprofile.main(cmd.split()[1:], log_level='WARNING')
         self.assertFileEqual(expected_result, out, comment='#')
 
@@ -380,7 +384,7 @@ hit_id\treplicon_name\tposition_hit\thit_sequence_length\tgene_name\ti_eval\tsco
         out = os.path.join(self.tmpdir, 'test_macsyprofile')
         previous_run = self.find_data('functional_test_degenerated_systems')
         expected_result = self.find_data('results_macsyprofile_coverage.tsv')
-        cmd = f"macsyprofile -o {out} --index-dir {self.tmpdir} --coverage-profile 0.5 {previous_run} "
+        cmd = f"msl_profile -o {out} --index-dir {self.tmpdir} --coverage-profile 0.5 {previous_run} "
         macsyprofile.main(cmd.split()[1:], log_level='WARNING')
         self.assertFileEqual(expected_result, out, comment='#')
 
@@ -389,7 +393,7 @@ hit_id\treplicon_name\tposition_hit\thit_sequence_length\tgene_name\ti_eval\tsco
         out = os.path.join(self.tmpdir, 'test_macsyprofile')
         previous_run = self.find_data('functional_test_degenerated_systems')
         expected_result = self.find_data('results_macsyprofile_evalue.tsv')
-        cmd = f"macsyprofile -o {out} --index-dir {self.tmpdir} --i-evalue-sel 1e-3 {previous_run} "
+        cmd = f"msl_profile -o {out} --index-dir {self.tmpdir} --i-evalue-sel 1e-3 {previous_run} "
         macsyprofile.main(cmd.split()[1:], log_level='WARNING')
         self.assertFileEqual(expected_result, out, comment='#')
 
@@ -398,7 +402,7 @@ hit_id\treplicon_name\tposition_hit\thit_sequence_length\tgene_name\ti_eval\tsco
         out = os.path.join(self.tmpdir, 'test_macsyprofile')
         previous_run = self.find_data('functional_test_degenerated_systems')
         expected_result = self.find_data('results_macsyprofile_best_score.tsv')
-        cmd = f"macsyprofile -o {out} --index-dir {self.tmpdir} --best-hits score {previous_run} "
+        cmd = f"msl_profile -o {out} --index-dir {self.tmpdir} --best-hits score {previous_run} "
         macsyprofile.main(cmd.split()[1:], log_level='WARNING')
         self.assertFileEqual(expected_result, out, comment='#')
 
@@ -407,7 +411,7 @@ hit_id\treplicon_name\tposition_hit\thit_sequence_length\tgene_name\ti_eval\tsco
         out = os.path.join(self.tmpdir, 'test_macsyprofile')
         previous_run = self.find_data('functional_test_degenerated_systems')
         expected_result = self.find_data('results_macsyprofile_no_hits.tsv')
-        cmd = f"macsyprofile -o {out} --index-dir {self.tmpdir} --i-evalue-sel 1e-10 --coverage-profile 2.0 {previous_run}"
+        cmd = f"msl_profile -o {out} --index-dir {self.tmpdir} --i-evalue-sel 1e-10 --coverage-profile 2.0 {previous_run}"
         macsyprofile.main(cmd.split()[1:], log_level='WARNING')
         self.assertFileEqual(expected_result, out, comment='#')
 
@@ -416,7 +420,7 @@ hit_id\treplicon_name\tposition_hit\thit_sequence_length\tgene_name\ti_eval\tsco
         out = os.path.join(self.tmpdir, 'test_macsyprofile')
         open(out, 'w').close()
         previous_run = self.find_data('functional_test_degenerated_systems')
-        cmd = f"macsyprofile -o {self.tmpdir} --mute --best-hits score {previous_run} "
+        cmd = f"msl_profile -o {self.tmpdir} --mute --best-hits score {previous_run} "
 
         # we cannot test the log message here
         # because the logger are init when main is called
@@ -432,7 +436,7 @@ hit_id\treplicon_name\tposition_hit\thit_sequence_length\tgene_name\ti_eval\tsco
 
 
     def test_functional_no_previous_run(self):
-        cmd = "macsyprofile --mute nimportnaoik "
+        cmd = "msl_profile --mute nimportnaoik "
 
         # we cannot test the log message here
         # because the logger are init when main is called
@@ -443,7 +447,7 @@ hit_id\treplicon_name\tposition_hit\thit_sequence_length\tgene_name\ti_eval\tsco
 
         bad_previous_run = os.path.join(self.tmpdir, 'test_macsyprofile')
         open(bad_previous_run, 'w').close()
-        cmd = f"macsyprofile  {bad_previous_run} "
+        cmd = f"msl_profile  {bad_previous_run} "
 
         with self.catch_log('macsyprofile') as log:
             with self.assertRaises(ValueError):
@@ -460,12 +464,14 @@ hit_id\treplicon_name\tposition_hit\thit_sequence_length\tgene_name\ti_eval\tsco
         shutil.copyfile(old, os.path.join(self.tmpdir, 'macsylib.conf'))
 
         previous_run = self.tmpdir
-        cmd = f"macsyprofile --index-dir {self.tmpdir} {previous_run}"
+        cmd = f"msl_profile --index-dir {self.tmpdir} {previous_run}"
         with self.catch_io(err=True):
             with self.catch_log('macsyprofile') as log:
                 with self.assertRaises(ValueError):
-                    macsyprofile.main(cmd.split()[1:], log_level=logging.CRITICAL)
+                    macsyprofile.main(cmd.split()[1:],
+                                      prog_name='my_tool',
+                                      log_level=logging.CRITICAL)
                 log_msg = log.get_value().strip()
             self.assertEqual(log_msg,
                              f"Cannot find models in conf file {self.tmpdir}."
-                             f" May be these results have been generated with an old version of macsylib.")
+                             f" May be these results have been generated with an old version of my_tool.")

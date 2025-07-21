@@ -30,6 +30,6 @@ Both GENE_2.hmm and GENE_3.hmm must exist in profiles_directory-->
   <gene name="GENE_6" presence="accessory" inter_gene_max_space="10" />
   <!--
 For exhaustive documentation about grammar visit 
-https://macsyfinder.readthedocs.io/en/latest/modeler_guide/package.html
+https://macsylib.readthedocs.io/en/latest/modeler_guide/package.html
 -->
 </model>

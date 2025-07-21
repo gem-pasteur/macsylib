@@ -61,6 +61,7 @@ class TestMacsydata(MacsyTest):
 
         self.args = argparse.Namespace()
         self.args.org = 'foo'
+        self.args.prog_name = 'macsylib'
         self._remote_exists = macsydata.RemoteModelIndex.remote_exists
         macsydata.RemoteModelIndex.remote_exists = lambda x: True
         macsydata._log = macsydata.init_logger(20)  # 20 logging.INFO
@@ -213,7 +214,7 @@ class TestMacsydata(MacsyTest):
         self.args.package = pack_name
         fake_pack_path = self.create_fake_package(pack_name)
 
-        def fake_find_installed_package(pack_name, models_dir=None):
+        def fake_find_installed_package(pack_name, models_dir=None, prog_name='macsylib'):
             return macsydata.Package(fake_pack_path)
 
         find_local_package = macsydata._find_installed_package
@@ -254,7 +255,7 @@ copyright: 2019, Institut Pasteur, CNRS"""
         for model_loc in scan_models_dir(self.models_dir[0]):
             registry.add(model_loc)
 
-        def fake_find_all_installed_package(models_dir=None):
+        def fake_find_all_installed_package(models_dir=None, prog_name='macsylib'):
             return registry
 
         find_all_packages = macsydata._find_all_installed_packages
@@ -286,7 +287,7 @@ copyright: 2019, Institut Pasteur, CNRS"""
             registry.add(model_loc)
 
 
-        def fake_find_all_installed_package(models_dir=None):
+        def fake_find_all_installed_package(models_dir=None, prog_name='macsylib'):
             return registry
 
 
@@ -320,7 +321,7 @@ fake_2-0.0b2   ({os.path.join(model_dir, 'models', fake_packs[1])})"""
         for model_loc in scan_models_dir(self.models_dir[0]):
             registry.add(model_loc)
 
-        def fake_find_all_installed_package(models_dir=None):
+        def fake_find_all_installed_package(models_dir=None, prog_name='macsylib'):
             return registry
 
         find_all_packages = macsydata._find_all_installed_packages
@@ -355,7 +356,7 @@ fake_2-0.0b2   ({os.path.join(model_dir, 'models', fake_packs[1])})"""
         for model_loc in scan_models_dir(self.models_dir[0]):
             registry.add(model_loc)
 
-        def fake_find_all_installed_package(models_dir=None):
+        def fake_find_all_installed_package(models_dir=None, prog_name='macsylib'):
             return registry
 
         find_all_packages = macsydata._find_all_installed_packages
@@ -388,7 +389,7 @@ fake_2-0.0b2   ({os.path.join(model_dir, 'models', fake_packs[1])})"""
         for model_loc in scan_models_dir(self.models_dir[0]):
             registry.add(model_loc)
 
-        def fake_find_all_installed_package(models_dir=None):
+        def fake_find_all_installed_package(models_dir=None, prog_name='macsylib'):
             return registry
         find_all_packages = macsydata._find_all_installed_packages
         macsydata._find_all_installed_packages = fake_find_all_installed_package
@@ -423,7 +424,7 @@ fake_2-0.0b2   ({os.path.join(model_dir, 'models', fake_packs[1])})"""
         for model_loc in scan_models_dir(self.models_dir[0]):
             registry.add(model_loc)
         find_all_packages = macsydata._find_all_installed_packages
-        macsydata._find_all_installed_packages = lambda: registry
+        macsydata._find_all_installed_packages = lambda prog_name: registry
         try:
             with self.catch_io(out=True):
                 macsydata.do_freeze(self.args)
@@ -450,7 +451,7 @@ fake_2-0.0b2   ({os.path.join(model_dir, 'models', fake_packs[1])})"""
         fake_pack_path = self.create_fake_package(pack_name)
 
         find_local_package = macsydata._find_installed_package
-        macsydata._find_installed_package = lambda x, models_dir: macsydata.Package(fake_pack_path)
+        macsydata._find_installed_package = lambda x, models_dir, prog_name: macsydata.Package(fake_pack_path)
         try:
             with self.catch_io(out=True):
                 macsydata.do_cite(self.args)
@@ -491,7 +492,7 @@ To cite MacSyLib:
         self.args.package = pack_name
         fake_pack_path = self.create_fake_package(pack_name)
 
-        def fake_find_installed_package(pack_name, models_dir=None):
+        def fake_find_installed_package(pack_name, models_dir=None, prog_name='macsylib'):
             return macsydata.Package(fake_pack_path)
 
         find_local_package = macsydata._find_installed_package
@@ -514,7 +515,7 @@ To cite MacSyLib:
         fake_pack_path = self.create_fake_package(pack_name)
 
         find_local_package = macsydata._find_installed_package
-        macsydata._find_installed_package = lambda x, models_dir: macsylib.registries.ModelLocation(path=fake_pack_path)
+        macsydata._find_installed_package = lambda x, models_dir, prog_name: macsylib.registries.ModelLocation(path=fake_pack_path)
         try:
             with self.catch_io(out=True):
                 macsydata.do_show_definition(self.args)
@@ -538,7 +539,7 @@ To cite MacSyLib:
         fake_pack_path = self.create_fake_package(pack_name)
 
         find_local_package = macsydata._find_installed_package
-        macsydata._find_installed_package = lambda x, models_dir: macsylib.registries.ModelLocation(path=fake_pack_path)
+        macsydata._find_installed_package = lambda x, models_dir, prog_name: macsylib.registries.ModelLocation(path=fake_pack_path)
         try:
             with self.catch_io(out=True):
                 macsydata.do_show_definition(self.args)
@@ -582,7 +583,7 @@ To cite MacSyLib:
         self.args.models_dir = None
         fake_pack_path = self.create_fake_package(pack_name)
         find_local_package = macsydata._find_installed_package
-        macsydata._find_installed_package = lambda x, models_dir: macsylib.registries.ModelLocation(path=fake_pack_path)
+        macsydata._find_installed_package = lambda x, models_dir, prog_name: macsylib.registries.ModelLocation(path=fake_pack_path)
         try:
             with self.catch_log(log_name='macsydata') as log:
                 macsydata.do_show_definition(self.args)
@@ -613,7 +614,7 @@ To cite MacSyLib:
         self.args.models_dir = None
         fake_pack_path = self.create_fake_package(pack_name)
         find_local_package = macsydata._find_installed_package
-        macsydata._find_installed_package = lambda x, models_dir: macsylib.registries.ModelLocation(path=fake_pack_path)
+        macsydata._find_installed_package = lambda x, models_dir, prog_name: macsylib.registries.ModelLocation(path=fake_pack_path)
         try:
             with self.catch_log(log_name='macsydata') as log:
                 with self.assertRaises(ValueError):
@@ -643,9 +644,9 @@ Transform the models into a git repository
 add a remote repository to host the models
 for instance if you want to add the models to 'macsy-models'
 \tgit remote add origin https://github.com/macsy-models/
-\tgit tag -a <tag vers>  # check https://macsyfinder.readthedocs.io/en/latest/modeler_guide/publish_package.html#sharing-your-models
+\tgit tag -a <tag vers>  # check https://macsylib.readthedocs.io/en/latest/modeler_guide/publish_package.html#sharing-your-models
 \tgit push origin <tag vers>"""
-
+        self.maxDiff = None
         self.assertEqual(expected_msg, log_msg)
 
 
@@ -1316,10 +1317,10 @@ Maybe you can use --user option to install in your HOME.""")
         for model_loc in scan_models_dir(self.models_dir[0]):
             registry.add(model_loc)
 
-        def fake_find_all_installed_package(models_dir=None):
+        def fake_find_all_installed_package(models_dir=None, prog_name='macsylib'):
             return registry
 
-        def fake_find_installed_package(pack_name, models_dir=None):
+        def fake_find_installed_package(pack_name, models_dir=None, prog_name='macsylib'):
             return registry[pack_name]
 
         macsydata._find_all_installed_packages = fake_find_all_installed_package
@@ -1339,7 +1340,7 @@ Maybe you can use --user option to install in your HOME.""")
 
         self.args.package = 'foo'
         find_local_package = macsydata._find_installed_package
-        def fake_find_installed_package(pack_name, models_dir=None): return None
+        def fake_find_installed_package(pack_name, models_dir=None,prog_name='macsylib'): return None
         macsydata._find_installed_package = fake_find_installed_package
         try:
             with self.catch_log(log_name='macsydata') as log:

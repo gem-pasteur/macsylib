@@ -49,13 +49,13 @@ from macsylib.metadata import Metadata
 _log = None
 
 
-def get_version_message() -> str:
+def get_version_message(prog_name:str = 'msl_profile', data_mgr: str = 'msl_data') -> str:
     """
     :return: the long description of the macsylib version
     """
     version = macsylib.__version__
     commit = macsylib.__commit__
-    vers_msg = f"""macsyprofile {version} {commit}
+    vers_msg = f"""{prog_name} {version} {commit}
 Python {sys.version}
 
 MacSyLib is distributed under the terms of the GNU General Public License (GPLv3).
@@ -64,7 +64,7 @@ See the COPYING file for details.
 If you use this software please cite:
 {macsylib.__citation__}
 and don't forget to cite models used:
-macsydata cite <model>
+{data_mgr} cite <model>
 """
     return vers_msg
 
@@ -293,7 +293,7 @@ class HmmProfile:
                         raise ValueError(msg) from err
 
 
-def header(cmd: list[str], model: str, model_vers: str) -> str:
+def header(cmd: list[str], model: str, model_vers: str, prog_name='msl_profile') -> str:
     """
 
     :param cmd: the command use dto launch this analyse
@@ -301,9 +301,9 @@ def header(cmd: list[str], model: str, model_vers: str) -> str:
     :model_vers: The version of the model
     :return: The header of the result file
     """
-    header = f"""# macsyprofile {macsylib.__version__}
+    header = f"""# {prog_name} {macsylib.__version__}
 # models: {model}-{model_vers}
-# macsyprofile {' '.join(cmd)}
+# {prog_name} {' '.join(cmd)}
 hit_id\treplicon_name\tposition_hit\thit_sequence_length\tgene_name\ti_eval\tscore\tprofile_coverage\tsequence_coverage\tbegin\tend"""
     return header
 
@@ -358,7 +358,7 @@ def verbosity_to_log_level(verbosity: int) -> int:
     return level
 
 
-def parse_args(args: list[str]) -> argparse.Namespace:
+def parse_args(args: list[str], prog_name: str = 'msl_profile') -> argparse.Namespace:
     """
 
     :param args: The arguments provided on the command line
@@ -368,7 +368,7 @@ def parse_args(args: list[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         epilog="For more details, visit the MacSyLib website and see the MacSyLib documentation.",
         formatter_class=argparse.RawDescriptionHelpFormatter,
-        description=dedent(r'''
+        description=dedent(rf'''
 
          *            *               *                   * *       *
     *           *               *   *   *  *    **                *
@@ -384,12 +384,12 @@ def parse_args(args: list[str]) -> argparse.Namespace:
                  *                           *  *           *     *
 
 
-    MacSyProfile - MacSyLib profile helper tool
+    {prog_name} - MacSyLib profile helper tool
     '''))
 
     parser.add_argument('previous_run',
                         action='store',
-                        help='The path to a macsylib results directory.'
+                        help=f'The path to a {prog_name} results directory.'
                         )
     parser.add_argument('--coverage-profile',
                         action='store',
@@ -449,7 +449,9 @@ Error messages (default), Warning (-v), Info (-vv) and Debug.(-vvv)""")
     return parsed_args
 
 
-def main(args: list[str] | None = None, log_level: str | int | None = None) -> None:
+def main(args: list[str] | None = None,
+         prog_name: str = 'msl_profile',
+         log_level: str | int | None = None) -> None:
     """
     main entry point to macsyprofile
 
@@ -508,7 +510,7 @@ def main(args: list[str] | None = None, log_level: str | int | None = None) -> N
         profiles_dir = os.path.join(model_dir, 'profiles')
     except IndexError:
         _log.critical(f"Cannot find models in conf file {msf_run_path}. "
-                      f"May be these results have been generated with an old version of macsylib.")
+                      f"May be these results have been generated with an old version of {prog_name}.")
         sys.tracebacklimit = 10
         raise ValueError() from None
 
@@ -550,4 +552,4 @@ def main(args: list[str] | None = None, log_level: str | int | None = None) -> N
 
 
 if __name__ == '__main__':
-    main()
+    main(prog_name='msl_profile')
