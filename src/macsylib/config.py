@@ -743,7 +743,7 @@ class Config:
         """
         :param str path: the path to the models (definitions + profiles) are stored.
         """
-        # if models_dir is provide by the user this value mask canonical ones
+        # if models_dir is provided by the user this value mask canonical ones
         # prefix_data, 'models'
         # os.path.expanduser('~'), '.<program name | macsylib>', 'data'
         # models_dir must return a list of path
