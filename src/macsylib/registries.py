@@ -445,3 +445,7 @@ class DefinitionLocation(dict, metaclass=MetaDefLoc):
 
     def __gt__(self, other: DefinitionLocation) -> bool:
         return self.fqn > other.fqn
+
+
+_exclude = {'_exclude', 'annotations', 'os', 'colorlog', 'Metadata', '_log', '_SEPARATOR'}
+__all__ = list(set(locals().keys()) - _exclude)
