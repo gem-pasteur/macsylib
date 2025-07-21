@@ -53,7 +53,7 @@ class MacsyDefaults(dict):
     the argument parser or config must use a MacsyDefaults object
     """
 
-    def __init__(self, prog_name:str = 'macsylib', **kwargs) -> None:
+    def __init__(self, pack_name:str = 'macsylib', **kwargs) -> None:
         """
         :param kwargs: allow to overwrite a default value.
                        It mainly used in unit tests
@@ -63,7 +63,7 @@ class MacsyDefaults(dict):
         super().__init__()
         self.__dict__ = self
 
-        common_path = os.path.join('share', prog_name, 'models')
+        common_path = os.path.join('share', pack_name, 'models')
         virtual_env = os.environ.get('VIRTUAL_ENV')
         if virtual_env:
             system_models_dir = os.path.join(virtual_env, common_path)
@@ -78,7 +78,7 @@ class MacsyDefaults(dict):
             # depending on distrib it's installed in /share or /usr/local/share
             # if it's installed with --user
             # install models in ~/.<program name> instead of ~/.local/share/<program name>
-        self.prog_name = prog_name
+        self.pack_name = pack_name
         self.cfg_file = kwargs.get('cfg_file', None)
         self.coverage_profile = kwargs.get('coverage_profile', 0.5)
         self.e_value_search = kwargs.get('e_value_search', 0.1)
@@ -90,7 +90,7 @@ class MacsyDefaults(dict):
         self.index_dir = kwargs.get('index_dir', None)
         self.inter_gene_max_space = kwargs.get('inter_gene_max_space', None)
         self.log_level = kwargs.get('log_level', logging.INFO)
-        self.log_file = kwargs.get('log_file', f'{prog_name}.log')
+        self.log_file = kwargs.get('log_file', f'{pack_name}.log')
         self.max_nb_genes = kwargs.get('max_nb_genes', None)
         self.min_genes_required = kwargs.get('min_genes_required', None)
         self.min_mandatory_genes_required = kwargs.get('min_mandatory_genes_required', None)
@@ -98,7 +98,7 @@ class MacsyDefaults(dict):
         self.system_models_dir = kwargs.get('system_models_dir', [path for path in
                                                                   (system_models_dir,
                                                                    os.path.join(os.path.expanduser('~'),
-                                                                                f'.{prog_name}', 'models'))
+                                                                                f'.{pack_name}', 'models'))
                                                                   if os.path.exists(path)]
                                             )
         self.models_dir = kwargs.get('models_dir', None)
@@ -174,18 +174,18 @@ class Config:
         :param parsed_args: the command line arguments parsed
         """
         self._defaults = defaults
-        self.cfg_name = f"{self._defaults.prog_name}.conf"
+        self.cfg_name = f"{self._defaults.pack_name}.conf"
 
         virtual_env = os.environ.get('VIRTUAL_ENV')
         if virtual_env:
-            system_wide_config_file = os.path.join(virtual_env, 'etc', self._defaults.prog_name, self.cfg_name)
+            system_wide_config_file = os.path.join(virtual_env, 'etc', self._defaults.pack_name, self.cfg_name)
         else:
             # not in virtual_env
             var_env = os.environ.get('MACSY_CONF')
             if var_env:
                 system_wide_config_file = var_env
             else:
-                system_wide_config_file = os.path.join('/', 'etc', self._defaults.prog_name, self.cfg_name)
+                system_wide_config_file = os.path.join('/', 'etc', self._defaults.pack_name, self.cfg_name)
 
         self._options = {}
         self._tmp_opts = {}
@@ -195,11 +195,11 @@ class Config:
         if os.path.exists(system_wide_config_file):
             self._set_system_wide_config(system_wide_config_file)
 
-        user_wide_config_file = os.path.join(os.path.expanduser('~'), f'.{self._defaults.prog_name}', self.cfg_name)
+        user_wide_config_file = os.path.join(os.path.expanduser('~'), f'.{self._defaults.pack_name}', self.cfg_name)
         if os.path.exists(user_wide_config_file):
             self._set_user_wide_config(user_wide_config_file)
 
-        project_config_file = os.path.join(os.getcwd(), f'{self._defaults.prog_name}.conf')
+        project_config_file = os.path.join(os.getcwd(), f'{self._defaults.pack_name}.conf')
         if os.path.exists(project_config_file):
             self._set_project_config_file(project_config_file)
 
@@ -393,7 +393,7 @@ class Config:
             parser.read([file])
             _log.debug(f"Configuration file {file} parsed.")
         except ParsingError as err:
-            raise ParsingError(f"The {self._defaults.prog_name} configuration file '{file}' is not well formed: {err}") from None
+            raise ParsingError(f"The {self._defaults.pack_name} configuration file '{file}' is not well formed: {err}") from None
         opts = {}
         sections = list(parser.sections())
 
@@ -673,7 +673,7 @@ class Config:
             return out_dir
         else:
             out_dir = os.path.join(self._options['res_search_dir'],
-                                   f"{self._defaults.prog_name}-{strftime('%Y%m%d_%H-%M-%S')}")
+                                   f"{self._defaults.pack_name}-{strftime('%Y%m%d_%H-%M-%S')}")
             self._options['out_dir'] = out_dir
             return out_dir
 
@@ -851,7 +851,7 @@ class Config:
 class NoneConfig:
     """
     Minimalist Config object just use in some special case where config is required by api
-    but not used for instance in :class:`macsylib.package.Package`
+    but not used for instance in :class:`macsylib.package.ModelPackage`
     """
 
     def __getattr__(self, prop):

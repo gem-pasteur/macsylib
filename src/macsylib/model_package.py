@@ -305,7 +305,7 @@ class RemoteModelIndex(AbstractModelIndex):
         return tmp_archive_path
 
 
-class Package:
+class ModelPackage:
     """
     This class Modelize a package of Models
     a package is a directory with the name of the models family
@@ -389,30 +389,31 @@ class Package:
         _log.info(f"Checking '{self.name}' package structure")
         errors = []
         warnings = []
+        msg = f"The model package '{self.name}' "
         if not os.path.exists(self.path):
-            errors.append(f"The package '{self.name}' does not exists.")
+            errors.append(msg + "does not exists.")
         elif not os.path.isdir(self.path):
-            errors.append(f"'{self.name}' is not a directory ")
+            errors.append("is not a directory ")
         elif not os.path.exists(os.path.join(self.path, 'metadata.yml')):
-            errors.append(f"The package '{self.name}' have no 'metadata.yml'.")
+            errors.append(msg + "have no 'metadata.yml'.")
         if not errors:
             # check several criteria and don't stop at the first problem.
             # this is why I use several If and not one set of if/elif
             if not os.path.exists(os.path.join(self.path, 'definitions')):
-                errors.append(f"The package '{self.name}' have no 'definitions' directory.")
+                errors.append(msg + "have no 'definitions' directory.")
             elif not os.path.isdir(os.path.join(self.path, 'definitions')):
                 errors.append(f"'{os.path.join(self.path, 'definitions')}' is not a directory.")
 
             if not os.path.exists(os.path.join(self.path, 'profiles')):
-                errors.append(f"The package '{self.name}' have no 'profiles' directory.")
+                errors.append(msg + "have no 'profiles' directory.")
             elif not os.path.isdir(os.path.join(self.path, 'profiles')):
                 errors.append(f"'{os.path.join(self.path, 'profiles')}' is not a directory.")
 
             if not os.path.exists(os.path.join(self.path, 'LICENSE')):
-                warnings.append(f"The package '{self.name}' have not any LICENSE file. "
+                warnings.append(msg + "have not any LICENSE file. "
                                 f"May be you have not right to use it.")
             if not self.readme:
-                warnings.append(f"The package '{self.name}' have not any README file.")
+                warnings.append(msg + "have not any README file.")
         return errors, warnings
 
 

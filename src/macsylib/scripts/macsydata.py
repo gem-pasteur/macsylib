@@ -49,7 +49,7 @@ import macsylib
 from macsylib.error import MacsydataError, MacsyDataLimitError
 from macsylib.config import MacsyDefaults, Config
 from macsylib.registries import ModelRegistry, ModelLocation, scan_models_dir
-from macsylib.package import RemoteModelIndex, LocalModelIndex, Package, parse_arch_path
+from macsylib.model_package import RemoteModelIndex, LocalModelIndex, ModelPackage, parse_arch_path
 from macsylib.metadata import Metadata, Maintainer
 from macsylib import licenses
 
@@ -89,13 +89,13 @@ def do_available(args: argparse.Namespace) -> None:
     :return: None
     """
     remote = RemoteModelIndex(org=args.org)
-    packages = remote.list_packages()
-    for pack in packages:
-        all_versions = remote.list_package_vers(pack)
+    models_packages = remote.list_packages()
+    for m_pack in models_packages:
+        all_versions = remote.list_package_vers(m_pack)
         if all_versions:
             last_vers = all_versions[0]
-            metadata = remote.get_metadata(pack, vers=last_vers)
-            pack_vers = f"{pack} ({last_vers})"
+            metadata = remote.get_metadata(m_pack, vers=last_vers)
+            pack_vers = f"{m_pack} ({last_vers})"
             # 26 = length of field
             # 25 = number of displayed chars
             print(f"{pack_vers:26.25} - {metadata['short_desc']}")
@@ -118,8 +118,8 @@ def do_search(args: argparse.Namespace) -> None:
             results = _search_in_desc(args.pattern, remote, packages, match_case=args.match_case)
         else:
             results = _search_in_pack_name(args.pattern, remote, packages, match_case=args.match_case)
-        for pack, last_vers, desc in results:
-            pack_vers = f"{pack} ({last_vers})"
+        for m_pack, last_vers, desc in results:
+            pack_vers = f"{m_pack} ({last_vers})"
             print(f"{pack_vers:26.25} - {desc}")
     except MacsyDataLimitError as err:
         _log.critical(str(err))
@@ -127,18 +127,18 @@ def do_search(args: argparse.Namespace) -> None:
 
 def _search_in_pack_name(pattern: str,
                          remote: RemoteModelIndex,
-                         packages: list[str],
+                         m_packages: list[str],
                          match_case: bool = False) -> list[tuple[str, str, dict]]:
     """
 
     :param pattern: the substring to search packages names
     :param remote: the uri of the macsy-models index
-    :param packages: list of packages to search in
+    :param m_packages: list of model packages to search in
     :param match_case: True if the search is case-sensitive, False otherwise
     :return:
     """
     results = []
-    for pack_name in packages:
+    for pack_name in m_packages:
         if not match_case:
             pack = pack_name.lower()
             pattern = pattern.lower()
@@ -156,18 +156,18 @@ def _search_in_pack_name(pattern: str,
 
 def _search_in_desc(pattern: str,
                     remote: RemoteModelIndex,
-                    packages: list[str],
+                    m_packages: list[str],
                     match_case: bool = False) -> tuple[str, str, str]:
     """
 
     :param pattern: the substring to search packages descriptions
     :param remote: the uri of the macsy-models index
-    :param packages: list of packages to search in
+    :param m_packages: list of model packages to search in
     :param match_case: True if the search is case-sensitive, False otherwise
     :return:
     """
     results = []
-    for pack_name in packages:
+    for pack_name in m_packages:
         all_versions = remote.list_package_vers(pack_name)
         if all_versions:
             metadata = remote.get_metadata(pack_name)
@@ -195,32 +195,32 @@ def do_download(args: argparse.Namespace) -> str | None:
     try:
         remote = RemoteModelIndex(org=args.org)
         req = requirements.Requirement(args.package)
-        pack_name = req.name
+        model_pack_name = req.name
         specifier = req.specifier
-        all_versions = remote.list_package_vers(pack_name)
+        all_versions = remote.list_package_vers(model_pack_name)
         if all_versions:
             compatible_version = list(specifier.filter(all_versions))
             if compatible_version:
                 vers = compatible_version[0]
-                _log.info(f"Downloading {pack_name} {vers}")
-                arch_path = remote.download(pack_name, vers, dest=args.dest)
-                _log.info(f"Successfully downloaded packaging {pack_name} in {arch_path}")
+                _log.info(f"Downloading {model_pack_name} {vers}")
+                arch_path = remote.download(model_pack_name, vers, dest=args.dest)
+                _log.info(f"Successfully downloaded models {model_pack_name} in {arch_path}")
                 return arch_path
             else:
-                _log.error(f"No version that satisfy requirements '{specifier}' for '{pack_name}'.")
+                _log.error(f"No version that satisfy requirements '{specifier}' for '{model_pack_name}'.")
                 _log.warning(f"Available versions: {','.join(all_versions)}")
     except MacsyDataLimitError as err:
         _log.critical(str(err))
 
 
-def _find_all_installed_packages(models_dir: list[str] | None = None, prog_name: str = 'macsylib') -> ModelRegistry:
+def _find_all_installed_packages(models_dir: list[str] | None = None, package_name: str = 'macsylib') -> ModelRegistry:
     """
 
     :param models_dir: list of path where package can be find.
-    :param prog_name: the name of the high level tool that embed macsylib
+    :param package_name: the name of the high level tool that embed macsylib
     :return: all models installed
     """
-    defaults = MacsyDefaults(prog_name=prog_name)
+    defaults = MacsyDefaults(package_name=package_name)
     args = argparse.Namespace()
     if models_dir is not None:
         args.models_dir = models_dir
@@ -236,20 +236,20 @@ def _find_all_installed_packages(models_dir: list[str] | None = None, prog_name:
     return registry
 
 
-def _find_installed_package(pack_name: str,
+def _find_installed_package(model_pack_name: str,
                             models_dir: list[str] | None = None,
-                            prog_name: str = 'macsylib') -> ModelLocation | None:
+                            package_name: str = 'macsylib') -> ModelLocation | None:
     """
     search if a package names *pack_name* is already installed
 
-    :param pack_name: the name of the family model to search
+    :param model_pack_name: the name of the family model to search
     :param models_dir: list of path where package can be find.
-    :param prog_name: the name of the high level tool that embed macsylib
+    :param package_name: the name of the high level tool that embed macsylib, for instance: 'macsyfinder'
     :return: The model location corresponding to the `pack_name`
     """
-    registry = _find_all_installed_packages(models_dir, prog_name=prog_name)
+    registry = _find_all_installed_packages(models_dir, package_name=package_name)
     try:
-        return registry[pack_name]
+        return registry[model_pack_name]
     except KeyError:
         return None
 
@@ -279,13 +279,13 @@ def do_install(args: argparse.Namespace) -> None:
             os.makedirs(path)
         return path
 
-    if os.path.exists(args.package):
+    if os.path.exists(args.model_package):
         remote = False
-        pack_name, inst_vers = parse_arch_path(args.package)
+        pack_name, inst_vers = parse_arch_path(args.model_package)
         user_req = requirements.Requirement(f"{pack_name}=={inst_vers}")
     else:
         remote = True
-        user_req = requirements.Requirement(args.package)
+        user_req = requirements.Requirement(args.model_package)
 
     if args.target:
         dest = os.path.realpath(args.target)
@@ -294,14 +294,14 @@ def do_install(args: argparse.Namespace) -> None:
         elif not os.path.exists(dest):
             os.makedirs(dest)
 
-    pack_name = user_req.name
-    inst_pack_loc = _find_installed_package(pack_name, models_dir=args.target, prog_name=args.prog_name)
+    model_pack_name = user_req.name
+    inst_pack_loc = _find_installed_package(model_pack_name, models_dir=args.target, package_name=args.pack_name)
     if inst_pack_loc:
-        pack = Package(inst_pack_loc.path)
+        m_pack = ModelPackage(inst_pack_loc.path)
         try:
-            local_vers = version.Version(pack.metadata.vers)
+            local_vers = version.Version(m_pack.metadata.vers)
         except FileNotFoundError:
-            _log.error(f"{pack_name} locally installed is corrupted.")
+            _log.error(f"{model_pack_name} locally installed is corrupted.")
             _log.warning(f"You can fix it by removing '{inst_pack_loc.path}'.")
             sys.tracebacklimit = 0
             raise RuntimeError() from None
@@ -315,7 +315,7 @@ def do_install(args: argparse.Namespace) -> None:
 
     if remote:
         try:
-            all_available_versions = _get_remote_available_versions(pack_name, args.org)
+            all_available_versions = _get_remote_available_versions(model_pack_name, args.org)
         except (ValueError, MacsyDataLimitError) as err:
             _log.error(str(err))
             sys.tracebacklimit = 0
@@ -327,11 +327,11 @@ def do_install(args: argparse.Namespace) -> None:
     if not compatible_version and local_vers:
         target_vers = version.Version(all_available_versions[0])
         if target_vers == local_vers and not args.force:
-            _log.warning(f"Requirement already satisfied: {pack_name}{user_specifier} in {pack.path}.\n"
+            _log.warning(f"Requirement already satisfied: {model_pack_name}{user_specifier} in {m_pack.path}.\n"
                          f"To force installation use option -f --force-reinstall.")
             return None
         elif target_vers < local_vers and not args.force:
-            _log.warning(f"{pack_name} ({local_vers}) is already installed.\n"
+            _log.warning(f"{model_pack_name} ({local_vers}) is already installed.\n"
                          f"To downgrade to {target_vers} use option -f --force-reinstall.")
             return None
         else:
@@ -340,18 +340,18 @@ def do_install(args: argparse.Namespace) -> None:
             pass
     elif not compatible_version:
         # No compatible version and not local version
-        _log.warning(f"Could not find version that satisfied '{pack_name}{user_specifier}'")
+        _log.warning(f"Could not find version that satisfied '{model_pack_name}{user_specifier}'")
         return None
     else:
         # it exists at least one compatible version
         target_vers = version.Version(compatible_version[0])
         if inst_pack_loc:
             if target_vers > local_vers and not args.upgrade:
-                _log.warning(f"{pack_name} ({local_vers}) is already installed but {target_vers} version is available.\n"
-                             f"To install it please run 'macsydata install --upgrade {pack_name}'")
+                _log.warning(f"{model_pack_name} ({local_vers}) is already installed but {target_vers} version is available.\n"
+                             f"To install it please run '{args.tool_name} install --upgrade {model_pack_name}'")
                 return None
             elif target_vers == local_vers and not args.force:
-                _log.warning(f"Requirement already satisfied: {pack_name}{user_specifier} in {pack.path}.\n"
+                _log.warning(f"Requirement already satisfied: {model_pack_name}{user_specifier} in {m_pack.path}.\n"
                              f"To force installation use option -f --force-reinstall.")
                 return None
             else:
@@ -361,15 +361,15 @@ def do_install(args: argparse.Namespace) -> None:
 
     # if i'm here it's mean I have to install a new package
     if remote:
-        _log.info(f"Downloading {pack_name} ({target_vers}).")
+        _log.info(f"Downloading {model_pack_name} ({target_vers}).")
         model_index = RemoteModelIndex(org=args.org, cache=args.cache)
-        _log.debug(f"call download with pack_name={pack_name}, vers={target_vers}")
-        arch_path = model_index.download(pack_name, str(target_vers))
+        _log.debug(f"call download with pack_name={model_pack_name}, vers={target_vers}")
+        arch_path = model_index.download(model_pack_name, str(target_vers))
     else:
         model_index = LocalModelIndex(cache=args.cache)
-        arch_path = args.package
+        arch_path = args.model_package
 
-    _log.info(f"Extracting {pack_name} ({target_vers}).")
+    _log.info(f"Extracting {model_pack_name} ({target_vers}).")
     cached_pack = model_index.unarchive_package(arch_path)
 
     _log.debug(f"package is cached at: {cached_pack}")
@@ -382,7 +382,7 @@ def do_install(args: argparse.Namespace) -> None:
         maintainer_loc = f" ({model_index.repos_url})"
         clean_cache(model_index)
 
-        _log.error(f"Failed to install '{pack_name}-{target_vers}' : The package has no 'metadata.yml' file.")
+        _log.error(f"Failed to install '{model_pack_name}-{target_vers}' : The model package has no 'metadata.yml' file.")
         _log.warning(f"Please contact the package maintainer.{maintainer_loc}")
         sys.tracebacklimit = 0
         raise MacsydataError() from None
@@ -392,24 +392,24 @@ def do_install(args: argparse.Namespace) -> None:
     metadata.save(metadata_path)
 
     if args.user:
-        dest = os.path.realpath(os.path.join(os.path.expanduser('~'), f'.{args.prog_name}', 'models'))
+        dest = os.path.realpath(os.path.join(os.path.expanduser('~'), f'.{args.package_name}', 'models'))
         create_dir(dest)
     elif args.target:
         dest = args.target
     elif 'VIRTUAL_ENV' in os.environ:
-        dest = os.path.join(os.environ['VIRTUAL_ENV'], 'share', args.prog_name, 'models')
+        dest = os.path.join(os.environ['VIRTUAL_ENV'], 'share', args.package_name, 'models')
         create_dir(dest)
     else:
-        defaults = MacsyDefaults(prog_name=args.prog_name)
+        defaults = MacsyDefaults(package_name=args.package_name)
         config = Config(defaults, argparse.Namespace())
         models_dirs = config.models_dir()
         if not models_dirs:
             clean_cache(model_index)
-            msg = """There is no canonical directories to store models:
+            msg = f"""There is no canonical directories to store models:
 You can create one in your HOME to enable the models for the user
-       macsydata install --user <PACK_NAME>
+       {args.tool_name} install --user <PACK_NAME>
 or for a project
-       macsydata install --models <PACK_NAME>
+       {args.tool_name} install --models <PACK_NAME>
 In this latter case you have to specify --models-dir <path_to_models_dir> on the macsyfinder command line
 for the system wide models installation please refer to the documentation.
 """
@@ -423,7 +423,7 @@ for the system wide models installation please refer to the documentation.
         old_pack_path = f"{inst_pack_loc.path}.old"
         shutil.move(inst_pack_loc.path, old_pack_path)
 
-    _log.info(f"Installing {pack_name} ({target_vers}) in {dest}")
+    _log.info(f"Installing {model_pack_name} ({target_vers}) in {dest}")
     try:
         _log.debug(f"move {cached_pack} -> {dest}")
         shutil.move(cached_pack, dest)
@@ -438,19 +438,19 @@ for the system wide models installation please refer to the documentation.
     shutil.rmtree(pathlib.Path(cached_pack).parent)
     if inst_pack_loc:
         shutil.rmtree(old_pack_path)
-    _log.info(f"The models {pack_name} ({target_vers}) have been installed successfully.")
+    _log.info(f"The models {model_pack_name} ({target_vers}) have been installed successfully.")
     clean_cache(model_index)
 
 
-def _get_remote_available_versions(pack_name: str, org: str) -> list[str]:
+def _get_remote_available_versions(model_pack_name: str, org: str) -> list[str]:
     """
     Ask the organization org the available version for the package pack_name
-    :param pack_name: the name of the package
+    :param model_pack_name: the name of the models package
     :param org: The remote organization to query
     :return: list of available version for the package
     """
     remote = RemoteModelIndex(org=org)
-    all_versions = remote.list_package_vers(pack_name)
+    all_versions = remote.list_package_vers(model_pack_name)
     return all_versions
 
 #################
@@ -465,16 +465,16 @@ def do_uninstall(args: argparse.Namespace) -> None:
     :param args: the arguments passed on the command line
     :raise ValueError: if the package is not found locally
     """
-    pack_name = args.package
-    inst_pack_loc = _find_installed_package(pack_name,
+    model_pack_name = args.model_package
+    inst_pack_loc = _find_installed_package(model_pack_name,
                                             models_dir=args.models_dir,
-                                            prog_name=args.prog_name)
+                                            package_name=args.pack_name)
     if inst_pack_loc:
-        pack = Package(inst_pack_loc.path)
+        pack = ModelPackage(inst_pack_loc.path)
         shutil.rmtree(pack.path)
-        _log.info(f"models '{pack_name}' in {pack.path} uninstalled.")
+        _log.info(f"models '{model_pack_name}' in {pack.path} uninstalled.")
     else:
-        _log.error(f"Models '{pack_name}' not found locally.")
+        _log.error(f"Models '{model_pack_name}' not found locally.")
         sys.tracebacklimit = 0
         raise ValueError()
 
@@ -486,16 +486,16 @@ def do_info(args: argparse.Namespace) -> None:
     :param args: the arguments passed on the command line
     :raise ValueError: if the package is not found locally
     """
-    pack_name = args.package
-    inst_pack_loc = _find_installed_package(pack_name,
+    model_pack_name = args.model_package
+    inst_pack_loc = _find_installed_package(model_pack_name,
                                             models_dir=args.models_dir,
-                                            prog_name=args.prog_name)
+                                            package_name=args.pack_name)
 
     if inst_pack_loc:
-        pack = Package(inst_pack_loc.path)
+        pack = ModelPackage(inst_pack_loc.path)
         print(pack.info())
     else:
-        _log.error(f"Models '{pack_name}' not found locally.")
+        _log.error(f"Models '{model_pack_name}' not found locally.")
         sys.tracebacklimit = 0
         raise ValueError()
 
@@ -507,10 +507,10 @@ def do_list(args: argparse.Namespace) -> None:
     :param args: the arguments passed on the command line
     """
     registry = _find_all_installed_packages(models_dir=args.models_dir,
-                                            prog_name=args.prog_name)
+                                            package_name=args.pack_name)
     for model_loc in registry.models():
         try:
-            pack = Package(model_loc.path)
+            pack = ModelPackage(model_loc.path)
             pack_vers = pack.metadata.vers
             model_path = f"   ({model_loc.path})" if args.long else ""
             if args.outdated or args.uptodate:
@@ -535,10 +535,10 @@ def do_freeze(args: argparse.Namespace) -> None:
 
     :param args: the arguments passed on the command line
     """
-    registry = _find_all_installed_packages(prog_name=args.prog_name)
+    registry = _find_all_installed_packages(package_name=args.pack_name)
     for model_loc in sorted(registry.models(), key=lambda ml: ml.name.lower()):
         try:
-            pack = Package(model_loc.path)
+            pack = ModelPackage(model_loc.path)
             pack_vers = pack.metadata.vers
             print(f"{model_loc.name}=={pack_vers}")
         except Exception:
@@ -551,12 +551,12 @@ def do_cite(args: argparse.Namespace) -> None:
 
     :param args: the arguments passed on the command line
     """
-    pack_name = args.package
-    inst_pack_loc = _find_installed_package(pack_name,
+    model_pack_name = args.model_package
+    inst_pack_loc = _find_installed_package(model_pack_name,
                                             models_dir=args.models_dir,
-                                            prog_name=args.prog_name)
+                                            package_name=args.pack_name)
     if inst_pack_loc:
-        pack = Package(inst_pack_loc.path)
+        pack = ModelPackage(inst_pack_loc.path)
         pack_citations = pack.metadata.cite
         pack_citations = [cite.replace('\n', '\n  ') for cite in pack_citations]
         pack_citations = '\n- '.join(pack_citations)
@@ -564,7 +564,7 @@ def do_cite(args: argparse.Namespace) -> None:
         macsy_cite = macsylib.__citation__
         macsy_cite = macsy_cite.replace('\n', '\n  ')
         macsy_cite = '- ' + macsy_cite
-        print(f"""To cite {pack_name}:
+        print(f"""To cite {model_pack_name}:
 
 {pack_citations}
 
@@ -573,7 +573,7 @@ To cite MacSyLib:
 {macsy_cite}
 """)
     else:
-        _log.error(f"Models '{pack_name}' not found locally.")
+        _log.error(f"Models '{model_pack_name}' not found locally.")
         sys.tracebacklimit = 0
         raise ValueError()
 
@@ -587,15 +587,15 @@ def do_help(args: argparse.Namespace) -> None:
     :return: None
     :raise ValueError: if the package name is not known.
     """
-    pack_name = args.package
-    inst_pack_loc = _find_installed_package(pack_name,
+    model_pack_name = args.model_package
+    inst_pack_loc = _find_installed_package(model_pack_name,
                                             models_dir=args.models_dir,
-                                            prog_name=args.prog_name)
+                                            package_name=args.pack_name)
     if inst_pack_loc:
-        pack = Package(inst_pack_loc.path)
+        pack = ModelPackage(inst_pack_loc.path)
         print(pack.help())
     else:
-        _log.error(f"Models '{pack_name}' not found locally.")
+        _log.error(f"Models '{model_pack_name}' not found locally.")
         sys.tracebacklimit = 0
         raise ValueError()
 
@@ -606,8 +606,8 @@ def do_check(args: argparse.Namespace) -> None:
     :param args: the arguments passed on the command line
     :rtype: None
     """
-    pack = Package(args.path)
-    errors, warnings = pack.check()
+    model_pack = ModelPackage(args.path)
+    errors, warnings = model_pack.check()
     if errors:
         for error in errors:
             _log.error(error)
@@ -617,18 +617,18 @@ def do_check(args: argparse.Namespace) -> None:
     if warnings:
         for warning in warnings:
             _log.warning(warning)
-        _log.warning("""
-macsydata says: You're only giving me a partial QA payment?
+        _log.warning(f"""
+{args.tool_name} says: You're only giving me a partial QA payment?
 I'll take it this time, but I'm not happy.
 I'll be really happy, if you fix warnings above, before to publish these models.""")
 
     if not warnings:
         _log.info("If everyone were like you, I'd be out of business")
         _log.info("To push the models in organization:")
-        if os.path.realpath(os.getcwd()) != pack.path:
+        if os.path.realpath(os.getcwd()) != model_pack.path:
             # I use level 25 just to remove color
-            _log.log(25, f"\tcd {pack.path}")
-        if not os.path.exists(os.path.join(pack.path, '.git')):
+            _log.log(25, f"\tcd {model_pack.path}")
+        if not os.path.exists(os.path.join(model_pack.path, '.git')):
             _log.info("Transform the models into a git repository")
             _log.log(25, "\tgit init .")
             _log.log(25, "\tgit add .")
@@ -664,11 +664,11 @@ def do_show_definition(args: argparse.Namespace) -> None:
         return def_txt
 
     model_family, *models = args.model
-    pack_name, *sub_family = model_family.split('/')
+    model_pack_name, *sub_family = model_family.split('/')
 
-    inst_pack_loc = _find_installed_package(pack_name,
+    inst_pack_loc = _find_installed_package(model_pack_name,
                                             models_dir=args.models_dir,
-                                            prog_name=args.prog_name)
+                                            package_name=args.pack_name)
 
     if inst_pack_loc:
         if not models or 'all' in models:
@@ -678,7 +678,7 @@ def do_show_definition(args: argparse.Namespace) -> None:
                     [(p.fqn, p.path) for p in inst_pack_loc.get_all_definitions(root_def_name=root_def_name)]
                 )
             except ValueError:
-                _log.error(f"'{'/'.join(sub_family)}' not found in package '{pack_name}'.")
+                _log.error(f"'{'/'.join(sub_family)}' not found in package '{model_pack_name}'.")
                 sys.tracebacklimit = 0
                 raise ValueError() from None
 
@@ -698,7 +698,7 @@ def do_show_definition(args: argparse.Namespace) -> None:
                     _log.error(f"Model '{fqn}' not found.")
                     continue
     else:
-        _log.error(f"Package '{pack_name}' not found.")
+        _log.error(f"Model Package '{model_pack_name}' not found.")
         sys.tracebacklimit = 0
         raise ValueError() from None
 
@@ -721,10 +721,10 @@ def do_init_package(args: argparse.Namespace) -> None:
         import git
     except ModuleNotFoundError:
         import warnings
-        warnings.warn(f"GitPython is not installed, `{args.prog_name} init` is disabled.\n"
+        warnings.warn(f"GitPython is not installed, `{args.tool_name} init` is disabled.\n"
                       "To turn this feature ON:\n"
                       "  - install git\n"
-                      "  - then run `python -m pip install macsyfinder[model]` in your activated environment.")
+                      f"  - then run `python -m pip install {args.pack_name}[model]` in your activated environment.")
         sys.exit(1)
 
     def add_metadata(pack_dir: str, maintainer: str, email: str,
@@ -864,17 +864,17 @@ Copyright (c) {date} {holders}
         with open(os.path.join(pack_dir, 'COPYRIGHT'), 'w') as copyright_file:
             copyright_file.write(text)
 
-    def add_readme(pack_dir: str, pack_name: str, desc: str):
+    def add_readme(pack_dir: str, model_pack_name: str, desc: str):
         """
         :param pack_dir: The path of package directory
-        :param pack_name: The name of the package
+        :param model_pack_name: The name of the package
         :param desc: One line description of the package
         """
         desc = ' ' + desc if desc is not None else ''
         text = f"""
-# {pack_name}:{desc}
+# {model_pack_name}:{desc}
 
-Place here information about {pack_name}
+Place here information about {model_pack_name}
 
 - how to use it
 - how to cite it
@@ -938,8 +938,8 @@ https://docs.github.com/en/get-started/writing-on-github/getting-started-with-wr
             with open(conf_path, 'w') as conf_file:
                 conf_file.writelines(conf)
 
-    def create_repo(package_name: str, models_dir: str | None = None) -> str:
-        pack_path = package_name if not models_dir else os.path.join(models_dir, package_name)
+    def create_repo(model_package_name: str, models_dir: str | None = None) -> str:
+        pack_path = model_package_name if not models_dir else os.path.join(models_dir, model_package_name)
         if os.path.exists(pack_path):
             if os.path.isdir(pack_path):
                 content = os.listdir(pack_path)
@@ -970,10 +970,10 @@ https://docs.github.com/en/get-started/writing-on-github/getting-started-with-wr
         return repo
 
     ######################
-    # Initialize Package #
+    # Initialize ModelPackage #
     ######################
     c_date = str(time.localtime().tm_year)
-    repo = create_repo(args.pack_name, models_dir=args.models_dir)
+    repo = create_repo(args.model_package, models_dir=args.models_dir)
     pack_dir = repo.working_dir
     def_dir = os.path.join(pack_dir, 'definitions')
     profiles_dir = os.path.join(pack_dir, 'profiles')
@@ -990,7 +990,7 @@ https://docs.github.com/en/get-started/writing-on-github/getting-started-with-wr
 
     if args.license:
         try:
-            license_text = licenses.license(args.license, args.pack_name, args.authors, c_date, args.holders, args.desc)
+            license_text = licenses.license(args.license, args.model_package, args.authors, c_date, args.holders, args.desc)
             add_license(pack_dir, license_text)
         except KeyError:
             _log.error(f"The license {args.license} is not managed by init (see macsydata init help). "
@@ -1019,7 +1019,7 @@ https://docs.github.com/en/get-started/writing-on-github/getting-started-with-wr
     if not os.path.exists(os.path.join(pack_dir, 'model_conf.xml')):
         create_model_conf(pack_dir, license=license_text)
     if not (os.path.exists(os.path.join(pack_dir, 'README')) or os.path.exists(os.path.join(pack_dir, 'README.md'))):
-        add_readme(pack_dir, args.pack_name, args.desc)
+        add_readme(pack_dir, args.model_package, args.desc)
 
     add_metadata(pack_dir, args.maintainer, args.email, desc=args.desc, license=args.license,
                  c_date=c_date, c_holders=args.holders)
@@ -1043,7 +1043,7 @@ add files:
     else:
         shutil.copy(pre_push_path, dest)
         os.chmod(dest, 0o755)
-    _log.info(f"""The skeleton of {args.pack_name} is ready.
+    _log.info(f"""The skeleton of {args.model_package} is ready.
 The package is located at {pack_dir}
 
 - Edit metadata.yml and fill how to cite your package and where to find documentation about it.
@@ -1056,18 +1056,38 @@ The package is located at {pack_dir}
 Before to publish your package you can use `macsydata check` to verify it's integrity.
 """
               )
-    _log.warning("To share your models with the MacSyFinder community.")
+    _log.warning("To share your models with the MacSyModels community.")
     _log.info("Consider to ask for a repository to macsy-models organization (https://github.com/macsy-models)")
     _log.info("then add this new repo to your local package. git remote add <remote name> <remote url>")
-    _log.warning("\nRead macsyfinder modeler guide for further details: "
+    _log.warning(f"\nRead {args.pack_name} modeler guide for further details: "
                  "https://macsylib.readthedocs.io/en/latest/modeler_guide/index.html")
 
 ##################################
 # parsing command line arguments #
 ##################################
 
+def _cmde_line_header():
+    return textwrap.dedent(rf'''
 
-def build_arg_parser(prog_name='msl_data') -> argparse.ArgumentParser:
+         *            *               *              
+    *           *               *   *   *  *    **   
+      **     *    *   *  *     *        *           
+                *      _      *   _   *   _      *  
+      *  _ __ ___  ___| |      __| | __ _| |_ __ _ 
+        | '_ ` _ \/ __| |     / _` |/ _` | __/ _` |
+        | | | | | \__ \ |    | (_| | (_| | || (_| |
+        |_| |_| |_|___/_|_____\__,_|\__,_|\__\__,_|
+               *        |_____|          *  
+     *      *   * *     *   **         *   *  *     
+      *      *         *        *    *              
+    *                           *  *           *   
+
+
+    msl_data - Model Management Tool
+    ''')
+
+
+def build_arg_parser(header, package_name='macsylib', tool_name='msl_data') -> argparse.ArgumentParser:
     """
     Build argument parser.
 
@@ -1076,24 +1096,7 @@ def build_arg_parser(prog_name='msl_data') -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         epilog="For more details, visit the MacSyFinder website and see the MacSyFinder documentation.",
         formatter_class=argparse.RawDescriptionHelpFormatter,
-        description=textwrap.dedent(rf'''
-
-         *            *               *                   * *       *
-    *           *               *   *   *  *    **                *
-      **     *    *   *  *     *                    *               *
-        __  __  *         ____ *      ____    ** _  *
-       |  \/  | __ _  ___/ ___| _   _|  _ | __ _| |_  __ _     *
-       | |\/| |/ _` |/ __|___ \| | | | | ||/ _` |  _|/ _` |
-       | |  | | (_| | (__ ___) | |_| | |_|| (_| | | | (_| |
-       |_|  |_|\__,_|\___|____/ \__, |____|\__,_|_|  \__,_|
-               *                |___/    *                   *
-     *      *   * *     *   **         *   *  *           *
-      *      *         *        *    *              *
-                 *                           *  *           *     *
-
-
-    {prog_name} - Model Management Tool
-    '''))
+        description=header)
 
     # -- general options -- #
 
@@ -1117,17 +1120,17 @@ def build_arg_parser(prog_name='msl_data') -> argparse.ArgumentParser:
                                      help="The name of Model organization"
                                           "(default 'macsy-models'))"
                                      )
-    available_subparser.set_defaults(func=do_available, prog_name=prog_name)
+    available_subparser.set_defaults(func=do_available, tool_name=tool_name,)
     ############
     # download #
     ############
     download_subparser = subparsers.add_parser('download',
-                                               help='Download packages.')
+                                               help='Download model packages.')
 
-    download_subparser.set_defaults(func=do_download, prog_name=prog_name)
+    download_subparser.set_defaults(func=do_download, tool_name=tool_name)
     download_subparser.add_argument('-d', '--dest',
                                     default=os.getcwd(),
-                                    help='Download packages into <dir>.')
+                                    help='Download model packages into <dir>.')
     download_subparser.add_argument('--cache',
                                     help=argparse.SUPPRESS)
     download_subparser.add_argument('--org',
@@ -1135,16 +1138,16 @@ def build_arg_parser(prog_name='msl_data') -> argparse.ArgumentParser:
                                     help="The name of Model organization"
                                          "(default 'macsy-models'))"
                                     )
-    download_subparser.add_argument('package', help='Package name.')
+    download_subparser.add_argument('model_package', help='Model package name.')
     ###########
     # Install #
     ###########
-    install_subparser = subparsers.add_parser('install', help='Install packages.')
-    install_subparser.set_defaults(func=do_install, prog_name=prog_name)
+    install_subparser = subparsers.add_parser('install', help='Install Model packages.')
+    install_subparser.set_defaults(func=do_install, tool_name=tool_name, pack_name=package_name)
     install_subparser.add_argument('-f', '--force',
                                    action='store_true',
                                    default=False,
-                                   help='Reinstall package even if it is already up-to-date.')
+                                   help='Reinstall Model package even if it is already up-to-date.')
     install_subparser.add_argument('--org',
                                    default="macsy-models",
                                    help="The name of Model orgagnization"
@@ -1155,7 +1158,7 @@ def build_arg_parser(prog_name='msl_data') -> argparse.ArgumentParser:
                               action='store_true',
                               default=False,
                               help='Install to the MacSYFinder user install directory for your platform. '
-                                   'Typically ~/.macsyfinder/data')
+                                   f'Typically ~/.{package_name}/data')
     install_dest.add_argument('-t', '--target', '--models-dir',
                               dest='target',
                               help='Install packages into <TARGET> dir instead in canonical location')
@@ -1164,8 +1167,8 @@ def build_arg_parser(prog_name='msl_data') -> argparse.ArgumentParser:
                                    action='store_true',
                                    default=False,
                                    help='Upgrade specified package to the newest available version.')
-    install_subparser.add_argument('package',
-                                   help='Package name.')
+    install_subparser.add_argument('model_package',
+                                   help='Model Package name.')
     install_subparser.add_argument('--cache',
                                    help=argparse.SUPPRESS)
     install_subparser.add_argument('--no-clean',
@@ -1178,9 +1181,9 @@ def build_arg_parser(prog_name='msl_data') -> argparse.ArgumentParser:
     #############
     uninstall_subparser = subparsers.add_parser('uninstall',
                                                 help='Uninstall packages.')
-    uninstall_subparser.set_defaults(func=do_uninstall, prog_name=prog_name)
-    uninstall_subparser.add_argument('package',
-                                     help='Package name.')
+    uninstall_subparser.set_defaults(func=do_uninstall, pack_name=package_name)
+    uninstall_subparser.add_argument('model_package',
+                                     help='ModelPackage name.')
     uninstall_subparser.add_argument('--target, --models-dir',
                                      dest='models_dir',
                                      help='the path of the alternative root directory containing package instead used '
@@ -1190,7 +1193,7 @@ def build_arg_parser(prog_name='msl_data') -> argparse.ArgumentParser:
     ##########
     search_subparser = subparsers.add_parser('search',
                                              help='Discover new packages.')
-    search_subparser.set_defaults(func=do_search, prog_name=prog_name)
+    search_subparser.set_defaults(func=do_search, tool_name=tool_name)
     search_subparser.add_argument('--org',
                                   default="macsy-models",
                                   help="The name of Model organization"
@@ -1211,9 +1214,9 @@ def build_arg_parser(prog_name='msl_data') -> argparse.ArgumentParser:
     ########
     info_subparser = subparsers.add_parser('info',
                                            help='Show information about packages.')
-    info_subparser.add_argument('package',
-                                help='Package name.')
-    info_subparser.set_defaults(func=do_info, prog_name=prog_name)
+    info_subparser.add_argument('model_package',
+                                help='Model Package name.')
+    info_subparser.set_defaults(func=do_info, tool_name=tool_name, pack_name=package_name)
     info_subparser.add_argument('--models-dir',
                                 help='the path of the alternative root directory containing package instead used '
                                      'canonical locations')
@@ -1222,7 +1225,7 @@ def build_arg_parser(prog_name='msl_data') -> argparse.ArgumentParser:
     ########
     list_subparser = subparsers.add_parser('list',
                                            help='List installed packages.')
-    list_subparser.set_defaults(func=do_list, prog_name=prog_name)
+    list_subparser.set_defaults(func=do_list, pack_name=package_name)
     list_subparser.add_argument('-o', '--outdated',
                                 action='store_true',
                                 default=False,
@@ -1258,26 +1261,26 @@ def build_arg_parser(prog_name='msl_data') -> argparse.ArgumentParser:
     freeze_subparser.add_argument('--models-dir',
                                    help='the path of the alternative root directory containing package instead used '
                                         'canonical locations')
-    freeze_subparser.set_defaults(func=do_freeze, prog_name=prog_name)
+    freeze_subparser.set_defaults(func=do_freeze, pack_name=package_name)
     ########
     # cite #
     ########
     cite_subparser = subparsers.add_parser('cite',
                                            help='How to cite a package.')
-    cite_subparser.set_defaults(func=do_cite, prog_name=prog_name)
+    cite_subparser.set_defaults(func=do_cite, pack_name=package_name)
     cite_subparser.add_argument('--models-dir',
                                 help='the path of the alternative root directory containing package instead used '
                                      'canonical locations')
     cite_subparser.add_argument('package',
-                                help='Package name.')
+                                help='ModelPackage name.')
     ########
     # help #
     ########
     help_subparser = subparsers.add_parser('help',
                                            help='get online documentation.')
-    help_subparser.set_defaults(func=do_help, prog_name=prog_name)
-    help_subparser.add_argument('package',
-                                help='Package name.')
+    help_subparser.set_defaults(func=do_help, pack_name=package_name)
+    help_subparser.add_argument('model_package',
+                                help='ModelPackage name.')
     help_subparser.add_argument('--models-dir',
                                 help='the path of the alternative root directory containing package instead used '
                                      'canonical locations')
@@ -1286,7 +1289,7 @@ def build_arg_parser(prog_name='msl_data') -> argparse.ArgumentParser:
     #########
     check_subparser = subparsers.add_parser('check',
                                             help='check if the directory is ready to be publish as data package')
-    check_subparser.set_defaults(func=do_check)
+    check_subparser.set_defaults(func=do_check, pack_name='macsylib', tool_name=tool_name)
     check_subparser.add_argument('path',
                                  nargs='?',
                                  default=os.getcwd(),
@@ -1297,7 +1300,7 @@ def build_arg_parser(prog_name='msl_data') -> argparse.ArgumentParser:
     ##############
     def_subparser = subparsers.add_parser('definition',
                                             help='show a model definition ')
-    def_subparser.set_defaults(func=do_show_definition, prog_name=prog_name)
+    def_subparser.set_defaults(func=do_show_definition, pack_name=package_name)
     def_subparser.add_argument('model',
                                nargs='+',
                                help='the family and name(s) of a model(s) eg: TXSS T6SS T4SS or TFF/bacterial T2SS')
@@ -1309,19 +1312,19 @@ def build_arg_parser(prog_name='msl_data') -> argparse.ArgumentParser:
     ########
     init_subparser = subparsers.add_parser('init',
                                            help='Create a template for a new data package (REQUIRE git/GitPython installation)')
-    init_subparser.set_defaults(func=do_init_package, prog_name=prog_name)
-    init_subparser.add_argument('--pack-name',
+    init_subparser.set_defaults(func=do_init_package, tool_name=tool_name, pack_name=package_name)
+    init_subparser.add_argument('--model-package',
                                 required=True,
-                                help='The name of the data package.')
+                                help='The name of the model data package.')
     init_subparser.add_argument('--maintainer',
                                 required=True,
-                                help='The name of the package maintainer.')
+                                help='The name of the model package maintainer.')
     init_subparser.add_argument('--email',
                                 required=True,
-                                help='The email of the package maintainer.')
+                                help='The email of the model package maintainer.')
     init_subparser.add_argument('--authors',
                                 required=True,
-                                help="The authors of the package. Could be different that the maintainer."
+                                help="The authors of the model package. Could be different that the maintainer."
                                      "Could be several persons. Surround the names by quotes 'John Doe, Richard Miles'")
     init_subparser.add_argument('--license',
                                 choices=['cc-by', 'cc-by-sa', 'cc-by-nc', 'cc-by-nc-sa', 'cc-by-nc-nd'],
@@ -1344,13 +1347,13 @@ def cmd_name(args: argparse.Namespace) -> str:
     (scriptname + operation).
 
     Example
-        macsydata uninstall
+        msl_data uninstall
 
     :param args: the arguments passed on the command line
     """
     assert 'func' in args
     func_name = args.func.__name__.replace('do_', '')
-    return f"macsydata {func_name}"
+    return f"{args.tool_name} {func_name}"
 
 
 def init_logger(level: typing.Literal['NOTSET', 'DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'] | int = 'INFO',
@@ -1407,7 +1410,7 @@ def verbosity_to_log_level(verbosity: int) -> int:
     return level
 
 
-def main(args: list[str] = None, prog_name='msl_data') -> None:
+def main(args: list[str] = None, tool_name='msl_data') -> None:
     """
     Main entry point.
 
@@ -1415,7 +1418,7 @@ def main(args: list[str] = None, prog_name='msl_data') -> None:
     """
     global _log
     args = sys.argv[1:] if args is None else args
-    parser = build_arg_parser(prog_name=prog_name)
+    parser = build_arg_parser(_cmde_line_header(), tool_name=tool_name)
     parsed_args = parser.parse_args(args)
     log_level = verbosity_to_log_level(parsed_args.verbose)
     # set logger for module 'package'
@@ -1433,4 +1436,4 @@ def main(args: list[str] = None, prog_name='msl_data') -> None:
 
 
 if __name__ == "__main__":
-    main(prog_name='msl_data')
+    main(tool_name='msl_data')
