@@ -487,8 +487,8 @@ To cite MacSyLib:
         self.assertEqual(log_msg.strip(), f"Models '{pack_name}' not found locally.")
 
         model_pack_name = "fake_pack"
-        self.args.model_package = pack_name
-        fake_pack_path = self.create_fake_package(pack_name)
+        self.args.model_package = model_pack_name
+        fake_pack_path = self.create_fake_package(model_pack_name)
 
         def fake_find_installed_package(model_pack_name, models_dir=None, package_name='macsylib'):
             return macsydata.ModelPackage(fake_pack_path)
@@ -1908,7 +1908,6 @@ Maybe you can use --user option to install in your HOME.""")
 
     def test_no_subcommand(self):
         cmd = "msl_data"
-        header = "FAKE HEADER"
         parser = macsydata.build_arg_parser(macsydata._cmde_line_header(), package_name='macsylib', tool_name='msl_data')
         out = io.StringIO()
         parser.print_help(file=out)
