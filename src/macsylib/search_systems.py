@@ -98,7 +98,7 @@ def search_systems(config: Config,
     parser = DefinitionParser(config, model_bank, gene_bank, model_registry, profile_factory)
     parser.parse(models_def_to_detect)
 
-    logger.info(f"{config.prog_name() }'s results will be stored in working_dir{working_dir}")
+    logger.info(f"{config.tool_name() }'s results will be stored in working_dir{working_dir}")
     logger.info(f"Analysis launched on {config.sequence_db()} for model(s):")
 
     for model in models_def_to_detect:
