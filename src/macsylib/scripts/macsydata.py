@@ -1067,7 +1067,7 @@ Before to publish your package you can use `macsydata check` to verify it's inte
 ##################################
 
 def _cmde_line_header():
-    return textwrap.dedent(rf'''
+    return textwrap.dedent(r'''
 
          *            *               *              
     *           *               *   *   *  *    **   
@@ -1087,10 +1087,15 @@ def _cmde_line_header():
     ''')
 
 
-def build_arg_parser(header, package_name='macsylib', tool_name='msl_data') -> argparse.ArgumentParser:
+def build_arg_parser(header:str, package_name='macsylib', tool_name='msl_data') -> argparse.ArgumentParser:
     """
     Build argument parser.
 
+    :param header: the header of console scriot
+    :param args: The arguments provided on the command line
+    :param package_name: the name of the higher package that embed the macsylib (eg 'macsyfinder')
+    :param tool_name: the name of this tool as it appear in pyproject.toml
+    :return: The arguments parsed
     """
 
     parser = argparse.ArgumentParser(
@@ -1410,15 +1415,18 @@ def verbosity_to_log_level(verbosity: int) -> int:
     return level
 
 
-def main(args: list[str] = None, tool_name='msl_data') -> None:
+def main(args: list[str] = None, header:str = _cmde_line_header(), package_name:str = 'macsylib', tool_name='msl_data') -> None:
     """
     Main entry point.
 
     :param args: the arguments passed on the command line (before parsing)
+    :param header: the header of console scriot
+    :param package_name: the name of the higher package that embed the macsylib (eg 'macsyfinder')
+    :param tool_name: the name of this tool as it appear in pyproject.toml
     """
     global _log
     args = sys.argv[1:] if args is None else args
-    parser = build_arg_parser(_cmde_line_header(), tool_name=tool_name)
+    parser = build_arg_parser(header, package_name=package_name, tool_name=tool_name)
     parsed_args = parser.parse_args(args)
     log_level = verbosity_to_log_level(parsed_args.verbose)
     # set logger for module 'package'
@@ -1436,4 +1444,4 @@ def main(args: list[str] = None, tool_name='msl_data') -> None:
 
 
 if __name__ == "__main__":
-    main(tool_name='msl_data')
+    main()
