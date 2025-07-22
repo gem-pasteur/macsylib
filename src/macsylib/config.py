@@ -53,7 +53,7 @@ class MacsyDefaults(dict):
     the argument parser or config must use a MacsyDefaults object
     """
 
-    def __init__(self, pack_name:str = 'macsylib', **kwargs) -> None:
+    def __init__(self, tool_name:str|None = None, pack_name:str = 'macsylib', **kwargs) -> None:
         """
         :param kwargs: allow to overwrite a default value.
                        It mainly used in unit tests
@@ -79,6 +79,7 @@ class MacsyDefaults(dict):
             # if it's installed with --user
             # install models in ~/.<program name> instead of ~/.local/share/<program name>
         self.pack_name = pack_name
+        self.tool_name = tool_name if tool_name is not None else pack_name
         self.cfg_file = kwargs.get('cfg_file', None)
         self.coverage_profile = kwargs.get('coverage_profile', 0.5)
         self.e_value_search = kwargs.get('e_value_search', 0.1)
