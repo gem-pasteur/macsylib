@@ -293,7 +293,7 @@ class HmmProfile:
                         raise ValueError(msg) from err
 
 
-def header(cmd: list[str], model: str, model_vers: str, prog_name='msl_profile') -> str:
+def result_header(cmd: list[str], model: str, model_vers: str, tool_name='msl_profile') -> str:
     """
 
     :param cmd: the command use dto launch this analyse
@@ -301,9 +301,9 @@ def header(cmd: list[str], model: str, model_vers: str, prog_name='msl_profile')
     :model_vers: The version of the model
     :return: The header of the result file
     """
-    header = f"""# {prog_name} {macsylib.__version__}
+    header = f"""# {tool_name} {macsylib.__version__}
 # models: {model}-{model_vers}
-# {prog_name} {' '.join(cmd)}
+# {tool_name} {' '.join(cmd)}
 hit_id\treplicon_name\tposition_hit\thit_sequence_length\tgene_name\ti_eval\tscore\tprofile_coverage\tsequence_coverage\tbegin\tend"""
     return header
 
@@ -357,39 +357,45 @@ def verbosity_to_log_level(verbosity: int) -> int:
     level = max((logging.INFO - (10 * verbosity), 1))
     return level
 
+def _cmde_line_header():
+    return dedent(r'''
+         *            *               *                   * *
+                *               *   *   *  *    **           
+      **     *    *   *  *     *                    *        
+                *       _   *             **    __ _ _     *         
+          _ __ ___  ___| |     _ __  _ __ ___  / _(_) | ___          
+         | '_ ` _ \/ __| |    | '_ \| '__/ _ \| |_| | |/ _ \       
+         | | | | | \__ \ |    | |_) | | | (_) |  _| | |  __/
+         |_| |_| |_|___/_|____| .__/|_|  \___/|_| |_|_|\___|
+               *         |_____|_|        *                  *
+            *   * *     *   **         *   *  *           *
+      *      *         *        *    *              *        
+                 *                           *  *           * 
 
-def parse_args(args: list[str], prog_name: str = 'msl_profile') -> argparse.Namespace:
+
+    msl_profile - MacSyLib profile helper tool
+    ''')
+
+
+def parse_args(header:str, args: list[str], package_name='macsylib', tool_name: str = 'msl_profile') -> argparse.Namespace:
     """
+    Build argument parser.
 
+    :param header: the header of console scriot
     :param args: The arguments provided on the command line
+    :param package_name: the name of the higher package that embed the macsylib (eg 'macsyfinder')
+    :param tool_name: the name of this tool as it appear in pyproject.toml
     :return: The arguments parsed
     """
-    msf_def = MacsyDefaults()
+    msl_def = MacsyDefaults(pack_name=package_name)
     parser = argparse.ArgumentParser(
         epilog="For more details, visit the MacSyLib website and see the MacSyLib documentation.",
         formatter_class=argparse.RawDescriptionHelpFormatter,
-        description=dedent(rf'''
-
-         *            *               *                   * *       *
-    *           *               *   *   *  *    **                *
-      **     *    *   *  *     *                    *               *
-         __  __    *       ____ *      ____        **   __ _ _  *
-        |  \/  | __ _  ___/ ___| _   _|  _ \ _ __ ___  / _(_) | ___
-        | |\/| |/ _` |/ __\___ \| | | | |_) | '__/ _ \| |_| | |/ _ \
-        | |  | | (_| | (__ ___) | |_| |  __/| | | (_) |  _| | |  __/
-        |_|  |_|\__,_|\___|____/ \__, |_|   |_|  \___/|_| |_|_|\___|
-                *                |___/    *                   *
-     *      *   * *     *   **         *   *  *           *
-      *      *         *        *    *              *
-                 *                           *  *           *     *
-
-
-    {prog_name} - MacSyLib profile helper tool
-    '''))
+        description=header)
 
     parser.add_argument('previous_run',
                         action='store',
-                        help=f'The path to a {prog_name} results directory.'
+                        help=f'The path to a {package_name} results directory.'
                         )
     parser.add_argument('--coverage-profile',
                         action='store',
@@ -441,8 +447,8 @@ Error messages (default), Warning (-v), Info (-vv) and Debug.(-vvv)""")
                         action="store_true",
                         default=False,
                         help=f"""Mute the log on stdout.
-(continue to log on macsyfinder.log)
-(default: {msf_def['mute']})""")
+(continue to log on {package_name}.log)
+(default: {msl_def['mute']})""")
 
     parsed_args = parser.parse_args(args)
 
@@ -450,17 +456,21 @@ Error messages (default), Warning (-v), Info (-vv) and Debug.(-vvv)""")
 
 
 def main(args: list[str] | None = None,
-         prog_name: str = 'msl_profile',
+         header: str = _cmde_line_header(),
+         package_name: str ='macsylib',
+         tool_name: str = 'msl_profile',
          log_level: str | int | None = None) -> None:
     """
-    main entry point to macsyprofile
+    main entry point
 
     :param args: the arguments passed on the command line without the program name
+    :param package_name: the name of the higher package that embed the macsylib (eg 'macsyfinder')
+    :param tool_name: the name of this tool as it appear in pyproject.toml
     :param log_level: the output verbosity
     """
     global _log
     args = sys.argv[1:] if args is None else args
-    parsed_args = parse_args(args)
+    parsed_args = parse_args(header, args, package_name=package_name, tool_name=tool_name)
 
     if log_level is None:
         log_level = verbosity_to_log_level(parsed_args.verbosity)
@@ -475,7 +485,7 @@ def main(args: list[str] | None = None,
         sys.tracebacklimit = 0
         raise ValueError() from None
 
-    defaults = MacsyDefaults(i_evalue_sel=1.0e9, coverage_profile=-1.0)
+    defaults = MacsyDefaults(i_evalue_sel=1.0e9, coverage_profile=-1.0, pack_name=package_name)
     cfg = Config(defaults, parsed_args)
 
     msf_run_path = cfg.previous_run()
@@ -510,14 +520,14 @@ def main(args: list[str] | None = None,
         profiles_dir = os.path.join(model_dir, 'profiles')
     except IndexError:
         _log.critical(f"Cannot find models in conf file {msf_run_path}. "
-                      f"May be these results have been generated with an old version of {prog_name}.")
+                      f"May be these results have been generated with an old version of {tool_name}.")
         sys.tracebacklimit = 10
         raise ValueError() from None
 
     _log.debug(f"hmmer_files: {hmmer_files}")
     all_hits = []
     with open(profile_report_path, 'w') as prof_out:
-        print(header(args, model_familly_name, model_vers), file=prof_out)
+        print(result_header(args, model_familly_name, model_vers, tool_name=tool_name), file=prof_out)
         for hmmer_out_path in hmmer_files:
             _log.info(f"parsing {hmmer_out_path}")
             gene_name = get_gene_name(hmmer_out_path, hmm_suffix)
@@ -552,4 +562,4 @@ def main(args: list[str] | None = None,
 
 
 if __name__ == '__main__':
-    main(prog_name='msl_profile')
+    main()

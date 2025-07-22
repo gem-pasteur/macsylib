@@ -66,7 +66,8 @@ class TestMacsyprofile(MacsyTest):
 
     def test_pasre_args(self):
         cmd = f"msl_profile {self.previous_run}"
-        args = macsyprofile.parse_args(cmd.split()[1:])
+        fake_header = "FAKE_HEADER"
+        args = macsyprofile.parse_args(fake_header, cmd.split()[1:])
         self.assertEqual(args.previous_run, self.previous_run)
         self.assertEqual(args.coverage_profile, -1.)
         self.assertEqual(args.i_evalue_sel, 1.0e9)
@@ -78,32 +79,32 @@ class TestMacsyprofile(MacsyTest):
         self.assertFalse(args.mute)
 
         cmd = f"msl_profile -vv {self.previous_run}"
-        args = macsyprofile.parse_args(cmd.split()[1:])
+        args = macsyprofile.parse_args(fake_header, cmd.split()[1:])
         self.assertEqual(args.verbosity, 2)
 
         cmd = f"msl_profile -f {self.previous_run}"
-        args = macsyprofile.parse_args(cmd.split()[1:])
+        args = macsyprofile.parse_args(fake_header, cmd.split()[1:])
         self.assertTrue(args.force)
 
         cmd = f"msl_profile --out toto {self.previous_run}"
-        args = macsyprofile.parse_args(cmd.split()[1:])
+        args = macsyprofile.parse_args(fake_header, cmd.split()[1:])
         self.assertEqual(args.out, 'toto')
 
         pattern = '?toto'
         cmd = f"msl_profile --pattern {pattern} {self.previous_run}"
-        args = macsyprofile.parse_args(cmd.split()[1:])
+        args = macsyprofile.parse_args(fake_header, cmd.split()[1:])
         self.assertEqual(args.pattern, pattern)
 
         cmd = f"msl_profile --best-hits score {self.previous_run}"
-        args = macsyprofile.parse_args(cmd.split()[1:])
+        args = macsyprofile.parse_args(fake_header, cmd.split()[1:])
         self.assertEqual(args.best_hits, 'score')
 
         cmd = f"msl_profile --i-evalue-sel 1.0 {self.previous_run}"
-        args = macsyprofile.parse_args(cmd.split()[1:])
+        args = macsyprofile.parse_args(fake_header, cmd.split()[1:])
         self.assertEqual(args.i_evalue_sel, 1.0)
 
         cmd = f"msl_profile --coverage-profile 1.0 {self.previous_run}"
-        args = macsyprofile.parse_args(cmd.split()[1:])
+        args = macsyprofile.parse_args(fake_header, cmd.split()[1:])
         self.assertEqual(args.coverage_profile, 1.0)
 
 
@@ -118,18 +119,18 @@ class TestMacsyprofile(MacsyTest):
         out = "FOO"
         coverage_profile = 0.1
         version = macsylib.__version__
-        prog_name = 'mytool_profile'
-        cmd = f"{prog_name} --coverage-profile {coverage_profile} --out {out} --index-dir {self.tmpdir} {self.previous_run}"
+        tool_name = 'mytool_profile'
+        cmd = f"{tool_name} --coverage-profile {coverage_profile} --out {out} --index-dir {self.tmpdir} {self.previous_run}"
         model_name = 'TFF-SF'
         model_vers = '0.0b2'
-        expected_header = f"""# {prog_name} {version}
+        expected_header = f"""# {tool_name} {version}
 # models: {model_name}-{model_vers}
-# {prog_name} {' '.join(cmd.split()[1:])}
+# {tool_name} {' '.join(cmd.split()[1:])}
 hit_id\treplicon_name\tposition_hit\thit_sequence_length\tgene_name\ti_eval\tscore\tprofile_coverage\tsequence_coverage\tbegin\tend"""
-        got_header = macsyprofile.header(cmd.split()[1:],
+        got_header = macsyprofile.result_header(cmd.split()[1:],
                                          'TFF-SF',
                                          '0.0b2',
-                                         prog_name=prog_name)
+                                         tool_name=tool_name)
         self.assertEqual(expected_header, got_header)
 
 
@@ -469,7 +470,7 @@ hit_id\treplicon_name\tposition_hit\thit_sequence_length\tgene_name\ti_eval\tsco
             with self.catch_log('macsyprofile') as log:
                 with self.assertRaises(ValueError):
                     macsyprofile.main(cmd.split()[1:],
-                                      prog_name='my_tool',
+                                      tool_name='my_tool',
                                       log_level=logging.CRITICAL)
                 log_msg = log.get_value().strip()
             self.assertEqual(log_msg,
