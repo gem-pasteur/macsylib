@@ -61,7 +61,8 @@ class TestMacsyDefaults(MacsyTest):
                          'out_dir': None,
                          'previous_run': None,
                          'profile_suffix': '.hmm',
-                         'prog_name': 'macsylib',
+                         'pack_name': 'macsylib',
+                         'tool_name': 'macsylib',
                          'quiet': 0,
                          'relative_path': False,
                          'replicon_topology': 'circular',
@@ -136,16 +137,18 @@ class TestMacsyDefaults(MacsyTest):
 
 
     def test_MacsyDefaults_other_prog(self):
-        prog_name = 'NIMPORTNAOIK'
-        common_path = os.path.join('share', prog_name, 'models')
+        tool_name = 'NIMPORTNAOIK'
+        pack_name = 'MY_LIB'
+        common_path = os.path.join('share', pack_name, 'models')
         prefixes = ('/', os.path.join('/', 'usr', 'local'))
         system_models_dir = [os.path.join(root, common_path) for root in prefixes]
-        system_models_dir.append(os.path.join(os.path.expanduser('~'), f'.{prog_name}', 'models'))
+        system_models_dir.append(os.path.join(os.path.expanduser('~'), f'.{pack_name}', 'models'))
         self.defaults['system_models_dir'] = [path for path in system_models_dir if os.path.exists(path)]
-        self.defaults['prog_name'] = prog_name
-        self.defaults['log_file'] = f"{prog_name}.log"
+        self.defaults['tool_name'] = tool_name
+        self.defaults['pack_name'] = pack_name
+        self.defaults['log_file'] = f"{pack_name}.log"
         try:
-            defaults = MacsyDefaults(prog_name=prog_name)
+            defaults = MacsyDefaults(pack_name=pack_name, tool_name=tool_name)
             self.maxDiff = None
             self.assertDictEqual(defaults, self.defaults)
         finally:
