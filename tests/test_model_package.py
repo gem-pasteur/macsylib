@@ -38,7 +38,7 @@ import colorlog
 from unittest.mock import patch
 
 import macsylib
-from macsylib import package
+from macsylib import model_package
 from macsylib.metadata import Maintainer
 from macsylib import model_conf_parser
 from macsylib.error import MacsydataError, MacsyDataLimitError
@@ -49,38 +49,38 @@ from tests import MacsyTest
 class TestPackageFunc(MacsyTest):
 
     def test_parse_arch_path(self):
-        self.assertTupleEqual(package.parse_arch_path("pack-3.0.tar.gz"),
+        self.assertTupleEqual(model_package.parse_arch_path("pack-3.0.tar.gz"),
                               ('pack', '3.0'))
-        self.assertTupleEqual(package.parse_arch_path("pack-3.0.tgz"),
+        self.assertTupleEqual(model_package.parse_arch_path("pack-3.0.tgz"),
                               ('pack', '3.0'))
 
         pack = "pack-3.0.foo"
         with self.assertRaises(ValueError) as ctx:
-            package.parse_arch_path(pack)
+            model_package.parse_arch_path(pack)
         self.assertEqual(str(ctx.exception),
                          f"{pack} does not seem to be a package (a tarball).")
         pack = "pack.tar.gz"
         with self.assertRaises(ValueError) as ctx:
-            package.parse_arch_path(pack)
+            model_package.parse_arch_path(pack)
         self.assertEqual(str(ctx.exception),
                          f"{pack} does not seem to not be versioned.")
 
 
     def test_init(self):
         with self.assertRaises(TypeError):
-            package.AbstractModelIndex()
+            model_package.AbstractModelIndex()
 
 
 class TestLocalModelIndex(MacsyTest):
 
     def test_init(self):
-        lmi = package.LocalModelIndex()
+        lmi = model_package.LocalModelIndex()
         self.assertEqual(lmi.org_name, 'local')
         expected_cache = os.path.join(tempfile.gettempdir(), 'tmp-macsy-cache')
         self.assertEqual(lmi.cache, expected_cache)
 
     def test_repos_url(self):
-        lmi = package.LocalModelIndex()
+        lmi = model_package.LocalModelIndex()
         self.assertEqual(lmi.repos_url, 'local')
 
 
@@ -148,62 +148,62 @@ class TestRemoteModelIndex(MacsyTest):
 
 
     def test_init(self):
-        rem_exists = package.RemoteModelIndex.remote_exists
-        package.RemoteModelIndex.remote_exists = lambda x: True
+        rem_exists = model_package.RemoteModelIndex.remote_exists
+        model_package.RemoteModelIndex.remote_exists = lambda x: True
         try:
-            remote = package.RemoteModelIndex()
+            remote = model_package.RemoteModelIndex()
             remote.cache = self.tmpdir
         finally:
-            package.RemoteModelIndex.remote_exists = rem_exists
+            model_package.RemoteModelIndex.remote_exists = rem_exists
         self.assertEqual(remote.org_name, 'macsy-models')
         self.assertEqual(remote.base_url, 'https://api.github.com')
         self.assertEqual(remote.cache, self.tmpdir)
 
-        package.RemoteModelIndex.remote_exists = lambda x: True
+        model_package.RemoteModelIndex.remote_exists = lambda x: True
         try:
-            remote = package.RemoteModelIndex(org='foo')
+            remote = model_package.RemoteModelIndex(org='foo')
             remote.cache = self.tmpdir
         finally:
-            package.RemoteModelIndex.remote_exists = rem_exists
+            model_package.RemoteModelIndex.remote_exists = rem_exists
         self.assertEqual(remote.org_name, 'foo')
 
-        package.RemoteModelIndex.remote_exists = lambda x: False
+        model_package.RemoteModelIndex.remote_exists = lambda x: False
         try:
             with self.assertRaises(ValueError) as ctx:
-                package.RemoteModelIndex(org='foo')
+                model_package.RemoteModelIndex(org='foo')
         finally:
-            package.RemoteModelIndex.remote_exists = rem_exists
+            model_package.RemoteModelIndex.remote_exists = rem_exists
         self.assertEqual(str(ctx.exception), "the 'foo' organization does not exist.")
 
 
     def test_repos_url(self):
-        rem_exists = package.RemoteModelIndex.remote_exists
-        package.RemoteModelIndex.remote_exists = lambda x: True
+        rem_exists = model_package.RemoteModelIndex.remote_exists
+        model_package.RemoteModelIndex.remote_exists = lambda x: True
         try:
             org = "package_repos_url"
-            remote = package.RemoteModelIndex(org=org)
+            remote = model_package.RemoteModelIndex(org=org)
             self.assertEqual(remote.repos_url, f"https://github.com/{org}")
         finally:
             rem_exists
 
     @patch('urllib.request.urlopen', side_effect=mocked_requests_get)
     def test_url_json(self, mock_urlopen):
-        rem_exists = package.RemoteModelIndex.remote_exists
-        package.RemoteModelIndex.remote_exists = lambda x: True
-        remote = package.RemoteModelIndex(org="nimportnaoik")
+        rem_exists = model_package.RemoteModelIndex.remote_exists
+        model_package.RemoteModelIndex.remote_exists = lambda x: True
+        remote = model_package.RemoteModelIndex(org="nimportnaoik")
         remote.cache = self.tmpdir
         try:
             j = remote._url_json("https://test_url_json/")
             self.assertDictEqual(j, {'fake': ['json', 'response']})
         finally:
-            package.RemoteModelIndex.remote_exists = rem_exists
+            model_package.RemoteModelIndex.remote_exists = rem_exists
 
 
     @patch('urllib.request.urlopen', side_effect=mocked_requests_get)
     def test_url_json_reach_limit(self, mock_urlopen):
-        rem_exists = package.RemoteModelIndex.remote_exists
-        package.RemoteModelIndex.remote_exists = lambda x: True
-        remote = package.RemoteModelIndex(org="nimportnaoik")
+        rem_exists = model_package.RemoteModelIndex.remote_exists
+        model_package.RemoteModelIndex.remote_exists = lambda x: True
+        remote = model_package.RemoteModelIndex(org="nimportnaoik")
         remote.cache = self.tmpdir
         try:
             with self.assertRaises(MacsyDataLimitError) as ctx:
@@ -212,12 +212,12 @@ class TestRemoteModelIndex(MacsyTest):
                              """You reach the maximum number of request per hour to github.
 Please wait before to try again.""")
         finally:
-            package.RemoteModelIndex.remote_exists = rem_exists
+            model_package.RemoteModelIndex.remote_exists = rem_exists
 
 
     @patch('urllib.request.urlopen', side_effect=mocked_requests_get)
     def test_remote_exists(self, mock_urlopen):
-        remote = package.RemoteModelIndex(org="remote_exists_true")
+        remote = model_package.RemoteModelIndex(org="remote_exists_true")
         remote.cache = self.tmpdir
         exists = remote.remote_exists()
         self.assertTrue(exists)
@@ -240,73 +240,73 @@ Please wait before to try again.""")
 
     @patch('urllib.request.urlopen', side_effect=mocked_requests_get)
     def test_get_metadata(self, mock_urlopen):
-        rem_exists = package.RemoteModelIndex.remote_exists
-        list_package_vers = package.RemoteModelIndex.list_package_vers
+        rem_exists = model_package.RemoteModelIndex.remote_exists
+        list_package_vers = model_package.RemoteModelIndex.list_package_vers
         try:
             vers = '0.0'
             pack_name = 'foo'
-            package.RemoteModelIndex.remote_exists = lambda x: True
-            package.RemoteModelIndex.list_package_vers = lambda x, pack_name: [vers]
-            remote = package.RemoteModelIndex(org="get_metadata")
+            model_package.RemoteModelIndex.remote_exists = lambda x: True
+            model_package.RemoteModelIndex.list_package_vers = lambda x, pack_name: [vers]
+            remote = model_package.RemoteModelIndex(org="get_metadata")
             remote.cache = self.tmpdir
             metadata = remote.get_metadata(pack_name)
             self.assertDictEqual(metadata, {"maintainer": {"name": "moi"}})
         finally:
-            package.RemoteModelIndex.remote_exists = rem_exists
-            package.RemoteModelIndex.list_package_vers = list_package_vers
+            model_package.RemoteModelIndex.remote_exists = rem_exists
+            model_package.RemoteModelIndex.list_package_vers = list_package_vers
 
         #################################################
         # The remote package is not versioned (tagged)  #
         #################################################
         try:
-            package.RemoteModelIndex.remote_exists = lambda x: True
-            package.RemoteModelIndex.list_package_vers = lambda x, pack_name: []
-            remote = package.RemoteModelIndex(org="get_metadata")
+            model_package.RemoteModelIndex.remote_exists = lambda x: True
+            model_package.RemoteModelIndex.list_package_vers = lambda x, pack_name: []
+            remote = model_package.RemoteModelIndex(org="get_metadata")
             with self.assertRaises(MacsydataError) as ctx:
                 remote.get_metadata(pack_name)
             self.assertEqual(str(ctx.exception),
                              "No official version available for model 'foo'")
         finally:
-            package.RemoteModelIndex.remote_exists = rem_exists
-            package.RemoteModelIndex.list_package_vers = list_package_vers
+            model_package.RemoteModelIndex.remote_exists = rem_exists
+            model_package.RemoteModelIndex.list_package_vers = list_package_vers
 
         #####################################
         # The pack version is not available #
         #####################################
         try:
-            package.RemoteModelIndex.remote_exists = lambda x: True
-            package.RemoteModelIndex.list_package_vers = lambda x, pack_name: ["12"]
-            remote = package.RemoteModelIndex(org="get_metadata")
+            model_package.RemoteModelIndex.remote_exists = lambda x: True
+            model_package.RemoteModelIndex.list_package_vers = lambda x, pack_name: ["12"]
+            remote = model_package.RemoteModelIndex(org="get_metadata")
             with self.assertRaises(RuntimeError) as ctx:
                 remote.get_metadata(pack_name, vers="1.1")
             self.assertEqual(str(ctx.exception),
                              "The version '1.1' does not exists for model foo.")
         finally:
-            package.RemoteModelIndex.remote_exists = rem_exists
-            package.RemoteModelIndex.list_package_vers = list_package_vers
+            model_package.RemoteModelIndex.remote_exists = rem_exists
+            model_package.RemoteModelIndex.list_package_vers = list_package_vers
 
 
     @patch('urllib.request.urlopen', side_effect=mocked_requests_get)
     def test_list_packages(self, mock_urlopen):
-        rem_exists = package.RemoteModelIndex.remote_exists
+        rem_exists = model_package.RemoteModelIndex.remote_exists
         try:
-            package.RemoteModelIndex.remote_exists = lambda x: True
-            remote = package.RemoteModelIndex(org="list_packages")
+            model_package.RemoteModelIndex.remote_exists = lambda x: True
+            remote = model_package.RemoteModelIndex(org="list_packages")
             remote.cache = self.tmpdir
             self.assertListEqual(remote.list_packages(), ['model_1', 'model_2'])
         finally:
-            package.RemoteModelIndex.remote_exists = rem_exists
+            model_package.RemoteModelIndex.remote_exists = rem_exists
 
 
     @patch('urllib.request.urlopen', side_effect=mocked_requests_get)
     def test_list_package_vers(self, mock_urlopen):
-        rem_exists = package.RemoteModelIndex.remote_exists
+        rem_exists = model_package.RemoteModelIndex.remote_exists
         try:
-            package.RemoteModelIndex.remote_exists = lambda x: True
-            remote = package.RemoteModelIndex(org="list_package_vers")
+            model_package.RemoteModelIndex.remote_exists = lambda x: True
+            remote = model_package.RemoteModelIndex(org="list_package_vers")
             remote.cache = self.tmpdir
         finally:
-            package.RemoteModelIndex.remote_exists = rem_exists
+            model_package.RemoteModelIndex.remote_exists = rem_exists
 
         self.assertListEqual(remote.list_package_vers('model_1'), ['v_1', 'v_2'])
 
@@ -321,10 +321,10 @@ Please wait before to try again.""")
 
     @patch('urllib.request.urlopen', side_effect=mocked_requests_get)
     def test_download(self, mock_urlopen):
-        rem_exists = package.RemoteModelIndex.remote_exists
+        rem_exists = model_package.RemoteModelIndex.remote_exists
         try:
-            package.RemoteModelIndex.remote_exists = lambda x: True
-            remote = package.RemoteModelIndex(org="package_download")
+            model_package.RemoteModelIndex.remote_exists = lambda x: True
+            remote = model_package.RemoteModelIndex(org="package_download")
             remote.cache = self.tmpdir
             pack_name = "fake"
             pack_vers = "1.0"
@@ -368,7 +368,7 @@ Please wait before to try again.""")
             self.assertEqual(str(ctx.exception),
                              "package 'bad_pack-0.2' does not exists on repos 'package_download'")
         finally:
-            package.RemoteModelIndex.remote_exists = rem_exists
+            model_package.RemoteModelIndex.remote_exists = rem_exists
 
 
     def test_unarchive(self):
@@ -391,10 +391,10 @@ Please wait before to try again.""")
         pack_name = 'model-toto'
         pack_vers = '2.0'
 
-        rem_exists = package.RemoteModelIndex.remote_exists
-        package.RemoteModelIndex.remote_exists = lambda x: True
+        rem_exists = model_package.RemoteModelIndex.remote_exists
+        model_package.RemoteModelIndex.remote_exists = lambda x: True
         try:
-            remote = package.RemoteModelIndex(org="package_unarchive")
+            remote = model_package.RemoteModelIndex(org="package_unarchive")
             arch = create_pack(self.tmpdir, remote.org_name, pack_name, pack_vers, 'e020300')
             remote.cache = self.tmpdir
 
@@ -413,10 +413,10 @@ Please wait before to try again.""")
                                  sorted([os.path.join(unpacked_path, f"file_{i}") for i in range(3)])
                                  )
         finally:
-            package.RemoteModelIndex.remote_exists = rem_exists
+            model_package.RemoteModelIndex.remote_exists = rem_exists
 
 
-class TestPackage(MacsyTest):
+class TestModelPackage(MacsyTest):
 
     def setUp(self) -> None:
         self._tmp_dir = tempfile.TemporaryDirectory(prefix='test_msf_package_')
@@ -425,11 +425,11 @@ class TestPackage(MacsyTest):
         macsylib.init_logger()
         macsylib.logger_set_level(level=30)
         logger = colorlog.getLogger('macsylib.package')
-        package._log = logger
+        model_package._log = logger
         logger = colorlog.getLogger('macsylib.model_conf_parser')
         model_conf_parser._log = logger
         maintainer = Maintainer("auth_name", "auth_name@mondomain.fr")
-        self.metadata = package.Metadata(maintainer,
+        self.metadata = model_package.Metadata(maintainer,
                                          "this is a short description of the repos")
         self.metadata.vers = "0.0b2"
         self.metadata.cite = ["bla bla",
@@ -492,7 +492,7 @@ ligne 3 et bbbbb
                                 )
         if metadata:
             meta_path = self.find_data('pack_metadata', metadata)
-            meta_dest = os.path.join(pack_path, package.Metadata.name)
+            meta_dest = os.path.join(pack_path, model_package.Metadata.name)
             with open(meta_path) as meta_file:
                 meta = yaml.safe_load(meta_file)
             if not vers:
@@ -541,7 +541,7 @@ ligne 3 et bbbbb
 
     def test_init(self):
         fake_pack_path = self.create_fake_package('fake_model')
-        pack = package.Package(fake_pack_path)
+        pack = model_package.ModelPackage(fake_pack_path)
         self.assertEqual(pack.path, fake_pack_path)
         self.assertEqual(pack.readme, os.path.join(fake_pack_path, 'README'))
         self.assertEqual(pack.name, 'fake_model')
@@ -550,7 +550,7 @@ ligne 3 et bbbbb
 
     def test_metadata(self):
         fake_pack_path = self.create_fake_package('fake_model')
-        pack = package.Package(fake_pack_path)
+        pack = model_package.ModelPackage(fake_pack_path)
         self.assertEqual(pack.metadata.maintainer, self.metadata.maintainer)
         self.assertEqual(pack.metadata.short_desc, self.metadata.short_desc)
         self.assertEqual(pack.metadata.license, self.metadata.license)
@@ -560,7 +560,7 @@ ligne 3 et bbbbb
 
     def test_find_readme(self):
         fake_pack_path = self.create_fake_package('fake_model')
-        pack = package.Package(fake_pack_path)
+        pack = model_package.ModelPackage(fake_pack_path)
         for ext in ('', '.rst', '.md'):
             readme_path = os.path.join(pack.path, 'README' + ext)
             os.rename(pack.readme, readme_path)
@@ -572,21 +572,21 @@ ligne 3 et bbbbb
 
     def test_check_model_conf(self):
         fake_pack_path = self.create_fake_package('fake_model')
-        pack = package.Package(fake_pack_path)
+        pack = model_package.ModelPackage(fake_pack_path)
         errors, warnings = pack._check_model_conf()
         self.assertListEqual(errors, [])
         self.assertListEqual(warnings, [])
 
     def test_check_model_conf_no_conf(self):
         fake_pack_path = self.create_fake_package('fake_model', conf=False)
-        pack = package.Package(fake_pack_path)
+        pack = model_package.ModelPackage(fake_pack_path)
         errors, warnings = pack._check_model_conf()
         self.assertListEqual(errors, [])
         self.assertListEqual(warnings, [])
 
     def test_check_model_conf_bad_conf(self):
         fake_pack_path = self.create_fake_package('fake_model', conf=False, bad_conf=True)
-        pack = package.Package(fake_pack_path)
+        pack = model_package.ModelPackage(fake_pack_path)
         with self.catch_log(log_name='macsylib'):
             errors, warnings = pack._check_model_conf()
         self.maxDiff =None
@@ -596,7 +596,7 @@ ligne 3 et bbbbb
 
     def test_check_structure(self):
         fake_pack_path = self.create_fake_package('fake_model')
-        pack = package.Package(fake_pack_path)
+        pack = model_package.ModelPackage(fake_pack_path)
         errors, warnings = pack._check_structure()
         self.assertListEqual(errors, [])
         self.assertListEqual(warnings, [])
@@ -604,23 +604,23 @@ ligne 3 et bbbbb
 
     def test_check_structure_bad_path(self):
         foobar = os.path.join(self.tmpdir, "foobar")
-        pack = package.Package(foobar)
+        pack = model_package.ModelPackage(foobar)
         errors, warnings = pack._check_structure()
-        self.assertListEqual(errors, ["The package 'foobar' does not exists."])
+        self.assertListEqual(errors, ["The model package 'foobar' does not exists."])
         self.assertListEqual(warnings, [])
 
         open(foobar, 'w').close()
         errors, warnings = pack._check_structure()
-        self.assertListEqual(errors, ["'foobar' is not a directory "])
+        self.assertListEqual(errors, ["The model package 'foobar' is not a directory "])
         self.assertListEqual(warnings, [])
 
 
     def test_check_structure_no_def(self):
         fake_pack_path = self.create_fake_package('fake_model', definitions=False)
-        pack = package.Package(fake_pack_path)
+        pack = model_package.ModelPackage(fake_pack_path)
         errors, warnings = pack._check_structure()
 
-        self.assertListEqual(errors, ["The package 'fake_model' have no 'definitions' directory."])
+        self.assertListEqual(errors, ["The model package 'fake_model' have no 'definitions' directory."])
         self.assertListEqual(warnings, [])
 
         open(os.path.join(pack.path, 'definitions'), 'w').close()
@@ -631,10 +631,10 @@ ligne 3 et bbbbb
 
     def test_check_structure_no_profiles(self):
         fake_pack_path = self.create_fake_package('fake_model', profiles=False)
-        pack = package.Package(fake_pack_path)
+        pack = model_package.ModelPackage(fake_pack_path)
         errors, warnings = pack._check_structure()
 
-        self.assertListEqual(errors, ["The package 'fake_model' have no 'profiles' directory."])
+        self.assertListEqual(errors, ["The model package 'fake_model' have no 'profiles' directory."])
         self.assertListEqual(warnings, [])
 
         open(os.path.join(pack.path, 'profiles'), 'w').close()
@@ -645,35 +645,35 @@ ligne 3 et bbbbb
 
     def test_check_structure_no_metadata(self):
         fake_pack_path = self.create_fake_package('fake_model', metadata='')
-        pack = package.Package(fake_pack_path)
+        pack = model_package.ModelPackage(fake_pack_path)
         errors, warnings = pack._check_structure()
 
-        self.assertListEqual(errors, ["The package 'fake_model' have no 'metadata.yml'."])
+        self.assertListEqual(errors, ["The model package 'fake_model' have no 'metadata.yml'."])
         self.assertListEqual(warnings, [])
 
 
     def test_check_structure_no_readme(self):
         fake_pack_path = self.create_fake_package('fake_model', readme=False)
-        pack = package.Package(fake_pack_path)
+        pack = model_package.ModelPackage(fake_pack_path)
         errors, warnings = pack._check_structure()
 
         self.assertEqual(errors, [])
-        self.assertEqual(warnings, ["The package 'fake_model' have not any README file."])
+        self.assertEqual(warnings, ["The model package 'fake_model' have not any README file."])
 
 
     def test_check_structure_no_license(self):
         fake_pack_path = self.create_fake_package('fake_model', license=False)
-        pack = package.Package(fake_pack_path)
+        pack = model_package.ModelPackage(fake_pack_path)
         errors, warnings = pack._check_structure()
 
         self.assertEqual(errors, [])
-        self.assertEqual(warnings, ["The package 'fake_model' have not any LICENSE file. "
+        self.assertEqual(warnings, ["The model package 'fake_model' have not any LICENSE file. "
                                     "May be you have not right to use it."])
 
 
     def test_check_model_consistency(self):
         fake_pack_path = self.create_fake_package('fake_model')
-        pack = package.Package(fake_pack_path)
+        pack = model_package.ModelPackage(fake_pack_path)
         with self.catch_log(log_name='macsylib'):
             errors, warnings = pack._check_model_consistency()
 
@@ -683,7 +683,7 @@ ligne 3 et bbbbb
 
     def test_check_model_consistency_extra_profile(self):
         fake_pack_path = self.create_fake_package('fake_model')
-        pack = package.Package(fake_pack_path)
+        pack = model_package.ModelPackage(fake_pack_path)
         open(os.path.join(fake_pack_path, 'profiles', 'extra_profile.hmm'), 'w').close()
         with self.catch_log(log_name='macsylib'):
             errors, warnings = pack._check_model_consistency()
@@ -694,7 +694,7 @@ ligne 3 et bbbbb
 
     def test_check_model_consistency_lack_one_profile(self):
         fake_pack_path = self.create_fake_package('fake_model', skip_hmm=['flgB', 'fliE'])
-        pack = package.Package(fake_pack_path)
+        pack = model_package.ModelPackage(fake_pack_path)
         with self.catch_log(log_name='macsylib'):
             errors, warnings = pack._check_model_consistency()
 
@@ -707,7 +707,7 @@ ligne 3 et bbbbb
 
     def test_check_model_consistency_bad_definitions(self):
         fake_pack_path = self.create_fake_package('fake_model', bad_definitions=True)
-        pack = package.Package(fake_pack_path)
+        pack = model_package.ModelPackage(fake_pack_path)
         with self.catch_log(log_name='macsylib'):
             errors, warnings = pack._check_model_consistency()
         self.assertEqual(warnings, [])
@@ -717,24 +717,24 @@ ligne 3 et bbbbb
 
     def test_check_no_readme_n_no_license(self):
         fake_pack_path = self.create_fake_package('fake_model', readme=False, license=False, vers=False)
-        pack = package.Package(fake_pack_path)
+        pack = model_package.ModelPackage(fake_pack_path)
         errors, warnings = pack._check_structure()
 
         self.assertEqual(errors, [])
-        self.assertEqual(warnings, ["The package 'fake_model' have not any LICENSE file. "
+        self.assertEqual(warnings, ["The model package 'fake_model' have not any LICENSE file. "
                                     "May be you have not right to use it.",
-                                    "The package 'fake_model' have not any README file."])
+                                    "The model package 'fake_model' have not any README file."])
 
     def test_check_metadata(self):
         fake_pack_path = self.create_fake_package('fake_model', vers=False)
-        pack = package.Package(fake_pack_path)
+        pack = model_package.ModelPackage(fake_pack_path)
         errors, warnings = pack._check_metadata()
         self.assertEqual(errors, [])
         self.assertEqual(warnings, [])
 
     def test_check_metadata_no_maintainer(self):
         fake_pack_path = self.create_fake_package('fake_model', metadata='metadata_no_maintainer.yml', vers=False)
-        pack = package.Package(fake_pack_path)
+        pack = model_package.ModelPackage(fake_pack_path)
         errors, warnings = pack._check_metadata()
         self.assertListEqual(errors, [f"- The metadata file '{fake_pack_path}/metadata.yml' is not valid: "
                                       f"the element 'maintainer' is required."])
@@ -742,7 +742,7 @@ ligne 3 et bbbbb
 
     def test_check_metadata_no_name(self):
         fake_pack_path = self.create_fake_package('fake_model', metadata='metadata_no_name.yml', vers=False)
-        pack = package.Package(fake_pack_path)
+        pack = model_package.ModelPackage(fake_pack_path)
         errors, warnings = pack._check_metadata()
         self.assertListEqual(errors, [f"- The metadata file '{fake_pack_path}/metadata.yml' is not valid: "
                                                 "the element 'maintainer' must have fields 'name' and 'email'."])
@@ -750,7 +750,7 @@ ligne 3 et bbbbb
 
     def test_check_metadata_no_email(self):
         fake_pack_path = self.create_fake_package('fake_model', metadata='metadata_no_email.yml', vers=False)
-        pack = package.Package(fake_pack_path)
+        pack = model_package.ModelPackage(fake_pack_path)
         errors, warnings = pack._check_metadata()
         self.assertListEqual(errors, [f"- The metadata file '{fake_pack_path}/metadata.yml' is not valid: "
                                                 "the element 'maintainer' must have fields 'name' and 'email'."])
@@ -758,7 +758,7 @@ ligne 3 et bbbbb
 
     def test_check_metadata_no_desc(self):
         fake_pack_path = self.create_fake_package('fake_model', metadata='metadata_no_desc.yml', vers=False)
-        pack = package.Package(fake_pack_path)
+        pack = model_package.ModelPackage(fake_pack_path)
         errors, warnings = pack._check_metadata()
         self.assertEqual(errors, [f"- The metadata file '{fake_pack_path}/metadata.yml' is not valid: "
                                   f"the element 'short_desc' is required."])
@@ -767,14 +767,14 @@ ligne 3 et bbbbb
 
     def test_check_metadata_no_vers(self):
         fake_pack_path = self.create_fake_package('fake_model', metadata='metadata_no_vers.yml')
-        pack = package.Package(fake_pack_path)
+        pack = model_package.ModelPackage(fake_pack_path)
         errors, warnings = pack._check_metadata()
         self.assertEqual(errors, [])
         self.assertEqual(warnings, [])
 
     def test_check_metadata_with_vers(self):
         fake_pack_path = self.create_fake_package('fake_model')
-        pack = package.Package(fake_pack_path)
+        pack = model_package.ModelPackage(fake_pack_path)
         errors, warnings = pack._check_metadata()
         self.assertEqual(errors, [])
         self.assertEqual(warnings, ["The field 'vers' is not required anymore."
@@ -783,7 +783,7 @@ ligne 3 et bbbbb
 
     def test_check_metadata_no_cite(self):
         fake_pack_path = self.create_fake_package('fake_model', metadata='metadata_no_cite.yml', vers=False)
-        pack = package.Package(fake_pack_path)
+        pack = model_package.ModelPackage(fake_pack_path)
         errors, warnings = pack._check_metadata()
         self.assertEqual(errors, [])
         self.assertEqual(warnings, [f"It's better if the field 'cite' is setup in '{fake_pack_path}/metadata.yml' file."])
@@ -791,21 +791,21 @@ ligne 3 et bbbbb
 
     def test_check_metadata_no_doc(self):
         fake_pack_path = self.create_fake_package('fake_model', metadata='metadata_no_doc.yml', vers=False)
-        pack = package.Package(fake_pack_path)
+        pack = model_package.ModelPackage(fake_pack_path)
         errors, warnings = pack._check_metadata()
         self.assertEqual(errors, [])
         self.assertEqual(warnings, [f"It's better if the field 'doc' is setup in '{fake_pack_path}/metadata.yml' file."])
 
     def test_check_metadata_no_license(self):
         fake_pack_path = self.create_fake_package('fake_model', metadata='metadata_no_license.yml', vers=False)
-        pack = package.Package(fake_pack_path)
+        pack = model_package.ModelPackage(fake_pack_path)
         errors, warnings = pack._check_metadata()
         self.assertEqual(errors, [])
         self.assertEqual(warnings, [f"It's better if the field 'license' is setup in '{fake_pack_path}/metadata.yml' file."])
 
     def test_check_metadata_no_copyright(self):
         fake_pack_path = self.create_fake_package('fake_model', metadata='metadata_no_copyright.yml', vers=False)
-        pack = package.Package(fake_pack_path)
+        pack = model_package.ModelPackage(fake_pack_path)
         errors, warnings = pack._check_metadata()
         self.assertEqual(errors, [])
         self.assertEqual(warnings, [f"It's better if the field 'copyright' is setup in '{fake_pack_path}/metadata.yml' file."])
@@ -813,14 +813,14 @@ ligne 3 et bbbbb
 
     def test_check(self):
         fake_pack_path = self.create_fake_package('fake_model', metadata='good_metadata.yml', vers=False)
-        pack = package.Package(fake_pack_path)
+        pack = model_package.ModelPackage(fake_pack_path)
         errors, warnings = pack.check()
         self.assertListEqual(warnings, [])
         self.assertListEqual(errors, [])
 
     def test_check_bad_metadata(self):
         fake_pack_path = self.create_fake_package('fake_model', metadata='bad_metadata.yml')
-        pack = package.Package(fake_pack_path)
+        pack = model_package.ModelPackage(fake_pack_path)
         errors, warnings = pack.check()
 
         self.assertListEqual(warnings, [])
@@ -831,7 +831,7 @@ ligne 3 et bbbbb
 
     def test_check_poor_quality_metadata(self):
         fake_pack_path = self.create_fake_package('fake_model', metadata='metadata_poor_quality.yml')
-        pack = package.Package(fake_pack_path)
+        pack = model_package.ModelPackage(fake_pack_path)
         errors, warnings = pack.check()
         self.assertListEqual(errors, [])
         self.assertListEqual(warnings,
@@ -845,7 +845,7 @@ ligne 3 et bbbbb
         profiles_dir = os.path.join(fake_pack_path, 'profiles')
         os.mkdir(profiles_dir)
         shutil.copyfile(self.find_data('hmm', 'one_profile.hmm'), os.path.join(profiles_dir, 'one_profile.hmm'))
-        pack = package.Package(fake_pack_path)
+        pack = model_package.ModelPackage(fake_pack_path)
         errors, warnings = pack._check_profiles()
         self.assertListEqual(errors, [])
         self.assertListEqual(warnings, [])
@@ -867,7 +867,7 @@ ligne 3 et bbbbb
         os.mkdir(profiles_dir)
         fake_profile = os.path.join(profiles_dir, 'flgB.hmm')
         open(fake_profile, 'w').close()
-        pack = package.Package(fake_pack_path)
+        pack = model_package.ModelPackage(fake_pack_path)
         errors, warnings = pack._check_profiles()
         self.assertListEqual(errors, [f"Profile {fake_profile} seems empty: Check this file."])
         self.assertListEqual(warnings, [])
@@ -879,7 +879,7 @@ ligne 3 et bbbbb
         os.mkdir(profiles_dir)
         old_profile = os.path.join(profiles_dir, 'old_profile.hmm')
         shutil.copyfile(self.find_data('hmm', 'old_profile.hmm'), old_profile)
-        pack = package.Package(fake_pack_path)
+        pack = model_package.ModelPackage(fake_pack_path)
         errors, warnings = pack._check_profiles()
         self.assertListEqual(errors, [f"The file {old_profile} does not seems to be HMMER 3 profile: "
                                       f"check it or remove it."])
@@ -891,7 +891,7 @@ ligne 3 et bbbbb
         profiles_dir = os.path.join(fake_pack_path, 'profiles')
         dir_in_profiles = os.path.join(profiles_dir, 'nimportnaoik')
         os.makedirs(dir_in_profiles)
-        pack = package.Package(fake_pack_path)
+        pack = model_package.ModelPackage(fake_pack_path)
         errors, warnings = pack._check_profiles()
         self.assertListEqual(errors, [])
         self.assertListEqual(warnings,
@@ -903,7 +903,7 @@ ligne 3 et bbbbb
         profiles_dir = os.path.join(fake_pack_path, 'profiles')
         bad_profile = os.path.join(profiles_dir, 'flgB.bad_ext')
         open(bad_profile, 'w').close()
-        pack = package.Package(fake_pack_path)
+        pack = model_package.ModelPackage(fake_pack_path)
         errors, warnings = pack._check_profiles()
         self.assertListEqual(errors, [])
         self.assertListEqual(warnings,
@@ -911,20 +911,20 @@ ligne 3 et bbbbb
 
     def test_help(self):
         fake_pack_path = self.create_fake_package('fake_model', license=False)
-        pack = package.Package(fake_pack_path)
+        pack = model_package.ModelPackage(fake_pack_path)
 
         receive_help = pack.help()
         self.assertEqual(receive_help, "# This a README\n")
 
         os.unlink(os.path.join(fake_pack_path, 'README'))
-        pack = package.Package(fake_pack_path)
+        pack = model_package.ModelPackage(fake_pack_path)
         receive_help = pack.help()
         self.assertEqual(receive_help, "No help available for package 'fake_model'.")
 
 
     def test_info(self):
         fake_pack_path = self.create_fake_package('fake_model', license=False)
-        pack = package.Package(fake_pack_path)
+        pack = model_package.ModelPackage(fake_pack_path)
 
         info = pack.info()
 
@@ -952,7 +952,7 @@ copyright: 2019, Institut Pasteur, CNRS
 
     def test_info_no_citation(self):
         fake_pack_path = self.create_fake_package('fake_model', metadata='metadata_no_cite.yml', license=False)
-        pack = package.Package(fake_pack_path)
+        pack = model_package.ModelPackage(fake_pack_path)
 
         info = pack.info()
 
@@ -976,7 +976,7 @@ copyright: 2019, Institut Pasteur, CNRS
 
     def test_info_no_doc(self):
         fake_pack_path = self.create_fake_package('fake_model', metadata='metadata_no_doc.yml', license=False)
-        pack = package.Package(fake_pack_path)
+        pack = model_package.ModelPackage(fake_pack_path)
 
         info = pack.info()
         expected_info = """
@@ -1004,7 +1004,7 @@ copyright: 2019, Institut Pasteur, CNRS
 
     def test_info_no_license(self):
         fake_pack_path = self.create_fake_package('fake_model', metadata='metadata_no_license.yml', license=False)
-        pack = package.Package(fake_pack_path)
+        pack = model_package.ModelPackage(fake_pack_path)
 
         info = pack.info()
         expected_info = """
