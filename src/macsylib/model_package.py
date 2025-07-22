@@ -393,7 +393,7 @@ class ModelPackage:
         if not os.path.exists(self.path):
             errors.append(msg + "does not exists.")
         elif not os.path.isdir(self.path):
-            errors.append("is not a directory ")
+            errors.append(msg + "is not a directory ")
         elif not os.path.exists(os.path.join(self.path, 'metadata.yml')):
             errors.append(msg + "have no 'metadata.yml'.")
         if not errors:
@@ -411,7 +411,7 @@ class ModelPackage:
 
             if not os.path.exists(os.path.join(self.path, 'LICENSE')):
                 warnings.append(msg + "have not any LICENSE file. "
-                                f"May be you have not right to use it.")
+                                "May be you have not right to use it.")
             if not self.readme:
                 warnings.append(msg + "have not any README file.")
         return errors, warnings
