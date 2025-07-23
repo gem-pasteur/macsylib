@@ -61,7 +61,7 @@ class TestMacsydata(MacsyTest):
 
         self.args = argparse.Namespace()
         self.args.org = 'foo'
-        self.args.pack_name = 'macsylib'
+        self.args.package_name = 'macsylib'
         self._remote_exists = macsydata.RemoteModelIndex.remote_exists
         macsydata.RemoteModelIndex.remote_exists = lambda x: True
         macsydata._log = macsydata.init_logger(20)  # 20 logging.INFO
