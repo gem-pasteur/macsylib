@@ -230,7 +230,7 @@ class TestProfile(MacsyTest):
         # create a hmmdir with space in name
         self.cfg.hmmer_dir = lambda: 'hmmer results'
         # create sequence_db path with space in path
-        seq_path = os.path.join(self.cfg.working_dir(), "test test1.fasta")
+        seq_path = os.path.join(self.cfg.working_dir(), "test_1.fasta")
         shutil.copyfile(self.find_data("base", "test_1.fasta"),
                         seq_path)
         self.cfg._set_sequence_db(seq_path)
