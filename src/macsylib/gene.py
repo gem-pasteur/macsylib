@@ -206,6 +206,7 @@ class ModelGene:
     @property
     def status(self) -> GeneStatus:
         """
+
         :return: The status of this gene
         """
         return self._status
@@ -223,6 +224,7 @@ class ModelGene:
     @property
     def model(self) -> Model:
         """
+
         :return: the Model that owns this Gene
         """
         return self._model
@@ -230,6 +232,7 @@ class ModelGene:
     @property
     def core_gene(self) -> CoreGene:
         """
+
         :return: The CoreGene associated to this ModelGene
         """
         return self._gene
@@ -238,6 +241,7 @@ class ModelGene:
     @property
     def loner(self) -> bool:
         """
+
         :return: True if the gene can be isolated on the genome, False otherwise
         """
         return self._loner
@@ -246,6 +250,7 @@ class ModelGene:
     @property
     def exchangeables(self) -> list[ModelGene]:
         """
+
         :return: the list of genes which can replace this one without any effect on the model
         """
         return self._exchangeables[:]
@@ -254,6 +259,7 @@ class ModelGene:
     @property
     def is_exchangeable(self) -> bool:
         """
+
         :return: True if this gene is described in the model as an exchangeable.
                  False if it is described as first level gene.
         """
@@ -280,6 +286,7 @@ class ModelGene:
     @property
     def multi_system(self) -> bool:
         """
+
         :return: True if this Gene can belong to different occurrences of **the model**
                 (and can be used for multiple System assessments), False otherwise.
         """
@@ -289,6 +296,7 @@ class ModelGene:
     @property
     def multi_model(self) -> bool:
         """
+
         :return: True if this Gene can belong to different occurrences of systems from different
                  model :class:`macsylib.model.Model`
                 (and can be used for multiple System assessments), False otherwise.
@@ -300,6 +308,7 @@ class ModelGene:
     @property
     def inter_gene_max_space(self) -> int | None:
         """
+
         :return: The maximum distance allowed between this gene and another gene for them to be considered co-localized.
                  If the value is not set at the Gene level, return None.
         """
@@ -314,9 +323,11 @@ class ModelGene:
 
     def is_mandatory(self) -> bool:
         """
+
         :return: True if the gene is within the *mandatory* genes of the model, False otherwise.
                  Do not take in account the exchangeable
                  For instance:
+
                  .. code-block:: text
 
                      <gene name="A" presence="mandatory">
@@ -330,6 +341,7 @@ class ModelGene:
                 To get the real status of a gene whatever it is a regular or exchangeable gen use instead status property
                 gene_A.status -> <GeneStatus.MANDATORY: 1>
                 gene_B.status -> <GeneStatus.MANDATORY: 1>
+
         """
         # used at the end of definition parser to check model consistency
         return self in self._model.mandatory_genes
@@ -337,9 +349,11 @@ class ModelGene:
 
     def is_accessory(self) -> bool:
         """
+
         :return: True if the gene is within the *accessory* genes of the model, False otherwise.
                  Do not take in account the exchangeable
                  For instance:
+
                  .. code-block:: text
 
                      <gene name="A" presence="accessory">
@@ -353,6 +367,7 @@ class ModelGene:
                 To get the real status of a gene whatever it is a regular or exchangeable gen use instead status property
                 gene_A.status -> <GeneStatus.ACCESSORY: 2>
                 gene_B.status -> <GeneStatus.ACCESSORY: 2>
+
         """
         # used at the end of definition parser to check model consistency
         return self in self._model.accessory_genes
@@ -360,9 +375,11 @@ class ModelGene:
 
     def is_forbidden(self) -> bool:
         """
+
         :return: True if the gene is within the *forbidden* genes of the model, False otherwise.
                  Do not take in account the exchangeable
                  For instance:
+
                  .. code-block:: text
 
                      <gene name="A" presence="forbidden">
@@ -376,6 +393,7 @@ class ModelGene:
                 To get the real status of a gene whatever it is a regular or exchangeable gen use instead status property
                 gene_A.status -> <GeneStatus.FORBIDDEN: 3>
                 gene_B.status -> <GeneStatus.FORBIDDEN: 3>
+
         """
         # used at the end of definition parser to check model consistency
         return self in self._model.forbidden_genes
@@ -410,6 +428,7 @@ class Exchangeable(ModelGene):
     @property
     def is_exchangeable(self) -> bool:
         """
+
         :return: True
         """
         return True
@@ -417,6 +436,7 @@ class Exchangeable(ModelGene):
 
     def alternate_of(self) -> ModelGene:
         """
+
         :return: the gene to which this one is an exchangeable to (reference gene)
         """
         return self._ref
@@ -434,6 +454,7 @@ class Exchangeable(ModelGene):
     @property
     def status(self) -> GeneStatus:
         """
+
         :return: The status of this gene. if the status is not define for this gene itself,
                  return the status of the reference gene.
         """
