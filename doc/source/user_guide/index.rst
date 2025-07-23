@@ -14,8 +14,8 @@
 User Guide
 ==========
 
-Running MacSyFinder
-===================
+Using MacSyLib
+==============
 .. toctree::
    :maxdepth: 2
 
@@ -26,14 +26,13 @@ Running MacSyFinder
    outputs
 
 
-MacSyFinder functioning
-=======================
+MacSyLib functioning
+====================
 .. toctree::
    :maxdepth: 2
 
    model_definition
    functioning
-
 
 
 Frequently Asked Questions

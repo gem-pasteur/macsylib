@@ -18,7 +18,7 @@ MacSyLib documentation
 ======================
 
 
-    Macsyfinder documentation master file, created by sphinx-quickstart
+    MacSyLib documentation master file, created by sphinx-quickstart
 
 
 .. note::

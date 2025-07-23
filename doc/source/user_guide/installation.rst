@@ -4,7 +4,7 @@
     Authors: Sophie Abby, Bertrand Néron
     Copyright © 2014-2025 Institut Pasteur (Paris) and CNRS.
     See the COPYRIGHT file for details
-    MacsyLib is distributed under the terms of the GNU General Public License (GPLv3).
+    MacSyLib is distributed under the terms of the GNU General Public License (GPLv3).
     See the COPYING file for details.
 
 
@@ -15,27 +15,27 @@
 Installation
 ************
 
-MacSyFinder works with models for macromolecular systems that are not shipped with it,
-you have to install them separately. See the :ref:`macsydata section <macsydata>` below.
+MacSyLib works with models for macromolecular systems that are not shipped with it,
+you have to install them separately. See the :ref:`msl_data section <msl_data>` below.
 We also provide container so you can use macsyfinder directly.
 
 .. _user_dependencies:
 
-========================
-MacSyFinder dependencies
-========================
-**Python version >=3.10** is required to run MacSyFinder: https://docs.python.org/3.10/index.html
+=====================
+MacSyLib dependencies
+=====================
+**Python version >=3.10** is required to run MacSyLib: https://docs.python.org/3.10/index.html
 
-MacSyFinder has one program dependency:
+MacSyLib has one program dependency:
 
  - the *Hmmer* program, version 3.1 or greater (http://hmmer.org/).
 
-The *hmmsearch* program should be installed (*e.g.*, in the PATH) in order to use MacSyFinder.
+The *hmmsearch* program should be installed (*e.g.*, in the PATH) in order to use MacSyLib.
 Otherwise, the paths to this executable must be specified in the command-line:
 see the :ref:`command-line options <hmmer-options>`.
 
 
-MacSyFinder also relies on six Python library dependencies:
+MacSyLib also relies on six Python library dependencies:
 
  - colorlog
  - colorama
@@ -50,24 +50,23 @@ These dependencies will be automatically retrieved and installed when using `pip
     If you intend to build and distribute new models you will need some other dependencies see modeler guide for installation.
 
 .. note::
-    If you want to contribute to the *MacSyFinder* code, check the guide lines (`CONTRIBUTING <https://github.com/gem-pasteur/macsyfinder/blob/master/CONTRIBUTING.md>`_)
+    If you want to contribute to the *MacSyLib* code, check the guide lines (`CONTRIBUTING <https://github.com/gem-pasteur/macsyfinder/blob/master/CONTRIBUTING.md>`_)
     and specific procedure for :ref:`developer installation <dev_installation>`.
 
 
 ==================================
-MacSyFinder Installation procedure
+MacSyLib Installation procedure
 ==================================
 
-It is recommended to use `pip` to install the MacSyFinder package.
+It is recommended to use `pip` to install the MacSyLib package.
 
 Archive overview
 ================
 
 * **doc** => The documentation in html and pdf
 * **test** => All what is needed for unitary tests
-* **macsypy** => The macsyfinder python library
-* **setup.py** => The installation script
-* **setup.cfg** => The installation script
+* **src/macsylib* => The macsylib python library
+* **setup.py** => The installation script (to include documentation)
 * **pyproject.toml** => The project installation build tool
 * **COPYING** => The licensing
 * **COPYRIGHT** => The copyright
@@ -82,7 +81,7 @@ Installation steps:
 Make sure every required dependency/software is present.
 --------------------------------------------------------
 
-By default MacSyFinder will try to use `hmmsearch` in your PATH. If `hmmsearch` is not in the PATH,
+By default MacSyLib will try to use `hmmsearch` in your PATH. If `hmmsearch` is not in the PATH,
 you have to set the absolute path to `hmmsearch` in a :ref:`configuration file <config-definition-label>`
 or in the :ref:`command-line <hmmer-options>` upon execution.
 If the tools are not in the path, some test will be skipped and a warning will be raised.
@@ -105,7 +104,7 @@ installation in your home directory
 
 .. code-block:: bash
 
-    python3 -m pip install --user macsyfinder
+    python3 -m pip install --user macsylib
 
 
 installation in a virtualenv
@@ -113,19 +112,19 @@ installation in a virtualenv
 
 .. code-block:: bash
 
-    python3 -m venv macsyfinder
-    cd macsyfinder
+    python3 -m venv macsylib
+    cd macsylib
     source bin/activate
-    python3 -m pip install macsyfinder
+    python3 -m pip install macsylib
 
 To exit the virtualenv just execute the `deactivate` command.
-To run `macsyfinder`, you need to activate the virtualenv:
+To use `macsylib`, you need to activate the virtualenv:
 
 .. code-block:: bash
 
-    source macsyfinder/bin/activate
+    source macsylib/bin/activate
 
-Then run `macsyfinder` or `macsydata`.
+Then use `macsylib` or `msl_data`.
 
 
 .. note::
@@ -133,190 +132,122 @@ Then run `macsyfinder` or `macsydata`.
 
 
 .. note::
-  If you do not have the privileges, or if you do not want to install MacSyFinder in the Python libraries of your system,
-  you can install MacSyFinder in a virtual environment (http://www.virtualenv.org/).
+  If you do not have the privileges, or if you do not want to install MacSyLib in the Python libraries of your system,
+  you can install MacSyLib in a virtual environment (http://www.virtualenv.org/).
 
 .. warning::
-  When installing a new version of MacSyFinder, do not forget to uninstall the previous version installed !
+  When installing a new version of MacSyLib, do not forget to uninstall the previous version installed !
 
 
-Uninstalling MacSyFinder
+Uninstalling MacSyLib
 ========================
 
-To uninstall MacSyFinder (the last version installed), run
+To uninstall MacSyLib (the last version installed), run
 
 .. code-block:: bash
 
-  (sudo) pip uninstall macsyfinder
+  (sudo) pip uninstall macsylib
 
 If you install it in a virtualenv, just delete the virtual environment.
 For instance if you create a virtualenv name macsyfinder
 
 .. code-block:: bash
 
-    python3 -m venv macsyfinder
+    python3 -m venv macsylib
 
 To delete it, remove the directory
 
 .. code-block:: bash
 
-    rm -R macsyfinder
+    rm -R macsylib
 
 From Conda/Mamba
 ================
 
-From version 2.0, MacSyFinder is packaged for Conda/Mamba
+From version 2.0, MacSyLib is packaged for Conda/Mamba
 
 .. code-block:: text
 
-    mamba install -c macsyfinder=x.x
+    mamba install -c macsylib=x.x
 
-Where `x.x` is the macsyfinder version you want to install
-
-From container
-==============
-
-With Docker
------------
-
-The docker image is available on Docker Hub (https://hub.docker.com/repository/docker/gempasteur/macsyfinder)
-The computations are performed under msf user in /home/msf inside the container.
-So You have to mount a directory from the host in the container to exchange data (inputs data, and results) from the host and the container.
-The shared directory must be writable by the *msf* user or overwrite the user in the container by your id (see example below)
-
-Furthermore the models are no longer packaged along macsyfinder.
-So you have to install them by yourself.
-For that we provide a command line tool macsydata which is inspired by pip.
-
-.. code-block:: text
-
-    macsydata search PACKNAME
-    macsydata install PACKNAME== or >=, or ... VERSION
-
-To work with Docker you have to install models in a directory which will be mounted in the image at run time
-
-.. code-block:: bash
-
-    mkdir shared_dir
-    cd shared_dir
-
-install desired models in my_models directory
-
-.. code-block:: bash
-
-    docker run -v ${PWD}/:/home/msf -u $(id -u ${USER}):$(id -g ${USER})  gempasteur/macsyfinder:<tag> macsydata install --target /home/msf/my_models <MODELS_PACK>
-
-run msf against all models contains in <MODELS_PACK>
-
-.. code-block:: bash
-
-    docker run -v ${PWD}/:/home/msf -u $(id -u ${USER}):$(id -g ${USER})  gempasteur/macsyfinder:<tag> macsyfinder --db-type unordered_replicon --models-dir=/home/msf/my_models/ --models  <MODELS_PACK>  all --sequence-db my_genome.fasta -w 12
+Where `x.x` is the macsylib version you want to install
 
 
+.. _msl_data:
 
-With Apptainer (formely Singularity)
-------------------------------------
+===================================
+Models installation with `msl_data`
+===================================
 
-As the docker image is registered in docker hub you can also use it directly with Apptainer (https://apptainer.org/).
-Unlike docker you have not to worry about shared directory, your HOME and /tmp are automatically shared.
+Once MacSyLib is installed you have access to an utility program to manage the models: `msl_data`
 
-.. code-block:: bash
+This script allows to search, download, install and get information from MacSyLib models stored on
+github (https://github.com/macsy-models) or locally installed. The general syntax for `msl_data` is::
 
-    # install desired models in my_models directory
-    apptainer run -H ${HOME} docker://gempasteur/macsyfinder:<tag> macsydata install --target my_models <MODELS_PACK>
-
-    # run msf against all models contains in <MODELS_PACK>
-    apptainer run -H ${HOME} docker://gempasteur/macsyfinder:<tag> macsyfinder --db-type unordered_replicon --models-dir=my_models --models <MODELS_PACK> all --sequence-db my_genome.fasta -w 12
-
-If you intend to run *apptainer* from host which cannot access internet (cluster node for instance),
-you have to
-
-#. download the image locally
-#. transfert the image file on the right file system
-#. and then use it.
-
-.. code-block:: bash
-
-    apptainer build msf-<tag>.simg docker://gempasteur/macsyfinder:<tag>
-    cp msf-<tag>.simg <cluster_file_system>
-    apptainer run -H ${HOME} msf-<tag>.simg macsyfinder --db-type unordered_replicon --models-dir=my_models --models <MODELS_PACK> all --sequence-db my_genome.fasta -w 12
-
-
-.. _macsydata:
-
-====================================
-Models installation with `macsydata`
-====================================
-
-Once MacSyFinder is installed you have access to an utility program to manage the models: `macsydata`
-
-This script allows to search, download, install and get information from MacSyFinder models stored on
-github (https://github.com/macsy-models) or locally installed. The general syntax for `macsydata` is::
-
-    macsydata <general options> <subcommand> <sub command options> <arguments>
+    msl_data <general options> <subcommand> <sub command options> <arguments>
 
 
 To list all models available on *macsy-models*::
 
-    macsydata available
+    msl_data available
 
 To search for models on *macsy-models*::
 
-    macsydata search TXSS
+    msl_data search TXSS
 
 you can also search in models description::
 
-    macsydata search -S secretion
+    msl_data search -S secretion
 
 To install a model package::
 
-    macsydata install <model name>
+    msl_data install <model name>
 
 To install a model when you have not the right to install it system-wide
 
-To install it in your home (*./macsyfinder/data*)::
+To install it in your home (*./macsylib/data*)::
 
-    macsydata install --user <model name>
+    msl_data install --user <model name>
 
 To install it in any directory::
 
-    macsydata install --target <model dir> <model_name>
+    msl_data install --target <model dir> <model_name>
 
 To know how to cite a model package::
 
-    macsydata cite <model name>
+    msl_data cite <model name>
 
 To show the model definition::
 
-    macsydata definition <package or subpackage> model1 [model2, ...]
+    msl_data definition <package or subpackage> model1 [model2, ...]
 
 for instance to show model definitions T6SSii and T6SSiii in TXSS+/bacterial subpackage::
 
-    macsydata definition TXSS+/bacterial T6SSii T6SSiii
+    msl_data definition TXSS+/bacterial T6SSii T6SSiii
 
 To show all models definitions in TXSS+/bacterial subpackage::
 
-    macsydata definition TXSS+/bacterial
+    msl_data definition TXSS+/bacterial
 
 To create a skeleton for your own model package (to access init subcommand check modeler installation)::
 
-    macsydata init --pack-name <MY_PACK_NAME> --maintainer <"mantainer name"> --email <maintainer email> --authors <"author1, author2, ..">
+    msl_data init --pack-name <MY_PACK_NAME> --maintainer <"mantainer name"> --email <maintainer email> --authors <"author1, author2, ..">
 
-above macsydata with required options. Below I add optioanl but recommended options. ::
+above msl_data with required options. Below I add option but recommended options. ::
 
-    macsydata init --pack-name <MY_PACK_NAME> --maintainer <mantainer name> --email <maintainer email> --authors <"author1, author2, .."> \
+    msl_data init --pack-name <MY_PACK_NAME> --maintainer <mantainer name> --email <maintainer email> --authors <"author1, author2, .."> \
     --license cc-by-nc-sa --holders <"the copyright holders"> --desc <"one line package description">
 
-To list all `macsydata` subcommands::
+To list all `msl_data` subcommands::
 
-    macsydata --help
+    msl_data --help
 
 To list all available options for a subcommand::
 
-    macsydata <subcommand> --help
+    msl_data <subcommand> --help
 
 For models not stored in *macsy-models* the commands *available*, *search*,
 *installation* from remote or *upgrade* from remote are **NOT** available.
 
 For models **NOT** stored in *macsy-models*, you have to manage them semi-manually.
-Download the archive (do not unarchive it), then use *macsydata* to install the archive.
+Download the archive (do not unarchive it), then use *msl_data* to install the archive.

@@ -4,7 +4,7 @@
     Authors: Sophie Abby, Bertrand Néron
     Copyright © 2014-2025 Institut Pasteur (Paris) and CNRS.
     See the COPYRIGHT file for details
-    MacsyLib is distributed under the terms of the GNU General Public License (GPLv3).
+    MacSyLib is distributed under the terms of the GNU General Public License (GPLv3).
     See the COPYING file for details.
 
 
@@ -14,17 +14,15 @@
 Output format
 *************
 
-MacSyFinder provides different types of output files. At each run, MacSyFinder creates a new folder,
-whose name is based on a fixed prefix and a random suffix, for instance "macsyfinder-20130128_08-57-46".
-MacSyFinder output files are stored in this run-specific folder.
-
+MacSyLib allow to produce different types of output files. At each run, MacSyLib creates a new folder,
+whose name is based on a fixed prefix and a random suffix, for instance "macsylib-20130128_08-57-46".
+MacSyLib output files are stored in this run-specific folder.
 
 
 There are three types of output files:
   1. The main output files for the systems' search. They differ with the search mode (:ref:`ordered<ordered_outputs>` or :ref:`unordered<unordered_outputs>`).
   2. The :ref:`HMMER output files<hmmer-outputs-label>` (search of each systems' components), located in the `hmmer_results` folder.
   3. The internal :ref:`configuration and log files<logs_and_conf>`.
-
 
 
 .. note::
@@ -37,8 +35,7 @@ There are three types of output files:
 Output files for the "ordered replicon(s)" search modes
 -------------------------------------------------------
 
-
-These output files are provided when MacSyFinder search proceeds on a set of proteins that are deemed to follow the order of their genes on replicons.
+These output files can be generated when MacSyLib search proceeds on a set of proteins that are deemed to follow the order of their genes on replicons.
 This corresponds to the two search modes *gembase* and *ordered_replicon*.
 
 
@@ -46,11 +43,11 @@ This corresponds to the two search modes *gembase* and *ordered_replicon*.
 Systems detection results
 -------------------------
 
-Different types of output files are provided, human-readable files ".txt", and tabulated files ".tsv". For the latter,
+Different types of output files can be generated, human-readable files ".txt", and tabulated files ".tsv". For the latter,
 headers are provided with the content of the lines in the file.
 
 
-  * :ref:`best_solution.tsv<best_solution_tsv>` - This file contains the **best solution found by MacSyFinder** in terms of systems detected,
+  * :ref:`best_solution.tsv<best_solution_tsv>` - This file contains the **best solution found by MacSyLib** in terms of systems detected,
     under the form of a per-component, tabulated report file. A **solution** consists in a set of compatible systems (no components' overlap allowed).
     If multiple solutions showed a maximal score, a :ref:`ranking <sort_eqt_best_solution>` is established.
 
@@ -58,7 +55,7 @@ headers are provided with the content of the lines in the file.
 
     To see all possible, candidate systems without further processing, see files `all_systems.txt` and `all_systems.tsv`.
 
-    The `best_solution.tsv` file is the most similar to former V1 file `macsyfinder.report`.
+    The `best_solution.tsv` file is the most similar to former V1 file `macsylib.report`.
 
   * :ref:`best_solution_loners.tsv <best_solution_loners_tsv>` and :ref:`best_solution_multisystems.tsv <best_solution_multisystems_tsv>` report
     hits which have been identified as loners or multi-systems which means that the corresponding gene is tagged as a 'loner' or 'multi-system' in the model definition
@@ -71,11 +68,11 @@ headers are provided with the content of the lines in the file.
     under the form of a tabulated file in `all_systems.tsv`.
 
   * :ref:`rejected_candidates.tsv<rejected_candidates_tsv>` and :ref:`rejected_candidates.txt<rejected_candidates_txt>` - This file lists candidate clusters (or a combination of clusters) components that were rejected by
-    MacSyFinder during the search process, and were thus not assigned to a candidate system. This set of clusters are also given under the form of tabulated file
+    MacSyLib during the search process, and were thus not assigned to a candidate system. This set of clusters are also given under the form of tabulated file
     :ref:`rejected_candidates.tsv<rejected_candidates_tsv>`.
 
   * :ref:`all_best_solutions.tsv<best_solution_tsv>` - This file contains all possible best solutions under the form of a per-component, tabulated report file.
-    To retrieve a single best solution as proposed by MacSyFinder, see file `best_solution.tsv`.
+    To retrieve a single best solution as proposed by MacSyLib, see file `best_solution.tsv`.
 
   * :ref:`all_systems.tsv<all_systems_tsv>` - This file contains all possible candidate systems given the definitions -
     without processing of the potential overlaps between candidate systems, under the form of a per-component, tabulated report file. It corresponds
@@ -90,7 +87,7 @@ all_systems.txt
 
 The file starts with some comments:
 
-    - the version of MacSyFinder used
+    - the version of MacSyLib used
     - the name of model package and version used
     - the command line used to produce this file
 
@@ -121,9 +118,9 @@ Here is an example of the `all_systems.txt` file:
 
 .. code-block:: text
 
-    # macsyfinder 20200217.dev
+    # macsylib 20200217.dev
     # models: TFF-SF_final-0.1
-    # macsyfinder --sequence-db DATA_TEST/sequences.prt --db-type=gembase --models-dir data/models/ --models TFF-SF_final all -w 4
+    # macsylib --sequence-db DATA_TEST/sequences.prt --db-type=gembase --models-dir data/models/ --models TFF-SF_final all -w 4
     # Systems found:
 
     system id = VICH001.B.00001.C001_MSH_1
@@ -266,7 +263,7 @@ best_solution.tsv and all_best_solutions.tsv
 --------------------------------------------
 
 
-Since MacSyFinder 2.0, a combinatorial exploration of solutions using sets of systems found is performed. We call best solution, the combination of systems offering the highest score.
+Since MacSyLib 2.0, a combinatorial exploration of solutions using sets of systems found is performed. We call best solution, the combination of systems offering the highest score.
 
 The `best_solution.tsv` and `all_best_solutions.tsv` files have the same structure as the file `all_systems.tsv`, except that there is an extra column **sol_id** which is a
 solution identifier added to the file `all_best_solutions.tsv`. The systems that have the same "sol_id" belong to a same solution.
@@ -358,7 +355,7 @@ best_solution_summary.tsv
 
 This file is a concise view of which systems have been found in your replicons and how many per replicon.
 It is based on **best_solution.tsv**.
-The first two lines are comments that indicate the version of MacSyFinder and the command line used to generate the results.
+The first two lines are comments that indicate the version of MacSyLib and the command line used to generate the results.
 Then a table represented by tabulated text to separate columns, with the searched models in columns and the replicons scanned for the models in row.
 
 .. literalinclude:: ../_static/best_solution_summary.tsv
@@ -377,7 +374,7 @@ as a `tsv` file it can be parsed easily using pandas::
 
             import pandas as pd
 
-            all_best_sol = '<macsyfinder_results_dir>/all_best_solutions.tsv'
+            all_best_sol = '<macsylib_results_dir>/all_best_solutions.tsv'
 
             # read data from best_solution file
             data = pd.read_csv(all_best_sol, sep='\t', comment='#')
@@ -440,7 +437,7 @@ rejected_candidates.txt
 This file records all clusters or cluster combinations (if the "multi_loci" search mode is on)
 which have been discarded and the reason why they were not selected as systems.
 
-The header is composed of the MacSyFinder version and the command line used
+The header is composed of the MacSyLib version and the command line used
 followed by the description of the cluster(s). The list of the hits composing the cluster is presented
 at the end of the cluster or clusters' combination, followed by the reason why it has been discarded.
 
@@ -451,9 +448,9 @@ at the end of the cluster or clusters' combination, followed by the reason why i
 
 .. code-block:: text
 
-    # macsyfinder 20200511.dev
+    # macsylib 20200511.dev
     # models : TFF-SF-0.1b
-    # macsyfinder --sequence-db data/base/GCF_000006745.fasta --models TFF-SF all --models-dir data/models/ --db-type gembase -w 4
+    # macsylib --sequence-db data/base/GCF_000006745.fasta --models TFF-SF all --models-dir data/models/ --db-type gembase -w 4
     # Rejected candidates:
 
     Cluster:
@@ -491,7 +488,7 @@ for instance with python and `pandas <https://pandas.pydata.org/>`_ library.::
 
 As other file the first lines are comments and provides informations to indicate how this file has been produced.
 
-    - the macsyfinder version
+    - the macsylib version
     - the model package and version used
     - the command line used
 
@@ -539,9 +536,9 @@ Example of `rejected_candidates.tsv`
 
     .. code-block:: text
 
-        # macsyfinder 20230113.dev
+        # macsylib 20230113.dev
         # models : TXSScan-1.1.1
-        # macsyfinder --sequence-db tests/data/base/gembase.fasta --db-type gembase --models TXSScan -w 15 --timeout 1s
+        # macsylib --sequence-db tests/data/base/gembase.fasta --db-type gembase --models TXSScan -w 15 --timeout 1s
         #
         # WARNING: The replicon 'GCF_000006765' has been SKIPPED. Cannot be solved before timeout.
         #
@@ -569,7 +566,7 @@ As for ordered replicons, several output files are provided.
 .. note::
 
   In this `unordered` search mode, there is no notion of order or distance of the components along the replicon. The clustering step
-  is skipped by MacSyFinder, and it is therefore "only" checked for each type of system being searched whether there is the genetic potential to fulfil its model definition.
+  is skipped by MacSyLib, and it is therefore "only" checked for each type of system being searched whether there is the genetic potential to fulfil its model definition.
 
 
 .. _all_systems_txt_unordered:
@@ -587,9 +584,9 @@ In this file, for each component of each searched system's model, we report the 
 
 .. code-block:: text
 
-    # macsyfinder 20201028.dev
+    # macsylib 20201028.dev
     # models : TFF-SF-0.1b
-    # macsyfinder --sequence-db tests/data/base/one_replicon.fasta --db-type unordered --models-dir tests/data/models -m TFF-SF T4P_single_locus
+    # macsylib --sequence-db tests/data/base/one_replicon.fasta --db-type unordered --models-dir tests/data/models -m TFF-SF T4P_single_locus
     # Systems found:
 
     This replicon contains genetic materials needed for system TFF-SF/T4P_single_locus
@@ -649,9 +646,9 @@ This file contains the same information as in `all_systems.txt` but in `tsv` for
 
 .. code-block:: text
 
-    # macsyfinder 20201028.dev
+    # macsylib 20201028.dev
     # models : TFF-SF-0.1b
-    # macsyfinder --sequence-db tests/data/base/one_replicon.fasta --db-type unordered --models-dir tests/data/models -m TFF-SF T4P_single_locus
+    # macsylib --sequence-db tests/data/base/one_replicon.fasta --db-type unordered --models-dir tests/data/models -m TFF-SF T4P_single_locus
     # Likely Systems found:
 
     replicon	hit_id	gene_name	hit_pos	model_fqn	sys_id	sys_wholeness	hit_gene_ref	hit_status	hit_seq_len	hit_i_eval	hit_score	hit_profile_cov	hit_seq_cov	hit_begin_match	hit_end_match	used_in
@@ -689,9 +686,9 @@ followed by the model description and the components found.
 
 .. code-block:: text
 
-    # macsyfinder 20201113.dev
+    # macsylib 20201113.dev
     # models : TFF-SF-0.1b
-    # macsyfinder --sequence-db tests/data/base/one_replicon.fasta --db-type unordered --models-dir tests/data/models -m TFF-SF all
+    # macsylib --sequence-db tests/data/base/one_replicon.fasta --db-type unordered --models-dir tests/data/models -m TFF-SF all
     # Unlikely Systems found:
 
     This replicon probably not contains a system TFF-SF/T2SS:
@@ -740,15 +737,15 @@ Hmmer results' output files
 Raw Hmmer outputs are provided, as long with processed tabular outputs that include hits filtered as
 specified by the user. For instance, the Hmmer search for SctC homologs with the corresponding profile
 will result in the creation of two output files: "sctC.search_hmm.out" for the raw HMMER output file and
-"sctC.res_hmm_extract" for the output file after processing/filtering of the HMMER results by MacSyFinder.
+"sctC.res_hmm_extract" for the output file after processing/filtering of the HMMER results by MacSyLib.
 
 The processed output file "sctC.res_hmm_extract" recalls on the first lines the parameters used for
 hits filtering and relevant information on the matches, as in this example:
 
 .. code-block:: text
 
-  # gene: sctC extract from /Users/bob/macsyfinder_results/
-        macsyfinder-20130128_08-57-46/sctC.search_hmm.out hmm output
+  # gene: sctC extract from /Users/bob/macsylib_results/
+        macsylib-20130128_08-57-46/sctC.search_hmm.out hmm output
   # profile length= 544
   # i_evalue threshold= 0.001000
   # coverage threshold= 0.500000
@@ -769,7 +766,7 @@ hits filtering and relevant information on the matches, as in this example:
 Logs and configuration files
 ----------------------------
 
-Three specific output files are systematically built, whatever the search mode, to store information on MacSyFinder's execution:
+Three specific output files are systematically built, whatever the search mode, to store information on MacSyLib's execution:
 
- * **macsyfinder.conf** - contains the configuration information of the run. It is useful to recover all the parameters used for the run.
- * **macsyfinder.log** - the log file, contains raw information on the run. Please send it to us with any **bug report**.
+ * **macsylib.conf** - contains the configuration information of the run. It is useful to recover all the parameters used for the run.
+ * **macsylib.log** - the log file, contains raw information on the run. Please send it to us with any **bug report**.

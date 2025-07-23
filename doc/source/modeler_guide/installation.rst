@@ -15,7 +15,7 @@ Installation
 ************
 
 MacSyLib works with models for macromolecular systems that are not shipped with it,
-you have to install them separately. See the :ref:`macsydata section <modeler_macsydata>` below.
+you have to install them separately. See the :ref:`msl_data section <modeler_msl_data>` below.
 
 
 ===============================
@@ -54,81 +54,81 @@ From container
 From version 2.0 and above, a docker image is available. This image allow you to develop models.
 
 
-.. _modeler_macsydata:
+.. _modeler_msl_data:
 
 ====================================
-Models installation with `macsydata`
+Models installation with `msl_data`
 ====================================
 
-Once MacSyLib is installed you have access to an utility program to manage the models: `macsydata`
+Once MacSyLib is installed you have access to an utility program to manage the models: `msl_data`
 
 This script allows to search, download, install and get information from MacSyLib models stored on
-github (https://github.com/macsy-models) or locally installed. The general syntax for `macsydata` is::
+github (https://github.com/macsy-models) or locally installed. The general syntax for `msl_data` is::
 
-    macsydata <general options> <subcommand> <sub command options> <arguments>
+    msl_data <general options> <subcommand> <sub command options> <arguments>
 
 
 To list all models available on *macsy-models*::
 
-    macsydata available
+    msl_data available
 
 To search for models on *macsy-models*::
 
-    macsydata search TXSS
+    msl_data search TXSS
 
 you can also search in models description::
 
-    macsydata search -S secretion
+    msl_data search -S secretion
 
 To install a model package::
 
-    macsydata install <model name>
+    msl_data install <model name>
 
 To install a model when you have not the right to install it system-wide
 
 To install it in your home (*./<macsylib>/data*)::
 
-    macsydata install --user <model name>
+    msl_data install --user <model name>
 
 To install it in any directory::
 
-    macsydata install --target <model dir> <model_name>
+    msl_data install --target <model dir> <model_name>
 
 To know how to cite a model package::
 
-    macsydata cite <model name>
+    msl_data cite <model name>
 
 To show the model definition::
 
-    macsydata definition <package or subpackage> model1 [model2, ...]
+    msl_data definition <package or subpackage> model1 [model2, ...]
 
 for instance to show model definitions T6SSii and T6SSiii in TXSS+/bacterial subpackage::
 
-    macsydata definition TXSS+/bacterial T6SSii T6SSiii
+    msl_data definition TXSS+/bacterial T6SSii T6SSiii
 
 To show all models definitions in TXSS+/bacterial subpackage::
 
-    macsydata definition TXSS+/bacterial
+    msl_data definition TXSS+/bacterial
 
 To create a git repository with a skeleton for your own model package::
 
-    macsydata init --pack-name <MY_PACK_NAME> --maintainer <"mantainer name"> --email <maintainer email> --authors <"author1, author2, ..">
+    msl_data init --pack-name <MY_PACK_NAME> --maintainer <"mantainer name"> --email <maintainer email> --authors <"author1, author2, ..">
 
-above macsydata with required options. Below I add optioanl but recommended options. ::
+above msl_data with required options. Below I add optioanl but recommended options. ::
 
-    macsydata init --pack-name <MY_PACK_NAME> --maintainer <"mantainer name"> --email <maintainer email> --authors <"author1, author2, .."> \
+    msl_data init --pack-name <MY_PACK_NAME> --maintainer <"mantainer name"> --email <maintainer email> --authors <"author1, author2, .."> \
     --license cc-by-nc-sa --holders <"the copyright holders"> --desc <"one line package description">
 
-To list all `macsydata` subcommands::
+To list all `msl_data` subcommands::
 
-    macsydata --help
+    msl_data --help
 
 To list all available options for a subcommand::
 
-    macsydata <subcommand> --help
+    msl_data <subcommand> --help
 
 For models not stored in *macsy-models* the commands *available*, *search*,
 *installation* from remote or *upgrade* from remote are **NOT** available.
 
 For models **NOT** stored in *macsy-models*, you have to manage them semi-manually.
-Download the archive (do not unarchive it), then use *macsydata* to install the archive.
+Download the archive (do not unarchive it), then use *msl_data* to install the archive.

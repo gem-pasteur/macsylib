@@ -7,7 +7,7 @@
     MacsyLib is distributed under the terms of the GNU General Public License (GPLv3).
     See the COPYING file for details.
 
-.. _package_module:
+.. _model_package_module:
 
 *******
 package
@@ -15,9 +15,9 @@ package
 
 Allow to handles model package either on localhost or from a remote location.
 the model packages can be stored in github organization to be downloaded and installed locally.
-The classes below are used by `macsydata`, which is the entry point to manipulate models package.
+The classes below are used by `msl_data`, which is the entry point to manipulate models package.
 
-.. _package_api:
+.. _model_package_api:
 
 package API reference
 =====================
@@ -25,7 +25,7 @@ package API reference
 
 AbstractModelIndex
 ==================
-.. autoclass:: macsylib.package.AbstractModelIndex
+.. autoclass:: macsylib.model_package.AbstractModelIndex
    :members:
    :private-members:
    :special-members:
@@ -33,7 +33,7 @@ AbstractModelIndex
 
 LocalModelIndex
 ===============
-.. autoclass:: macsylib.package.LocalModelIndex
+.. autoclass:: macsylib.model_package.LocalModelIndex
    :members:
    :private-members:
    :special-members:
@@ -41,15 +41,15 @@ LocalModelIndex
 
 RemoteModelIndex
 ================
-.. autoclass:: macsylib.package.RemoteModelIndex
+.. autoclass:: macsylib.model_package.RemoteModelIndex
    :members:
    :private-members:
    :special-members:
 
 
-Package
-=======
-.. autoclass:: macsylib.package.Package
+ModelPackage
+============
+.. autoclass:: macsylib.model_package.ModelPackage
    :members:
    :private-members:
    :special-members:

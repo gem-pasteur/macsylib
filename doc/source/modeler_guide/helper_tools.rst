@@ -13,12 +13,12 @@
 Helper Tool
 ***********
 
-.. _macsyprofile:
+.. _msl_profile:
 
-macsyprofile
+msl_profile
 ============
 
-To help develop new models we provide the tool `macsyprofile` which is to be used as post treatement.
+To help develop new models we provide the tool `msl_profile` (formerly `macsyprofile`) which is to be used as post treatement.
 
 It is ran over a previous <macsylib> analysis:
 
@@ -28,26 +28,27 @@ It is ran over a previous <macsylib> analysis:
 
 .. code-block:: text
 
-    usage: macsyprofile [-h] [--coverage-profile COVERAGE_PROFILE]
+    usage: msl_profile [-h] [--coverage-profile COVERAGE_PROFILE]
                         [--i-evalue-sel I_EVALUE_SEL]
                         [--best-hits {score,i_eval,profile_coverage}] [-p PATTERN]
                         [-o OUT] [-f] [-V] [-v] [--mute]
                         previous_run
 
-         *            *               *                   * *       *
-    *           *               *   *   *  *    **                *
-      **     *    *   *  *     *                    *               *
-         __  __    *       ____ *      ____        **   __ _ _  *
-        |  \/  | __ _  ___/ ___| _   _|  _ \ _ __ ___  / _(_) | ___
-        | |\/| |/ _` |/ __\___ \| | | | |_) | '__/ _ \| |_| | |/ _ \
-        | |  | | (_| | (__ ___) | |_| |  __/| | | (_) |  _| | |  __/
-        |_|  |_|\__,_|\___|____/ \__, |_|   |_|  \___/|_| |_|_|\___|
-                *                |___/    *                   *
-     *      *   * *     *   **         *   *  *           *
+         *            *               *                   * *
+                *               *   *   *  *    **
+      **     *    *   *  *     *                    *
+                *       _   *             **    __ _ _     *
+          _ __ ___  ___| |     _ __  _ __ ___  / _(_) | ___
+         | '_ ` _ \/ __| |    | '_ \| '__/ _ \| |_| | |/ _ \
+         | | | | | \__ \ |    | |_) | | | (_) |  _| | |  __/
+         |_| |_| |_|___/_|____| .__/|_|  \___/|_| |_|_|\___|
+               *         |_____|_|        *                  *
+            *   * *     *   **         *   *  *           *
       *      *         *        *    *              *
-                 *                           *  *           *     *
+                 *                           *  *           *
 
-    MacSyProfile - MacSyLib profile helper tool
+
+    msl_profile - MacSyLib profile helper tool
 
     positional arguments:
       previous_run          The path to a macsylib results directory.
@@ -87,7 +88,7 @@ For instance:
 
 .. code-block:: shell
 
-    >macsyprofile  <macsylib>-2021XXXX_XX-XX-XX
+    >msl_profile  <macsylib>-2021XXXX_XX-XX-XX
 
 will analyse the HMMER raw outputs stored in `<macsylib>-2021XXXX_XX-XX-XX/hmmer_results` directory
 and the results will be stored in `<macsylib>-2021XXXX_XX-XX-XX/hmm_coverage.tsv` file
@@ -138,7 +139,7 @@ For instance:
 
 .. code-block:: text
 
-    >macsyprofile --pattern 'ComM*'  <macsylib>-2021XXXX_XX-XX-XX
+    >msl_profile --pattern 'ComM*'  <macsylib>-2021XXXX_XX-XX-XX
     parsing <macsylib>-2021XXXX_XX-XX-XX/hmmer_results/ComM_comB.search_hmm.out
     parsing <macsylib>-2021XXXX_XX-XX-XX/hmmer_results/ComM_comC.search_hmm.out
     parsing <macsylib>-2021XXXX_XX-XX-XX/hmmer_results/ComM_comEA.search_hmm.out
@@ -158,7 +159,7 @@ For instance:
 
     .. code-block:: text
 
-        >macsyprofile --pattern 'ComM_com?C' -f <macsylib>-2021XXXX_XX-XX-XX
+        >msl_profile --pattern 'ComM_com?C' -f <macsylib>-2021XXXX_XX-XX-XX
         parsing <macsylib>-2021XXXX_XX-XX-XX/hmmer_results/ComM_comEC.search_hmm.out
         parsing <macsylib>-2021XXXX_XX-XX-XX/hmmer_results/ComM_comGC.search_hmm.out
         found 16 hits
@@ -175,7 +176,7 @@ A useful example for modellers?
 
 .. code-block:: text
 
-    >macsyprofile --best-hits i_eval --i-evalue-sel 0.001 --coverage-profile 0.5 -o msf_GCF_003149495.1_ASM314949v1_tff-sf/hmm_coverage_best-hits_ieval_default_filter_MSF.tsv msf_GCF_003149495.1_ASM314949v1_tff-sf
+    >msl_profile --best-hits i_eval --i-evalue-sel 0.001 --coverage-profile 0.5 -o msf_GCF_003149495.1_ASM314949v1_tff-sf/hmm_coverage_best-hits_ieval_default_filter_MSF.tsv msf_GCF_003149495.1_ASM314949v1_tff-sf
     found 221 hits
     result is in 'msf_GCF_003149495.1_ASM314949v1_tff-sf/hmm_coverage_best-hits_ieval_default_filter_MSF.tsv'
 
@@ -193,18 +194,18 @@ is it because it does not comply to the co-localization rules defined in the sys
 
 
 
-Parsing macsyprofile outputs
+Parsing msl_profile outputs
 ----------------------------
 
-The `macsyprofile` output is a tabulated separated values (`.tsv`) files
+The `msl_profile` output is a tabulated separated values (`.tsv`) files
 The first lines which are comments (starting with '#') display the tool version
 and the complete command line used. Then follow the results.
 The first line of results is a header line.
 
 .. code-block:: text
 
-    # macsyprofile 2.0rc1
-    # macsyprofile --pattern ComM* --coverage-profile 0.5 <macsylib>-20201202_15-17-46/
+    # msl_profile 2.1.5
+    # msl_profile --pattern ComM* --coverage-profile 0.5 <macsylib>-20201202_15-17-46/
     hit_id  replicon_name   position_hit    hit_sequence_length     gene_name       i_eval  score   profile_coverage        sequence_coverage       begin   end
     GCF_000006745_021980    GCF_000006745   2198    291     ComM_comC       2.500e-40       136.400 0.942   0.708   62      267
     GCF_000006745_007650    GCF_000006745   765     253     ComM_comC       9.600e-31       105.100 0.937   0.798   43      244
@@ -223,7 +224,7 @@ The first line of results is a header line.
 
 .. warning::
 
-    The `macsyprofile` tool is not compliant with results produced with `macsyfinder v1`.
+    The `msl_profile` tool is not compliant with results produced with `macsyfinder v1`.
     If you get ``Cannot find models in conf file XXX. May be these results have been generated with an old version of macsyfinder.``
     Check the configuration file, if `[models]` section contains ``models_1 = XXX YYY`` remove the `_1` from models
     ``models = XXX YYY``

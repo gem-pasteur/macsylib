@@ -18,7 +18,7 @@ Frequently Asked Questions
 How to report an issue?
 -----------------------
 
-If you encounter a problem while running MacSyFinder, please submit an issue on the dedicated page of the `GitHub project <https://github.com/gem-pasteur/macsyfinder/issues>`_
+If you encounter a problem while running MacSyLib, please submit an issue on the dedicated page of the `GitHub project <https://github.com/gem-pasteur/macsylib/issues>`_
 
 To ensure we have all elements to help, please provide:
 
@@ -39,10 +39,10 @@ All these will definitely help us to help you! ;-)
 
 .. _citations:
 
-How to cite MacSyFinder and published macy-models?
+How to cite MacSyLib and published macy-models?
 --------------------------------------------------
 
-- `Abby et al. 2014 <https://doi.org/10.1371/journal.pone.0110726>`_, *PLoS ONE* for the **general principles of MacSyFinder** (version 1), and the corresponding set of Cas systems (CasFinder, 1st version).
+- `Néron, Bertrand et al 2023 <https://doi.org/10.24072/pcjournal.250>`_, *Peer Community Journal* MacSyFinder v2: Improved modelling and search engine to identify molecular systems in genomes.
 
 - `Abby and Rocha 2012 <https://doi.org/10.1371/journal.pgen.1002983>`_, *PLoS Genetics*, for the study of the evolutionary relationship between the T3SS and the bacterial flagellum, and how were designed the corresponding HMM protein profiles.
 
@@ -57,54 +57,27 @@ How to cite MacSyFinder and published macy-models?
 .. add CONJscan? Which ref?
 
 
-.. _cmd-line-examples:
+.. _python-example:
 
-What do MacSyFinder command lines look like?
---------------------------------------------
+How to use MacSyLib ?
+---------------------
 
 
-Here are a few examples of command line formation:
+Here are an example of analyse with a python script using macsylib:
 
-.. code-block:: python
+.. literalinclude:: ../_static/code/msl_example.py
+   :language: python
 
-   import os
-   import logging
-   from argparse import Namespace
+The script above will produce the file below with a summary of all systems found.
 
-   import macsylib
-   import macsylib.config
-   import macsylib.registries
-   import macsylib.utils
-   import macsylib.search_systems
+.. literalinclude:: ../_static/msl_example_all_systems.tsv
+   :language: text
 
-   defaults = macsylib.config.MacsyDefaults()
-   settings = Namespace(
-           db_type='ordered_replicon',
-           sequence_db='test.fasta',
-           models=['TFF-SF' , 'all'], # this model must be installed with msl_data scripts
-           worker=4,
-           out_dir='my_results'
-   )
-   config = macsylib.config.Config(defaults, settings)
+The code and the data are available
 
-   os.makedirs(config.working_dir()) # working_dir = out_dir; you have to create this directory
+:download:`msl_example.py <../_static/code/msl_example.py>` .
 
-   macsylib.init_logger(log_file=os.path.join(config.working_dir(), config.log_file()))
-   macsylib.logger_set_level(level=logging.INFO)
-   logger = logging.getLogger('macsylib')
-   model_registry = macsylib.registries.ModelRegistry()
-
-   for model_dir in config.models_dir():
-       models_loc_available = macsylib.registries.scan_models_dir(model_dir)
-       for model_loc in models_loc_available:
-           model_registry.add(model_loc)
-   models_def_to_detect, models_fam_name, models_version = macsylib.utils.get_def_to_detect(config.models(), model_registry)
-
-   all_systems, rejected_candidates = macsylib.search_systems.search_systems(config, model_registry, models_def_to_detect, logger)
-
-The code above correspond more or less to macsyfinder command line
-
-:code:`macsyfinder --db-type ordered_replicon --sequence-db genome.fasta --models TFF-SF all`
+:download:`test.fasta <../_static/test.fasta>` .
 
 | For more details check the developer guide :ref:`developer_guide` and api documentation :ref:`api`
 | For more example check `macsyfinder source code <https://github.com/gem-pasteur/macsyfinder/tree/master>`_
@@ -182,83 +155,19 @@ a given system is found in the set of proteins analysed, with no attempt to assi
 nor guarantee as to whether `forbidden` components should be considered for the potential occurrences.
 
 
-How to search for multiple systems at once?
--------------------------------------------
+Where to find MacSyLib models?
+------------------------------
 
-- It is possible to search for only some systems from a macsy-model package. In this case, the command-line should be formed as follows:
+Since version 2, there is a tool to enable the download and installation of published models from a repository: the `msl_data` tool.
 
-.. code-block:: text
-
-   macsyfinder --models TXSS Flagellum T2SS --sequence-db mygenomes.fasta --db-type gembase
-
-This would run the search of the systems "Flagellum" and "T2SS" in the dataset "mygenomes.fasta".
-
-
-- To run the search of all the models contained in a macsy-model package, use the following:
-
-.. code-block:: text
-
-   macsyfinder --models TXSS all --sequence-db mygenomes.fasta --db-type gembase
-   macsyfinder --models CRISPRCas all --sequence-db mygenomes.fasta --db-type gembase
-   macsyfinder --models CRISPRCas/typing all --sequence-db mygenomes.fasta --db-type gembase
-
-You can see that the `all` keyword can not only be applied to an entire macsy-model package and its entire hierarchy,
-but can also be ran on all the systems from a macsy-model sub-directory.
-
-
-When can the option `--previous-run` be used?
----------------------------------------------
-
-The option `--previous-run` enables to avoid running the HMM profile search and the hits extraction when the set
-of systems to search and the replicons to analyse are exactly the same between runs.
-This enables to alter the features of the systems to be searched for,
-i.e. basically any feature found in the XML file of the corresponding models:
-
-- the maximal distance allowed between components to be considered as part of a same locus `--inter-gene-max-space`
-- the minimal number of components to be found to infer a full system `--min-mandatory-genes-required` and `--min-genes-required`
-- the general genomic architecture of the system `--multi-loci`
-
-This also means that there are a number of options that are incompatible with  `--previous-run`, including:
-
-.. code-block:: text
-
-   --config, --sequence-db, --profile-suffix, --res-extract-suffix, --e-value-res, --db-type, --hmmer
-
-
-
-Which output file to be used to get ONE solution?
--------------------------------------------------
-
-Since version 2 of MacSyFinder, a combinatorial exploration of the possible sets of systems is performed.
-A scoring scheme has been set up to differentiate between solutions,
-in order to provide the user with the most complete set of systems as possible given the searched models.
-This score is maximal for the "best solution". This also means that some solutions might get the same maximal score.
-In this case, one can wonder how to find all the equivalent solutions, and an other,
-how to simply pick one solution among the best, whichever it is.
-We thus propose several kind of :ref:`output files <ordered_outputs>`.
-
-- All equivalent best solutions are found in the `all_best_solutions.tsv` file.
-- One best solution is given in the `best_solution.tsv` file.
-
-.. note::
-
-   For those more familiar with the output files from MacSyFinder v1, the file `best_solution.tsv` is the closest from
-   the previous output file `macsyfinder.report`.
-
-
-Where to find MacSyFinder models?
----------------------------------
-
-Since version 2, there is a tool to enable the download and installation of published models from a repository: the `macsydata` tool.
-
-See :ref:`here for details <macsydata>` on how to use it.
+See :ref:`here for details <msl_data>` on how to use it.
 
 
 
 What are the rules for options precedence?
 ------------------------------------------
 
-MacSyFinder offers many ways to parametrize the systems' search: through the command-line,
+MacSyLib offers many ways to parametrize the systems' search: through the command-line,
 through various configuration files (for the models, for the run, etc...).
 It offers a large control over the search engine. But it also means you can get lost in configuration. ;-)
 

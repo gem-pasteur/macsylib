@@ -85,7 +85,7 @@ If the package contains sub-families:
 
 For examples of macsy-model packages, please visit https://github.com/macsy-models
 
-You can create a template for your package by using `macsydata init`.
+You can create a template for your package by using `msl_data init` (formely `macsydata`).
 It will create for you:
 
 * the data package directory with the right structure.
@@ -110,7 +110,7 @@ README.md
 A description of the package: what kind of systems the package models,
 how to use it etc... in `markdown <https://guides.github.com/features/mastering-markdown/>`_ format.
 The Readme is displayed to the user on the macsy-models repository on Github.
-It is also displayed when the user runs `macsydata help`.
+It is also displayed when the user runs `msl_data help`.
 
 
 LICENSE
@@ -134,9 +134,9 @@ It is in `YAML <https://en.wikipedia.org/wiki/YAML>`_ format and must have the f
     maintainer:
       name: The name of the person who maintains/to contact for further information. (required)
       email: The email of the maintainer (required)
-    short_desc: A one line description of the package (can e.g. be used for *macsydata* searches) (required)
+    short_desc: A one line description of the package (can e.g. be used for *msl_data* searches) (required)
     vers: The package version (DEPRECATED)
-    cite: The publication(s) to cite by the user when the package is used (optional, used by `macsydata cite`)
+    cite: The publication(s) to cite by the user when the package is used (optional, used by `msl_data cite`)
     doc: Where to find extended documentation (optional)
     license: The license under the package is released (optional but highly recommended)
     copyright: The copyright of the package (optional)
@@ -173,7 +173,7 @@ For example:
 
 .. warning::
 
-    The field *vers* (the package version) is deprecated. *macsydata install* rely only on the git tag.
+    The field *vers* (the package version) is deprecated. *msl_data install* rely only on the git tag.
 
 
 .. _model_configuration:
