@@ -56,6 +56,7 @@ class TxtSystemSerializer(SystemSerializer):
 
     def serialize(self, system: System, hit_system_tracker: HitSystemTracker) -> str:
         """
+
         :return: a string representation of system readable by human
         """
         clst = ", ".join(["[" + ", ".join([str((v_h.id, v_h.gene.name, v_h.position)) for v_h in cluster.hits]) + "]"
@@ -109,7 +110,8 @@ class TsvSystemSerializer(SystemSerializer):
 
 
     def serialize(self, system: System, hit_system_tracker: HitSystemTracker) -> str:
-        r"""
+        """
+
         :param :class:`macsylib.system.System` system: The system to serialize.
         :param hit_system_tracker: The hit_system_tracker which allow to know for each hit
                in which system it is implied.
@@ -117,13 +119,12 @@ class TsvSystemSerializer(SystemSerializer):
         :return: a serialisation of this system in tabulated separated value format
                  each line represent a hit and have the following structure:
 
-        .. code-block:: text
+        .. code-block:: python
 
-            replicon\thit_id\tgene_name\thit_pos\tmodel_fqn\tsys_id\tsys_loci\tlocus_num\tsys_wholeness\tsys_score
-            \tsys_occ\thit_gene_ref.alternate_of\thit_status\thit_seq_len\thit_i_eval\thit_score\thit_profile_cov
-            \thit_seq_cov\tit_begin_match\thit_end_match\tcounterpart\tused_in_systems
+            replicon\\thit_id\\tgene_name\\thit_pos\\tmodel_fqn\\tsys_id\\tsys_loci\\tlocus_num\\tsys_wholeness\\tsys_score
+            \\tsys_occ\\thit_gene_ref.alternate_of\\thit_status\\thit_seq_len\\thit_i_eval\\thit_score\\thit_profile_cov
+            \\thit_seq_cov\\tit_begin_match\\thit_end_match\\tcounterpart\\tused_in_systems
 
-        :rtype: str
         """
         tsv = ''
         loci_num = system.loci_num
@@ -169,6 +170,7 @@ class TsvSolutionSerializer:
 
     def serialize(self, solution: Solution, sol_id: int, hit_system_tracker: HitSystemTracker) -> str:
         """
+
         :param solution: the solution to serialize
         :param sol_id: the solution identifier
         :param hit_system_tracker:
@@ -195,6 +197,7 @@ class TxtLikelySystemSerializer(SystemSerializer):
 
     def serialize(self, system: LikelySystem, hit_system_tracker: HitSystemTracker):
         """
+
         :param system: The likely system to serialize. Used only for unordered db-type
         :param hit_system_tracker: The hit_system_tracker which allow to know for each hit
                in which system it is implied.
@@ -255,18 +258,19 @@ class TsvLikelySystemSerializer(SystemSerializer):
 
 
     def serialize(self, system: LikelySystem, hit_system_tracker: HitSystemTracker) -> str:
-        r"""
+        """
+
         :param system: The likely system to serialize. Used only for unordered db-type
         :param hit_system_tracker: The hit_system_tracker which allow to know for each hit
                in which system it is implied.
         :return: a serialisation of this system in tabulated separated value format
                  each line represent a hit and have the following structure:
 
-        .. code-block:: text
+        .. code-block:: python
 
-            replicon\thit_id\tgene_name\thit_pos\tmodel_fqn\tsys_id\tsys_wholeness
-            \thit_gene_ref.alternate_of\thit_status\thit_seq_len\thit_i_eval\thit_score\thit_profile_cov
-            \thit_seq_cov\tit_begin_match\thit_end_match\t$used_in_systems
+            replicon\\thit_id\\tgene_name\\thit_pos\\tmodel_fqn\\tsys_id\\tsys_wholeness
+            \\thit_gene_ref.alternate_of\\thit_status\\thit_seq_len\\thit_i_eval\\thit_score\\thit_profile_cov
+            \\thit_seq_cov\\tit_begin_match\\thit_end_match\\tused_in_systems
 
         :rtype: str
         """
@@ -319,6 +323,7 @@ class TxtUnikelySystemSerializer(SystemSerializer):
 
     def serialize(self, system: UnlikelySystem) -> str:
         """
+
         :param system: The unlikely system to serialize. (used only if db-type is "unordered_replicon")
         :return: a string representation of system readable by human
         """
@@ -354,6 +359,7 @@ class TsvSpecialHitSerializer:
 
     def serialize(self, best_hits: typing.Iterable[Loner] | typing.Iterable[MultiSystem]):
         """
+
         :param best_hits: the special hits to serialized
         :type best_hits: sequence of :class:`macsylib.hit.Loner` or :class:`macsylib.hit.MultiSystem` objects
         """

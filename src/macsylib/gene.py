@@ -299,8 +299,7 @@ class ModelGene:
 
         :return: True if this Gene can belong to different occurrences of systems from different
                  model :class:`macsylib.model.Model`
-                (and can be used for multiple System assessments), False otherwise.
-        :rtype: boolean.
+                 (and can be used for multiple System assessments), False otherwise.
         """
         return self._multi_model
 
