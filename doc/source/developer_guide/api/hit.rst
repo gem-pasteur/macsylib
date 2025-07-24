@@ -16,7 +16,7 @@ hit
 
 This module implements class relative to hit and some functions to do some computation on hit objects.
 
-=========================================== =============================================================================
+============================================ =============================================================================
 :class:`macsylib.hit.CoreHit`                Modelize a hmm hit on the replicon. There is only one Corehit for a CoreGene.
 :class:`macsylib.hit.ModelHit`               Modelize a hit and its relation to the Model.
 :class:`macsylib.hit.AbstractCounterpartHit` Parent class of Loner, MultiSystem. It's inherits from ModelHit.
@@ -28,7 +28,7 @@ This module implements class relative to hit and some functions to do some compu
 :func:`macsylib.hit.sort_model_hits`         Sort hits
 :func:`macsylib.hit.compute_best_MSHit`      Choose among svereal multisystem hits the best one
 :func:`macsylib.hit.get_best_hits`           If several profile hit the same gene return the best hit
-=========================================== =============================================================================
+============================================ =============================================================================
 
 A Hit is created when `hmmsearch` find similarities between a profile and protein of the input dataset
 

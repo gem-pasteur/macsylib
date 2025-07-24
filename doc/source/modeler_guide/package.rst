@@ -7,6 +7,8 @@
    MacSyLib is distributed under the terms of the GNU General Public License (GPLv3).
    See the COPYING file for details... _model_package:
 
+.. _model_package:
+
 **************
 Models Package
 **************

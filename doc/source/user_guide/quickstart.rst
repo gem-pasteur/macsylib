@@ -52,4 +52,8 @@ MacSyLib Quick Start
 
 4. Install the macsy-models of interest from the `Macsy Models repository <https://github.com/macsy-models>`_:
 
+      :code:`msl_data available`
+
       :code:`msl_data install some-public-models`
+
+5. Use MacSylib :ref:`python-example`

@@ -8,14 +8,14 @@
     See the COPYING file for details.
 
 
-.. _new_v2:
+.. _new:
 
-**************************
-What's new in MacSyLib v2?
-**************************
+**********************
+What's new in MacSyLib
+**********************
 
-V 2.1.5
-=======
+V 1.0
+=====
 
 | Now MacSyFinder and MacSyLib are two separated packages.
 | MacSyFinder is build on top of MacSyLib.

@@ -107,7 +107,7 @@ Depending on the type of dataset you have, you will have to adapt MacSyFinder's 
    the presence of systems can only be suggested on the basis of the quorum of components - and not based on genomic context information.
 
 
-More on command-line options :ref:`here <command-line-label>` and on MacSyFinder's functioning :ref:`here <functioning>`.
+More on MacSyLib's functioning :ref:`here <functioning>`.
 
 
 How to deal with fragmented genomes (MAGs, SAGs, draft genomes)?

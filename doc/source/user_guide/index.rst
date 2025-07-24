@@ -19,7 +19,7 @@ Using MacSyLib
 .. toctree::
    :maxdepth: 2
 
-   new_v2
+   new
    installation
    quickstart
    input

@@ -30,14 +30,6 @@ Modelling Systems with MacSyLib
    publish_package
    gallery
 
-
-Carrying models from v1 to v2
-=============================
-.. toctree::
-   :maxdepth: 2
-
-   models_V1ToV2
-
 Frequently Asked Questions
 ==========================
 .. toctree::

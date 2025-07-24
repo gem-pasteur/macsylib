@@ -42,4 +42,4 @@ with open(os.path.join(config.working_dir(),'all_systems.txt'), "w", encoding='u
                                all_systems,
                                track_multi_systems_hit,
                                tsv_file,
-                               header=lambda model_name, model_v, skipped_replicons: f'# create by {__file__} script with models {model_name}-{model_v}')
+                               header=lambda model_name, model_v, skipped_replicons: f'# created by {__file__} script with models {model_name}-{model_v}')

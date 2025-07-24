@@ -14,10 +14,7 @@
 Output format
 *************
 
-MacSyLib allow to produce different types of output files. At each run, MacSyLib creates a new folder,
-whose name is based on a fixed prefix and a random suffix, for instance "macsylib-20130128_08-57-46".
-MacSyLib output files are stored in this run-specific folder.
-
+MacSyLib allow to produce different types of output files.
 
 There are three types of output files:
   1. The main output files for the systems' search. They differ with the search mode (:ref:`ordered<ordered_outputs>` or :ref:`unordered<unordered_outputs>`).
@@ -448,9 +445,7 @@ at the end of the cluster or clusters' combination, followed by the reason why i
 
 .. code-block:: text
 
-    # macsylib 20200511.dev
-    # models : TFF-SF-0.1b
-    # macsylib --sequence-db data/base/GCF_000006745.fasta --models TFF-SF all --models-dir data/models/ --db-type gembase -w 4
+    # <header of my choice see FAQ>
     # Rejected candidates:
 
     Cluster:
@@ -536,9 +531,7 @@ Example of `rejected_candidates.tsv`
 
     .. code-block:: text
 
-        # macsylib 20230113.dev
-        # models : TXSScan-1.1.1
-        # macsylib --sequence-db tests/data/base/gembase.fasta --db-type gembase --models TXSScan -w 15 --timeout 1s
+        # <header of my choice see FAQ>
         #
         # WARNING: The replicon 'GCF_000006765' has been SKIPPED. Cannot be solved before timeout.
         #
@@ -584,9 +577,7 @@ In this file, for each component of each searched system's model, we report the 
 
 .. code-block:: text
 
-    # macsylib 20201028.dev
-    # models : TFF-SF-0.1b
-    # macsylib --sequence-db tests/data/base/one_replicon.fasta --db-type unordered --models-dir tests/data/models -m TFF-SF T4P_single_locus
+    # <header of my choice see FAQ>
     # Systems found:
 
     This replicon contains genetic materials needed for system TFF-SF/T4P_single_locus
@@ -646,9 +637,7 @@ This file contains the same information as in `all_systems.txt` but in `tsv` for
 
 .. code-block:: text
 
-    # macsylib 20201028.dev
-    # models : TFF-SF-0.1b
-    # macsylib --sequence-db tests/data/base/one_replicon.fasta --db-type unordered --models-dir tests/data/models -m TFF-SF T4P_single_locus
+    # <header of my choice see FAQ>
     # Likely Systems found:
 
     replicon	hit_id	gene_name	hit_pos	model_fqn	sys_id	sys_wholeness	hit_gene_ref	hit_status	hit_seq_len	hit_i_eval	hit_score	hit_profile_cov	hit_seq_cov	hit_begin_match	hit_end_match	used_in
@@ -686,9 +675,7 @@ followed by the model description and the components found.
 
 .. code-block:: text
 
-    # macsylib 20201113.dev
-    # models : TFF-SF-0.1b
-    # macsylib --sequence-db tests/data/base/one_replicon.fasta --db-type unordered --models-dir tests/data/models -m TFF-SF all
+    # <header of my choice see FAQ>
     # Unlikely Systems found:
 
     This replicon probably not contains a system TFF-SF/T2SS:

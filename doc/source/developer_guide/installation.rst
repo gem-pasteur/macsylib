@@ -15,8 +15,8 @@ Installation
 ************
 
 MacSyLib works with models for macromolecular systems that are not shipped with it,
-you have to install them separately. See the :ref:`macsydata section <modeler_macsydata>` below.
-(macsydata is packaged alongside macsylib)
+you have to install them separately. See the :ref:`msl_data section <modeler_msl_data>` below.
+(msl_data is packaged alongside macsylib)
 
 .. dev_dependencies:
 
@@ -102,7 +102,7 @@ To exit the virtualenv just execute the `deactivate` command.
 
     source MacSyLib/bin/activate
 
-Then run `MacSyLib` or `macsydata`.
+Then use `MacSyLib` :ref:`python-example` or installed models with `msl_data` tool.
 
 
 .. note::
