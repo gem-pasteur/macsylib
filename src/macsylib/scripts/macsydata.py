@@ -1305,7 +1305,7 @@ def build_arg_parser(header:str, package_name='macsylib', tool_name='msl_data') 
     ##############
     def_subparser = subparsers.add_parser('definition',
                                             help='show a model definition ')
-    def_subparser.set_defaults(func=do_show_definition, package_name=package_name)
+    def_subparser.set_defaults(func=do_show_definition, package_name=package_name, tool_name=tool_name)
     def_subparser.add_argument('model',
                                nargs='+',
                                help='the family and name(s) of a model(s) eg: TXSS T6SS T4SS or TFF/bacterial T2SS')
