@@ -40,30 +40,21 @@ coverage_html/
 ###################################
 # MacsyFinder results directories #
 ###################################
-test/datatest/DEF_svg/
 macsyfinder-*/
 macsylib-*/
 
-####################
-# MacSyFinder data #
-####################
+#################
+# MacSyLib data #
+#################
 data/
-sandbox/
 !/tests/data
 !/src/macsylib/data
 
 
-######################################
-# Singularity/Apptainer def and simg #
-######################################
-Singularity/
-
-##############################
-# MacsyFinder generated file #
-##############################
+###########################
+# MacSyLib generated file #
+###########################
 MANIFEST
-uninstall.cfg
-uninstall_files
 src/MacSyLib.egg-info
 *\.idx
 
@@ -88,4 +79,3 @@ benchmark/
 Conda/
 Sandbox/
 perf/
-score_analysis/
