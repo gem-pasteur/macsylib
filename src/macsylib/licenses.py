@@ -23,6 +23,8 @@
 # along with MacSyLib (COPYING).                                        #
 # If not, see <https://www.gnu.org/licenses/>.                          #
 #########################################################################
+
+
 def _preambule(PN: str, authors: str, cr_date: str, cr_holders: str, short_desc: str) -> str:
     """
 
