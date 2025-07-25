@@ -210,9 +210,10 @@ def do_download(args: argparse.Namespace) -> str | None:
             else:
                 _log.error(f"No version that satisfy requirements '{specifier}' for '{model_pack_name}'.")
                 _log.warning(f"Available versions: {','.join(all_versions)}")
+        return None
     except MacsyDataLimitError as err:
         _log.critical(str(err))
-
+        return None
 
 def _find_all_installed_packages(models_dir: list[str] | None = None, package_name: str = 'macsylib') -> ModelRegistry:
     """
@@ -273,11 +274,11 @@ def do_install(args: argparse.Namespace) -> None:
             _log.warning(f"Cannot clean cache '{model_index.cache}': {err}")
 
     def create_dir(path):
-        if os.path.exists(path) and not os.path.isdir(path):
+        if not os.path.exists(path):
+            os.makedirs(path)
+        elif os.path.exists(path) and not os.path.isdir(path):
             clean_cache(model_index)
             raise RuntimeError(f"'{path}' already exist and is not a directory.")
-        elif not os.path.exists(path):
-            os.makedirs(path)
         return path
 
     if os.path.exists(args.model_package):
@@ -290,10 +291,10 @@ def do_install(args: argparse.Namespace) -> None:
 
     if args.target:
         dest = os.path.realpath(args.target)
-        if os.path.exists(dest) and not os.path.isdir(dest):
-            raise RuntimeError(f"'{dest}' already exist and is not a directory.")
-        elif not os.path.exists(dest):
+        if not os.path.exists(dest):
             os.makedirs(dest)
+        elif os.path.exists(dest) and not os.path.isdir(dest):
+            raise RuntimeError(f"'{dest}' already exist and is not a directory.")
 
     model_pack_name = user_req.name
     inst_pack_loc = _find_installed_package(model_pack_name, models_dir=args.target, package_name=args.package_name)
@@ -417,8 +418,7 @@ for the system wide models installation please refer to the documentation.
             _log.error(msg)
             sys.tracebacklimit = 0
             raise ValueError() from None
-        else:
-            dest = config.models_dir()[0]
+        dest = config.models_dir()[0]
 
     if inst_pack_loc:
         old_pack_path = f"{inst_pack_loc.path}.old"
@@ -638,7 +638,8 @@ I'll be really happy, if you fix warnings above, before to publish these models.
             _log.info("for instance if you want to add the models to 'macsy-models'")
             _log.log(25, "\tgit remote add origin https://github.com/macsy-models/")
 
-        _log.log(25, "\tgit tag -a <tag vers>  # check https://macsylib.readthedocs.io/en/latest/modeler_guide/publish_package.html#sharing-your-models")
+        _log.log(25, "\tgit tag -a <tag vers>  # check "
+                     "https://macsylib.readthedocs.io/en/latest/modeler_guide/publish_package.html#sharing-your-models")
         _log.log(25, "\tgit push origin <tag vers>")
 
 
@@ -660,7 +661,7 @@ def do_show_definition(args: argparse.Namespace) -> None:
     :param args: the arguments passed on the command line
     """
     def display_definition(path):
-        with open(path, 'r') as def_file:
+        with open(path, 'r', encoding='utf8') as def_file:
             def_txt = def_file.read()
         return def_txt
 
@@ -713,15 +714,15 @@ def do_init_package(args: argparse.Namespace) -> None:
         - profiles directory
         - skeleton for README.md file
         - COPYRIGHT file (if holders option is set)
-        - LICENSE file (if license option is set)
+        - LICENSE file (if model_license option is set)
 
     :param args: The parsed commandline subcommand arguments
     :return: None
     """
     try:
-        import git
+        import git  # pylint: disable=import-outside-toplevel
     except ModuleNotFoundError:
-        import warnings
+        import warnings # pylint: disable=import-outside-toplevel
         warnings.warn(f"GitPython is not installed, `{args.tool_name} init` is disabled.\n"
                       "To turn this feature ON:\n"
                       "  - install git\n"
@@ -729,7 +730,7 @@ def do_init_package(args: argparse.Namespace) -> None:
         sys.exit(1)
 
     def add_metadata(pack_dir: str, maintainer: str, email: str,
-                     desc: str | None = None, license: str | None = None,
+                     desc: str | None = None, model_license: str | None = None,
                      c_date: str | None = None, c_holders: str | None = None) -> None:
         """
 
@@ -737,7 +738,7 @@ def do_init_package(args: argparse.Namespace) -> None:
         :param maintainer: the maintainer name
         :param email: the maintainer email
         :param desc: a One line description of the package
-        :param license: the license chosen
+        :param model_license: the model_license chosen
         :param c_date: the date of the copyright
         :param c_holders: the holders of the copyright
         """
@@ -759,17 +760,17 @@ def do_init_package(args: argparse.Namespace) -> None:
             metadata.copyright_holder = c_holders
         else:
             metadata.copyright_holder = "copyright holders <My institution>"
-        if license:
-            metadata.license = licenses.name_2_url(license)
+        if model_license:
+            metadata.license = licenses.name_2_url(model_license)
 
         metadata.save(meta_path)
 
 
-    def add_def_skeleton(license: str | None = None) -> None:
+    def add_def_skeleton(model_license: str | None = None) -> None:
         """
         Create an example of model definition
 
-        :param license: the text of the license
+        :param model_license: the text of the model_license
         """
         model = ET.Element('model',
                            attrib={'inter_gene_max_space': "5",
@@ -825,27 +826,27 @@ def do_init_package(args: argparse.Namespace) -> None:
                    encoding='UTF-8',
                    xml_declaration=True)
 
-        if license:
+        if model_license:
             # Elementtree API does not allow to insert comment outside the tree (before root node)
             # this is the reason of this workaround
             # write the xml, read it as text, insert the comment, and write it again :-(
-            with open(def_path, 'r') as def_file:
+            with open(def_path, 'r', encoding='utf8') as def_file:
                 definition = def_file.readlines()
-            license = f"""<!--
-{license}-->
+            license_note = f"""<!--
+{model_license}-->
 """
-            definition.insert(1, license)
-            with open(def_path, 'w') as def_path:
+            definition.insert(1, license_note)
+            with open(def_path, 'w', encoding='utf8') as def_path:
                 def_path.writelines(definition)
 
     def add_license(pack_dir: str, license_text: str):
         """
-        Create a license file
+        Create a model_license file
 
         :param pack_dir: the package directory path
-        :param license_text: the text of the license
+        :param license_text: the text of the model_license
         """
-        with open(os.path.join(pack_dir, 'LICENSE'), 'w') as license_file:
+        with open(os.path.join(pack_dir, 'LICENSE'), 'w', encoding='utf8') as license_file:
             license_file.write(license_text)
 
     def add_copyright(pack_dir: str, pack_name: str, date: str, holders: str, desc: str):
@@ -862,7 +863,7 @@ def do_init_package(args: argparse.Namespace) -> None:
 
 Copyright (c) {date} {holders}
 """
-        with open(os.path.join(pack_dir, 'COPYRIGHT'), 'w') as copyright_file:
+        with open(os.path.join(pack_dir, 'COPYRIGHT'), 'w', encoding='utf8') as copyright_file:
             copyright_file.write(text)
 
     def add_readme(pack_dir: str, model_pack_name: str, desc: str):
@@ -884,14 +885,14 @@ Place here information about {model_pack_name}
 using markdown syntax
 https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax
 """
-        with open(os.path.join(pack_dir, 'README.md'), 'w') as readme_file:
+        with open(os.path.join(pack_dir, 'README.md'), 'w', encoding='utf8') as readme_file:
             readme_file.write(text)
 
-    def create_model_conf(pack_dir: str, license: str = None) -> None:
+    def create_model_conf(pack_dir: str, model_license: str = None) -> None:
         """
 
         :param pack_dir: The path of the package directory
-        :param license: The text of the chosen license
+        :param model_license: The text of the chosen license
         """
         msf_defaults = MacsyDefaults()
         model_conf = ET.Element('model_config')
@@ -925,18 +926,18 @@ https://docs.github.com/en/get-started/writing-on-github/getting-started-with-wr
         tree.write(conf_path,
                    encoding='UTF-8',
                    xml_declaration=True)
-        if license:
+        if model_license:
             # Elementtree API does not allow to insert comment outside the tree (before root node)
             # this is the reason of this workaround
             # write the xml, read it as text, insert the comment, and write it again :-(
 
-            with open(conf_path, 'r') as conf_file:
+            with open(conf_path, 'r', encoding='utf8') as conf_file:
                 conf = conf_file.readlines()
-            license = f"""<!--
-{license}-->
+            model_license = f"""<!--
+{model_license}-->
 """
-            conf.insert(1, license)
-            with open(conf_path, 'w') as conf_file:
+            conf.insert(1, model_license)
+            with open(conf_path, 'w', encoding='utf8') as conf_file:
                 conf_file.writelines(conf)
 
     def create_repo(model_package_name: str, models_dir: str | None = None) -> str:
@@ -991,11 +992,15 @@ https://docs.github.com/en/get-started/writing-on-github/getting-started-with-wr
 
     if args.license:
         try:
-            license_text = licenses.license(args.license, args.model_package, args.authors, c_date, args.holders, args.desc)
+            license_text = licenses.license(args.license,
+                                            args.model_package,
+                                            args.authors,
+                                            c_date, args.holders,
+                                            args.desc)
             add_license(pack_dir, license_text)
         except KeyError:
-            _log.error(f"The license {args.license} is not managed by init (see macsydata init help). "
-                       f"You will have to put the license by hand in package.")
+            _log.error(f"The model_license {args.license} is not managed by init (see macsydata init help). "
+                       f"You will have to put the model_license by hand in package.")
             license_text=None
     else:
         licence_path = os.path.exists(os.path.join(pack_dir, 'LICENSE'))
@@ -1004,25 +1009,26 @@ https://docs.github.com/en/get-started/writing-on-github/getting-started-with-wr
                          f"and protect your rights. https://data.europa.eu/elearning/en/module4/#/id/co-01")
             license_text = None
         else:
-            license_text = ''.join(open(licence_path).readlines())
+            with open(licence_path, encoding='utf8') as licencse_file:
+                license_text = ''.join(licencse_file.readlines())
 
     if os.path.exists(def_dir):
         _log.warning("The 'defintions' directory already exists.")
         if os.listdir(def_dir):
             # def_dir is not empty
-            _log.warning("Do not forget to add license in each xml definition file \n"
+            _log.warning("Do not forget to add model_license in each xml definition file \n"
                          "https://macsyfinder.readthedocs.io/en/latest/modeler_guide/package.html")
         else:
-            add_def_skeleton(license=license_text)
+            add_def_skeleton(model_license=license_text)
     else:
         os.mkdir(def_dir)
-        add_def_skeleton(license=license_text)
+        add_def_skeleton(model_license=license_text)
     if not os.path.exists(os.path.join(pack_dir, 'model_conf.xml')):
-        create_model_conf(pack_dir, license=license_text)
+        create_model_conf(pack_dir, model_license=license_text)
     if not (os.path.exists(os.path.join(pack_dir, 'README')) or os.path.exists(os.path.join(pack_dir, 'README.md'))):
         add_readme(pack_dir, args.model_package, args.desc)
 
-    add_metadata(pack_dir, args.maintainer, args.email, desc=args.desc, license=args.license,
+    add_metadata(pack_dir, args.maintainer, args.email, desc=args.desc, model_license=args.license,
                  c_date=c_date, c_holders=args.holders)
 
     # add files to repository
@@ -1114,8 +1120,9 @@ def build_arg_parser(header:str, package_name='macsylib', tool_name='msl_data') 
                         action="version",
                         version=get_version_message())
     # -- subparser options -- #
-    # inject  package_name=package_name, tool_name=tool_name in set_defaults by defaults)
-    argparse.ArgumentParser.set_defaults = partialmethod(argparse.ArgumentParser.set_defaults,  package_name=package_name, tool_name=tool_name)
+    # inject  package_name=package_name, tool_name=tool_name in ArgumentParser.set_defaults method by default)
+    argparse.ArgumentParser.set_defaults = partialmethod(argparse.ArgumentParser.set_defaults,
+                                                         package_name=package_name, tool_name=tool_name)
 
     subparsers = parser.add_subparsers(help=None)
     #############
@@ -1319,7 +1326,8 @@ def build_arg_parser(header:str, package_name='macsylib', tool_name='msl_data') 
     # init #
     ########
     init_subparser = subparsers.add_parser('init',
-                                           help='Create a template for a new data package (REQUIRE git/GitPython installation)')
+                                           help='Create a template for a new data package '
+                                                '(REQUIRE git/GitPython installation)')
     init_subparser.set_defaults(func=do_init_package)
     init_subparser.add_argument('--model-package',
                                 required=True,
@@ -1344,7 +1352,8 @@ by adding the license file in package and add suitable headers in model definiti
     init_subparser.add_argument('--desc',
                                 help="A short description (one line) of the package")
     init_subparser.add_argument('--models-dir',
-                                help='The path of an alternative models directory by default the package will be created here.' )
+                                help='The path of an alternative models directory '
+                                     'by default the package will be created here.' )
 
     return parser
 
