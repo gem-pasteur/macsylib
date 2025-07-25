@@ -54,7 +54,8 @@ or "circular" for detection. The default is set to "circular".
     The compressed files must end with the *.gz* extension.
     For the `hmmsearch` step You need to have `gunzip` installed on your system for this to work.
 
-.. config_object_parameters:
+
+.. _config_object_parameters:
 
 Config object
 =============

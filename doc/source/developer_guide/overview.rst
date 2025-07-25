@@ -99,7 +99,7 @@ MacSyLib architecture overview
 An overview of the main classes.
 
 
-.. figure:: ../_static/macsyfinder_classes.*
+.. figure:: ../_static/macsylib_classes.*
 
     The MacSyLib classes diagram.
     The classes are not details. only the main attributes allowing us to understand the interaction are mentioned.

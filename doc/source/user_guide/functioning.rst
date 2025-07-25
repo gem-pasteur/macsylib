@@ -11,14 +11,14 @@
 .. _functioning:
 
 
-MacSyFinder's search engine
+MacSyLib's search engine
 ===========================
 
 ********************
 Functioning overview
 ********************
 
-.. A. MacSyFinder is run from the command-line using a variety of input files and options.
+.. A. MacSyLib run using a variety of input files and options.
    See :ref:`input-dataset-label` for more details.
 
 .. B. Depending on the input dataset type ("ordered" or "unordered"),
@@ -26,7 +26,7 @@ Functioning overview
    More details are provided in the :ref:`section below<system_assessment>`
 
 
-MacSyFinder is run from the command-line using a variety of input files and options.
+MacSyLib is able to use a variety of input files and options.
 See :ref:`input-dataset-label` for more details. Below follows a description of its overall functioning.
 
 
@@ -34,7 +34,8 @@ See :ref:`input-dataset-label` for more details. Below follows a description of 
 A. Searching for Systems' components
 ************************************
 
-Initially, MacSyFinder **searches for the components** of the `System(s)` to detect by sequence similarity search.
+Initially, MacSyLib **searches for the components** of the `System(s)` to detect by sequence similarity search
+(:func:`macsylib.search_systems.search_systems`).
 
 1. From the list of `System(s)` to detect, a **non-redundant list of components to search** is built.
 For each system, the list can include:
@@ -47,14 +48,14 @@ For each system, the list can include:
       These other components are thus also added to the list of components to search.
 
 
-See :ref:`here for more details on writing MacSyFinder's models. <writing-models>`
+See :ref:`here for more details on writing MacSyLib's models. <writing-models>`
 
 2. HMMER is run on the corresponding set of components' HMM profiles, and the hits are filtered according to the criteria defined
 by the user or by default (see :ref:`Hmmer options <hmmer-options>` and for more, the API :ref:`HMMReport` object page).
-This step, and the extraction of significant hits can be performed in parallel (`-w` command-line option).
-See the :ref:`command-line-label`, and the :ref:`search_genes API <search_genes>` for more details.
+This step, and the extraction of significant hits can be performed in parallel (`worker` config option).
+See the :ref:`config_object_parameters`, and the :ref:`search_genes API <search_genes>` for more details.
 
-   .. image:: ../_static/msf_functionning_step1.*
+   .. image:: ../_static/msl_functionning_step1.*
      :height: 500px
      :align: left
 
@@ -92,15 +93,15 @@ The following two steps are reiterated for each model being searched.
 1. The search starts with the filtering of hits to only keep the **hits that are listed in the model** (mandatory, accessory, neutral,
    forbidden, exchangeable).
 
-2.  MacSyFinder searches for sets of contiguous hits to build **clusters**, following the
-    **(co-localization criterion)** for each replicon, as defined in the MacSyFinder's model.
+2.  MacSyLib searches for sets of contiguous hits to build **clusters**, following the
+    **(co-localization criterion)** for each replicon, as defined in the MacSyLib's model.
     Two hits are deemed contiguous if their genomic location is separated by less than *d* protein-encoding genes, *d*
     being the maximum of the two `inter_gene_max_space` parameters
     from the two genes with hits (system-wise, or gene-specific parameter).
     The `loner` components may form a cluster on their own.
 
 
-    .. image:: ../_static/msf_functionning_step2.*
+    .. image:: ../_static/msl_functionning_step2.*
        :height: 500px
        :align: left
 
@@ -111,10 +112,10 @@ Once performed for each model searched, the :ref:`next step <combinatorial-explo
     The clusters that do not fulfill the quorum requirements are stored in the :ref:`rejected_candidates.txt/tsv <rejected_candidates_txt>` file.
 
 .. note::
-    If several hits which co-locate have the same gene in the model. MSf does not consider them as a cluster.
+    If several hits which co-locate have the same gene in the model. MSL does not consider them as a cluster.
 
 .. note::
-     If a group of gene which co-locate is composed solely of Neutral genes, It has not considered by MSf as a cluster.
+     If a group of gene which co-locate is composed solely of Neutral genes, It has not considered by MSL as a cluster.
 
 
 For *unordered* datasets:
@@ -131,7 +132,8 @@ For each model being searched:
     The "unordered" mode of detection is less powerful, as a single occurrence of a given model is filled for
     an entire dataset with hits that origin is unknown. Please consider the assessment of systems with caution in this mode.
 
-For unordered datasets, the **search so ends**, and MacSyFinder generates the final :ref:`output files <unordered_outputs>`.
+For unordered datasets, the **search so ends**, and you can generates the final :ref:`output files <unordered_outputs>` with :module:`macsylib.io` module
+(:py:func:`macsylib.io.likely_systems_to_tsv` and :py:func:`macsylib.io.unlikely_systems_to_txt`).
 
 
 .. _combinatorial-exploration:
@@ -140,17 +142,16 @@ For unordered datasets, the **search so ends**, and MacSyFinder generates the fi
 C. Computing candidate Systems' scores (ordered mode)
 *****************************************************
 
-This step only applies to the most powerful search mode, i.e., on **ordered datasets**. The whole step is ``NEW in V2``
+This step only applies to the most powerful search mode, i.e., on **ordered datasets**.
 
-The **new search engine** implemented since version 2.0 of MacSyFinder better explores the space of possible Solutions
-regarding the presence of Systems in replicons analysed.
+The **search engine** explores the space of possible Solutions regarding the presence of Systems in replicons analysed.
 It creates clusters of hits for Systems' components separately for each System searched, and therefore might find
 **candidate occurrences of Systems that overlap** in terms of components.
 Moreover, if a System is possibly encoded at several locations on the replicon analysed (option `multi_loci` set to "True" in the model),
 this calls for a **combinatorial screening** of the different clusters to assemble them into coherent systems regarding the macsy-models.
 
 * For a given model, clusters are used to "fill up" Systems' occurrence(s) according to the **quorum criteria**
-  defined in the System's model (see function :func:`macsypy.system.match`):
+  defined in the System's model (see methods :meth:`macsylib.system.OrderedMatchMaker.match`, :meth:`macsylib.system.UnorderedMatchMaker.match`):
 
    The `min_genes_required` and `min_mandatory_genes_required` thresholds must be reached.
 
@@ -200,7 +201,7 @@ this calls for a **combinatorial screening** of the different clusters to assemb
    plus **a penality part** to avoid too much component's redundancy in Cluster's combinations.
    The systems' scoring step is exemplified in this figure:
 
-   .. image:: ../_static/msf_functionning_step3.*
+   .. image:: ../_static/msl_functionning_step3.*
      :height: 500px
      :align: left
 
@@ -210,7 +211,7 @@ this calls for a **combinatorial screening** of the different clusters to assemb
 D. Repeat operations B and C for the other models being searched
 *********************************************************************
 
-.. image:: ../_static/msf_functionning_step4.*
+.. image:: ../_static/msl_functionning_step4.*
      :height: 500px
      :align: left
 
@@ -224,7 +225,7 @@ representing combinations of putative sets of `Systems` in the analysed dataset.
 E. Computing possible Solutions, defining the best one (ordered mode)
 *********************************************************************
 
-At the end of the previous step MacSyFinder has computed all potential `Systems` present in the replicon,
+At the end of the previous step MacSyLib has computed all potential `Systems` present in the replicon,
 made of combinations of Clusters and `loner` components that fulfill the model's requirements,
 which are themselves made of a subset of Hits (remember, Hits are at 1st filtered and treated separately for each model of System to be detected).
 Candidate `Systems` may thus overlap by being partly made of the same components, or even partly being made of the same Clusters.
@@ -241,8 +242,8 @@ if they do not share any components (compatible `Systems`).
 Once the graph is created we look for the `maximum clique <https://en.wikipedia.org/wiki/Clique_problem#Definitions>`_
 which maximizes the score. This allows to provide the user with one, or multiple `Solutions`
 that have the **best score possible** among all combinations of compatible `Systems`.
+All this step is performed by the :func:`macsylib.solution.find_best_solution`
 
-
-.. image:: ../_static/msf_functionning_step5.*
+.. image:: ../_static/msl_functionning_step5.*
  :height: 500px
  :align: left

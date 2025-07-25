@@ -1,11 +1,11 @@
 .. MacSyLib - python library that provide functions for
-    detection of macromolecular systems in protein datasets
-    using systems modelling and similarity search.
-    Authors: Sophie Abby, Bertrand Néron
-    Copyright © 2014-2025 Institut Pasteur (Paris) and CNRS.
-    See the COPYRIGHT file for details
-    MacSyLib is distributed under the terms of the GNU General Public License (GPLv3).
-    See the COPYING file for details.
+   detection of macromolecular systems in protein datasets
+   using systems modelling and similarity search.
+   Authors: Sophie Abby, Bertrand Néron
+   Copyright © 2014-2025 Institut Pasteur (Paris) and CNRS.
+   See the COPYRIGHT file for details
+   MacSyLib is distributed under the terms of the GNU General Public License (GPLv3).
+   See the COPYING file for details.
 
 
 
@@ -17,7 +17,6 @@ Installation
 
 MacSyLib works with models for macromolecular systems that are not shipped with it,
 you have to install them separately. See the :ref:`msl_data section <msl_data>` below.
-We also provide container so you can use macsyfinder directly.
 
 .. _user_dependencies:
 
@@ -50,7 +49,7 @@ These dependencies will be automatically retrieved and installed when using `pip
     If you intend to build and distribute new models you will need some other dependencies see modeler guide for installation.
 
 .. note::
-    If you want to contribute to the *MacSyLib* code, check the guide lines (`CONTRIBUTING <https://github.com/gem-pasteur/macsyfinder/blob/master/CONTRIBUTING.md>`_)
+    If you want to contribute to the *MacSyLib* code, check the guide lines (`CONTRIBUTING <https://github.com/gem-pasteur/macsylib/blob/master/CONTRIBUTING.md>`_)
     and specific procedure for :ref:`developer installation <dev_installation>`.
 
 
@@ -70,7 +69,7 @@ Archive overview
 * **pyproject.toml** => The project installation build tool
 * **COPYING** => The licensing
 * **COPYRIGHT** => The copyright
-* **README.md** => Very brief macsyfinder overview
+* **README.md** => Very brief MacSyLib overview
 * **CONTRIBUTORS** => List of people who contributed to the code
 * **CONTRIBUTING** => The guide lines to contribute to the code
 
@@ -92,7 +91,7 @@ Perform the installation.
 
 .. code-block:: bash
 
-    python3 -m pip install macsyfinder
+    python3 -m pip install macsylib
 
 
 If you do not have the privileges to perform a system-wide installation,
@@ -124,7 +123,7 @@ To use `macsylib`, you need to activate the virtualenv:
 
     source macsylib/bin/activate
 
-Then use `macsylib` or `msl_data`.
+Then use `macsylib` as python library or the `msl_data` command line tool.
 
 
 .. note::
@@ -149,7 +148,7 @@ To uninstall MacSyLib (the last version installed), run
   (sudo) pip uninstall macsylib
 
 If you install it in a virtualenv, just delete the virtual environment.
-For instance if you create a virtualenv name macsyfinder
+For instance if you create a virtualenv name *macsylib*
 
 .. code-block:: bash
 

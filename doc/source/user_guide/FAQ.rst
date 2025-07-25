@@ -25,7 +25,7 @@ To ensure we have all elements to help, please provide:
 - a concise description of the issue
 - the expected behavior VS observed one
 - the exact command-line used
-- the version of MacSyFinder used
+- the version of MacSyLib used
 - the exact error message, and if applicable, the `<macsylib>.log` and `<macsylib>.conf` files
 - if applicable, an archive (or link to it) with the output files obtained
 - if possible, the smallest dataset there is to reproduce the issue
@@ -87,7 +87,7 @@ The code and the data are available
 What search mode to be used?
 ----------------------------
 
-Depending on the type of dataset you have, you will have to adapt MacSyFinder's search mode.
+Depending on the type of dataset you have, you will have to adapt MacSyLib's search mode.
 
 - If you have a fasta file from a complete genome where **proteins are ordered** according to the corresponding genes' order along the replicon,
   your dataset is entitled to the most powerful search mode (see below): `ordered_replicon` and use the following option `--db-type ordered_replicon`.
@@ -117,7 +117,7 @@ There are more and more genomes available which are not completely assembled, or
 In this case, several options can be considered.
 
 1. If your genome is at least partially assembled and contigs are not too short, you might "feel lucky" and first
-consider to run MacSyFinder with the `ordered_replicon` mode. It could be particularly efficient if you are investigating
+consider to run MacSyLib with the `ordered_replicon` mode. It could be particularly efficient if you are investigating
 systems encoded by compact loci (Cas systems, some secretion systems...), as they might be encoded by a single contig.
 
 2. On top of the `ordered_replicon` mode, you might add the option "multi-loci" to the systems to annotate (if not already the case),
@@ -180,7 +180,7 @@ The precedence rules between the different levels of configuration are:
  system < home < model < project < --cfg-file | --previous-run < command line options
 
 * **system**: the `<macsylib>.conf` file either in ${VIRTUAL_ENV}/etc/<macsylib>/
-  in case of a *virtualenv* this configuration affects only the MacSyFinder version installed in this virtualenv
+  in case of a *virtualenv* this configuration affects only the MacSyLib version installed in this virtualenv
 * **home**:  the `~/.<macsylib>/<macsylib>.conf` file
 * **model**: the `model_conf.xml` file at the root of the model package
 * **project**: the `<macsylib>.conf` file found in the directory where the `macsylib` command was run

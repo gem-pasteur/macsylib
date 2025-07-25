@@ -4,7 +4,7 @@
    Authors: Sophie Abby, Bertrand Néron
    Copyright © 2014-2025 Institut Pasteur (Paris) and CNRS.
    See the COPYRIGHT file for details
-   MacsyLib is distributed under the terms of the GNU General Public License (GPLv3).
+   MacSyLib is distributed under the terms of the GNU General Public License (GPLv3).
    See the COPYING file for details.
 
 
@@ -45,7 +45,7 @@ MacSyLib Quick Start
    (for further details see :ref:`input-dataset-label`). In the best case scenario, they would be ordered as the
    corresponding genes are ordered along the replicons.
 
-3. You need to install, or make available to MacSyFinder the models to search in your input genome data.
+3. You need to install, or make available to MacSyLib the models to search in your input genome data.
    Please refer to :ref:`model_definition` to create your own package of models.
    Otherwise, macsy-models contributed by the community are available here: https://github.com/macsy-models
    and can be retrieved and installed using the :ref:`msl_data <msl_data>` command, installed as part of the MacSylib suite.
