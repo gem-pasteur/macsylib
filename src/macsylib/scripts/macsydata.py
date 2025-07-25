@@ -40,6 +40,7 @@ import pathlib
 import logging
 import xml.etree.ElementTree as ET
 import typing
+from functools import partialmethod
 from importlib import resources as impresources
 
 import colorlog
@@ -1113,6 +1114,8 @@ def build_arg_parser(header:str, package_name='macsylib', tool_name='msl_data') 
                         action="version",
                         version=get_version_message())
     # -- subparser options -- #
+    # inject  package_name=package_name, tool_name=tool_name in set_defaults by defaults)
+    argparse.ArgumentParser.set_defaults = partialmethod(argparse.ArgumentParser.set_defaults,  package_name=package_name, tool_name=tool_name)
 
     subparsers = parser.add_subparsers(help=None)
     #############
@@ -1125,14 +1128,14 @@ def build_arg_parser(header:str, package_name='macsylib', tool_name='msl_data') 
                                      help="The name of Model organization"
                                           "(default 'macsy-models'))"
                                      )
-    available_subparser.set_defaults(func=do_available, package_name=package_name, tool_name=tool_name,)
+    available_subparser.set_defaults(func=do_available)
     ############
     # download #
     ############
     download_subparser = subparsers.add_parser('download',
                                                help='Download model packages.')
 
-    download_subparser.set_defaults(func=do_download, package_name=package_name, tool_name=tool_name)
+    download_subparser.set_defaults(func=do_download)
     download_subparser.add_argument('-d', '--dest',
                                     default=os.getcwd(),
                                     help='Download model packages into <dir>.')
@@ -1148,7 +1151,7 @@ def build_arg_parser(header:str, package_name='macsylib', tool_name='msl_data') 
     # Install #
     ###########
     install_subparser = subparsers.add_parser('install', help='Install Model packages.')
-    install_subparser.set_defaults(func=do_install, tool_name=tool_name, package_name=package_name)
+    install_subparser.set_defaults(func=do_install)
     install_subparser.add_argument('-f', '--force',
                                    action='store_true',
                                    default=False,
@@ -1186,7 +1189,7 @@ def build_arg_parser(header:str, package_name='macsylib', tool_name='msl_data') 
     #############
     uninstall_subparser = subparsers.add_parser('uninstall',
                                                 help='Uninstall packages.')
-    uninstall_subparser.set_defaults(func=do_uninstall, package_name=package_name)
+    uninstall_subparser.set_defaults(func=do_uninstall)
     uninstall_subparser.add_argument('model_package',
                                      help='ModelPackage name.')
     uninstall_subparser.add_argument('--target, --models-dir',
@@ -1198,7 +1201,7 @@ def build_arg_parser(header:str, package_name='macsylib', tool_name='msl_data') 
     ##########
     search_subparser = subparsers.add_parser('search',
                                              help='Discover new packages.')
-    search_subparser.set_defaults(func=do_search, package_name=package_name, tool_name=tool_name)
+    search_subparser.set_defaults(func=do_search)
     search_subparser.add_argument('--org',
                                   default="macsy-models",
                                   help="The name of Model organization"
@@ -1221,7 +1224,7 @@ def build_arg_parser(header:str, package_name='macsylib', tool_name='msl_data') 
                                            help='Show information about packages.')
     info_subparser.add_argument('model_package',
                                 help='Model Package name.')
-    info_subparser.set_defaults(func=do_info, tool_name=tool_name, package_name=package_name)
+    info_subparser.set_defaults(func=do_info)
     info_subparser.add_argument('--models-dir',
                                 help='the path of the alternative root directory containing package instead used '
                                      'canonical locations')
@@ -1230,7 +1233,7 @@ def build_arg_parser(header:str, package_name='macsylib', tool_name='msl_data') 
     ########
     list_subparser = subparsers.add_parser('list',
                                            help='List installed packages.')
-    list_subparser.set_defaults(func=do_list, package_name=package_name, tool_name=tool_name)
+    list_subparser.set_defaults(func=do_list)
     list_subparser.add_argument('-o', '--outdated',
                                 action='store_true',
                                 default=False,
@@ -1266,13 +1269,13 @@ def build_arg_parser(header:str, package_name='macsylib', tool_name='msl_data') 
     freeze_subparser.add_argument('--models-dir',
                                    help='the path of the alternative root directory containing package instead used '
                                         'canonical locations')
-    freeze_subparser.set_defaults(func=do_freeze, package_name=package_name)
+    freeze_subparser.set_defaults(func=do_freeze)
     ########
     # cite #
     ########
     cite_subparser = subparsers.add_parser('cite',
                                            help='How to cite a package.')
-    cite_subparser.set_defaults(func=do_cite, package_name=package_name)
+    cite_subparser.set_defaults(func=do_cite)
     cite_subparser.add_argument('--models-dir',
                                 help='the path of the alternative root directory containing package instead used '
                                      'canonical locations')
@@ -1283,7 +1286,7 @@ def build_arg_parser(header:str, package_name='macsylib', tool_name='msl_data') 
     ########
     help_subparser = subparsers.add_parser('help',
                                            help='get online documentation.')
-    help_subparser.set_defaults(func=do_help, package_name=package_name)
+    help_subparser.set_defaults(func=do_help)
     help_subparser.add_argument('model_package',
                                 help='ModelPackage name.')
     help_subparser.add_argument('--models-dir',
@@ -1294,7 +1297,7 @@ def build_arg_parser(header:str, package_name='macsylib', tool_name='msl_data') 
     #########
     check_subparser = subparsers.add_parser('check',
                                             help='check if the directory is ready to be publish as data package')
-    check_subparser.set_defaults(func=do_check, package_name=package_name, tool_name=tool_name)
+    check_subparser.set_defaults(func=do_check)
     check_subparser.add_argument('path',
                                  nargs='?',
                                  default=os.getcwd(),
@@ -1305,7 +1308,7 @@ def build_arg_parser(header:str, package_name='macsylib', tool_name='msl_data') 
     ##############
     def_subparser = subparsers.add_parser('definition',
                                             help='show a model definition ')
-    def_subparser.set_defaults(func=do_show_definition, package_name=package_name, tool_name=tool_name)
+    def_subparser.set_defaults(func=do_show_definition)
     def_subparser.add_argument('model',
                                nargs='+',
                                help='the family and name(s) of a model(s) eg: TXSS T6SS T4SS or TFF/bacterial T2SS')
@@ -1317,7 +1320,7 @@ def build_arg_parser(header:str, package_name='macsylib', tool_name='msl_data') 
     ########
     init_subparser = subparsers.add_parser('init',
                                            help='Create a template for a new data package (REQUIRE git/GitPython installation)')
-    init_subparser.set_defaults(func=do_init_package, tool_name=tool_name, package_name=package_name)
+    init_subparser.set_defaults(func=do_init_package)
     init_subparser.add_argument('--model-package',
                                 required=True,
                                 help='The name of the model data package.')
