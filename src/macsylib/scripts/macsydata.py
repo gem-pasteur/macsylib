@@ -47,6 +47,7 @@ import colorlog
 from packaging import requirements, specifiers, version
 
 import macsylib
+from macsylib import get_version_message
 from macsylib.error import MacsydataError, MacsyDataLimitError
 from macsylib.config import MacsyDefaults, Config
 from macsylib.registries import ModelRegistry, ModelLocation, scan_models_dir
@@ -57,26 +58,6 @@ from macsylib import licenses
 # _log is set in main func
 _log = None
 
-
-def get_version_message() -> str:
-    """
-    :return: the long description of the macsyfinder version
-    :rtype: str
-    """
-    msf_ver = macsylib.__version__
-    commit = macsylib.__commit__
-    vers_msg = f"""Macsydata {msf_ver} {commit}
-Python {sys.version}
-
-MacSyLib is distributed under the terms of the GNU General Public License (GPLv3).
-See the COPYING file for details.
-
-If you use this software please cite:
-{macsylib.__citation__}
-and don't forget to cite models used:
-macsydata cite <model>
-"""
-    return vers_msg
 
 ##################
 # Remote actions #
@@ -1094,7 +1075,8 @@ def _cmde_line_header():
     ''')
 
 
-def build_arg_parser(header:str, package_name='macsylib', tool_name='msl_data') -> argparse.ArgumentParser:
+def build_arg_parser(header:str, version:str,
+                     package_name:str = 'macsylib', tool_name:str = 'msl_data') -> argparse.ArgumentParser:
     """
     Build argument parser.
 
@@ -1118,7 +1100,7 @@ def build_arg_parser(header:str, package_name='macsylib', tool_name='msl_data') 
                         help="Give more output.")
     parser.add_argument("--version",
                         action="version",
-                        version=get_version_message())
+                        version=version)
     # -- subparser options -- #
     # inject  package_name=package_name, tool_name=tool_name in ArgumentParser.set_defaults method by default)
     argparse.ArgumentParser.set_defaults = partialmethod(argparse.ArgumentParser.set_defaults,
@@ -1427,7 +1409,11 @@ def verbosity_to_log_level(verbosity: int) -> int:
     return level
 
 
-def main(args: list[str] = None, header:str = _cmde_line_header(), package_name:str = 'macsylib', tool_name='msl_data') -> None:
+def main(args: list[str] = None,
+         header:str = _cmde_line_header(),
+         version=get_version_message(tool_name='msl_data'),
+         package_name:str = 'macsylib',
+         tool_name='msl_data') -> None:
     """
     Main entry point.
 
@@ -1438,7 +1424,7 @@ def main(args: list[str] = None, header:str = _cmde_line_header(), package_name:
     """
     global _log
     args = sys.argv[1:] if args is None else args
-    parser = build_arg_parser(header, package_name=package_name, tool_name=tool_name)
+    parser = build_arg_parser(header, version, package_name=package_name, tool_name=tool_name)
     parsed_args = parser.parse_args(args)
     log_level = verbosity_to_log_level(parsed_args.verbose)
     # set logger for module 'package'

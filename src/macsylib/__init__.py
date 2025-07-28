@@ -65,6 +65,27 @@ def get_git_revision_short_hash() -> str:
 __commit__ = f'{get_git_revision_short_hash()}' if 'dev' in __version__ else ''
 
 
+def get_version_message(tool_name='MacSyLib') -> str:
+    """
+    :return: the long description of the macsylib version
+    :rtype: str
+    """
+    msl_ver = __version__
+    commit = __commit__
+    vers_msg = f"""{tool_name} {msl_ver} {commit}
+Python {sys.version}
+
+MacSyLib is distributed under the terms of the GNU General Public License (GPLv3).
+See the COPYING file for details.
+
+If you use this software please cite:
+{__citation__}
+and don't forget to cite models used:
+macsydata cite <model>
+"""
+    return vers_msg
+
+
 def init_logger(name: str = 'macsylib', log_file: str = None, out: bool = True) -> list[logging.Handler]:
     """
     :param name: the name of the logger

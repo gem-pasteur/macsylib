@@ -49,13 +49,14 @@ from macsylib.metadata import Metadata
 _log = None
 
 
-def get_version_message(prog_name:str = 'msl_profile', data_mgr: str = 'msl_data') -> str:
+def get_version_message(tool_name:str = 'msl_profile', data_mgr: str = 'msl_data') -> str:
     """
+    :param tool_name: The name of the high level tool
     :return: the long description of the macsylib version
     """
     version = macsylib.__version__
     commit = macsylib.__commit__
-    vers_msg = f"""{prog_name} {version} {commit}
+    vers_msg = f"""{tool_name} {version} {commit}
 Python {sys.version}
 
 MacSyLib is distributed under the terms of the GNU General Public License (GPLv3).
