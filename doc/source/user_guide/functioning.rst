@@ -132,7 +132,7 @@ For each model being searched:
     The "unordered" mode of detection is less powerful, as a single occurrence of a given model is filled for
     an entire dataset with hits that origin is unknown. Please consider the assessment of systems with caution in this mode.
 
-For unordered datasets, the **search so ends**, and you can generates the final :ref:`output files <unordered_outputs>` with :module:`macsylib.io` module
+For unordered datasets, the **search so ends**, and you can generates the final :ref:`output files <unordered_outputs>` with :mod:`macsylib.io` module
 (:py:func:`macsylib.io.likely_systems_to_tsv` and :py:func:`macsylib.io.unlikely_systems_to_txt`).
 
 
