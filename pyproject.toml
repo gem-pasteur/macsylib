@@ -12,7 +12,7 @@ authors = [
 maintainers = [
     {name="Bertrand Neron", email='bneron@pasteur.fr'}
     ]
-description = 'MacSyLib: Module that help to Detect of macromolecular, systems genetic pathways… in prokaryotes protein datasets using systems modelling and similarity search'
+description = 'MacSyLib: Python library that help to detect of macromolecular, systems genetic pathways… in prokaryotes protein datasets using systems modelling and similarity search'
 readme = "README.md"
 license = {file="COPYING"}
 
@@ -64,11 +64,11 @@ msl_data = "macsylib.scripts.macsydata:main"
 msl_profile = "macslib.scripts.macsyprofile:main"
 
 [project.urls]
-Homepage = "https://github.com/gem-pasteur/macsyfinder/"
-Documentation = "https://macsyfinder.readthedocs.io/en/latest/"
-Repository = "https://github.com/gem-pasteur/macsyfinder/"
-Issues = "https://github.com/gem-pasteur/macsyfinder/issues"
-Changelog = "https://macsyfinder.readthedocs.io/en/latest/user_guide/new_v2.html#what-s-new-in-macsyfinder-v2"
+Homepage = "https://github.com/gem-pasteur/macsylib/"
+Documentation = "https://macsylib.readthedocs.io/en/latest/"
+Repository = "https://github.com/gem-pasteur/macsylib/"
+Issues = "https://github.com/gem-pasteur/macsylib/issues"
+Changelog = "https://macsylib.readthedocs.io/en/latest/user_guide/new.html"
 
 [tool.setuptools]
 include-package-data = true
