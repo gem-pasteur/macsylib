@@ -101,7 +101,7 @@ Enhancement suggestions are tracked as [GitHub issues](https://guides.github.com
   Include copy/pasteable snippets which you use in those examples, as [Markdown code blocks](https://help.github.com/articles/markdown-basics/#multiple-lines).
 * **Describe the current behavior** and **explain which behavior you expected to see instead** and why.
 * **Explain why this enhancement would be useful** to most macsyfinder users.
-* **Specify which version of macsyfinder you're using.** You can get the exact version by running `macsyfinder --version` in your terminal.
+* **Specify which version of macsylib you're using.** You can get the exact version by running `macsyfinder --version` in your terminal.
 * **Specify the name and version of the OS you're using.**
 
 ### Your First Code Contribution
