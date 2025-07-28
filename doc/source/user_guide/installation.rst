@@ -64,7 +64,7 @@ Archive overview
 
 * **doc** => The documentation in html and pdf
 * **test** => All what is needed for unitary tests
-* **src/macsylib* => The macsylib python library
+* **src/macsylib** => The macsylib python library
 * **setup.py** => The installation script (to include documentation)
 * **pyproject.toml** => The project installation build tool
 * **COPYING** => The licensing
