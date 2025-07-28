@@ -1831,9 +1831,10 @@ Maybe you can use --user option to install in your HOME.""")
 
 
     def test_build_argparser(self):
-        parser = macsydata.build_arg_parser(macsydata._cmde_line_header())
         tool_name = 'msl_data'
         cmd = f"{tool_name} install toto>1"
+        version = f"{tool_name} version message"
+        parser = macsydata.build_arg_parser(macsydata._cmde_line_header(), version)
         args = parser.parse_args(cmd.split()[1:])
         self.assertEqual(args.func.__name__, 'do_install')
         self.assertEqual(args.model_package, 'toto>1')
@@ -1894,7 +1895,8 @@ Maybe you can use --user option to install in your HOME.""")
             self.assertEqual(args.email, 'jim.doe@my_domain.com')
 
     def test_cmd_name(self):
-        parser = macsydata.build_arg_parser(macsydata._cmde_line_header())
+        version = "msl version message"
+        parser = macsydata.build_arg_parser(macsydata._cmde_line_header(), version)
         cmd = "msl_data download foo"
         args = parser.parse_args(cmd.split()[1:])
         cmd_name = macsydata.cmd_name(args)
@@ -1908,7 +1910,9 @@ Maybe you can use --user option to install in your HOME.""")
 
     def test_no_subcommand(self):
         cmd = "msl_data"
-        parser = macsydata.build_arg_parser(macsydata._cmde_line_header(), package_name='macsylib', tool_name='msl_data')
+        parser = macsydata.build_arg_parser(macsydata._cmde_line_header(),
+                                            'msl_data version message',
+                                            package_name='macsylib', tool_name='msl_data')
         out = io.StringIO()
         parser.print_help(file=out)
 
