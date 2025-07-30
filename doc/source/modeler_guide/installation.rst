@@ -22,7 +22,7 @@ you have to install them separately. See the :ref:`msl_data section <modeler_msl
 MacSyLib Installation procedure
 ===============================
 
-To develop new models and share them, MacSyLib requires *git* and the python librarie *GitPython*
+To develop new models and share them, MacSyLib requires *git* and the python library *GitPython*
 
 Below the procedure to install *MacSyLib* in *modeler* mode in a virtualenv
 
