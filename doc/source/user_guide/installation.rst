@@ -147,7 +147,7 @@ To uninstall MacSyLib (the last version installed), run
 
   (sudo) pip uninstall macsylib
 
-If you install it in a virtualenv, just delete the virtual environment.
+If you have installed it in a virtualenv, just delete the virtual environment.
 For instance if you create a virtualenv name *macsylib*
 
 .. code-block:: bash
@@ -163,8 +163,7 @@ To delete it, remove the directory
 From Conda/Mamba
 ================
 
-From version 2.0, MacSyLib is packaged for Conda/Mamba
-
+From version 1.0, MacSyLib is packaged for Conda/Mamba
 .. code-block:: text
 
     mamba install -c macsylib=x.x
@@ -228,7 +227,7 @@ To show all models definitions in TXSS+/bacterial subpackage::
 
     msl_data definition TXSS+/bacterial
 
-To create a skeleton for your own model package (to access init subcommand check modeler installation)::
+To create a skeleton for your own model package (to access init subcommand check :ref:`modeler instaltion <modeler_installation>`)::
 
     msl_data init --pack-name <MY_PACK_NAME> --maintainer <"mantainer name"> --email <maintainer email> --authors <"author1, author2, ..">
 
