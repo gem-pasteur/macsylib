@@ -623,6 +623,31 @@ I'll be really happy, if you fix warnings above, before to publish these models.
                      "https://macsylib.readthedocs.io/en/latest/modeler_guide/publish_package.html#sharing-your-models")
         _log.log(25, "\tgit push origin <tag vers>")
 
+def do_sow_package(args: argparse.Namespace) -> None:
+    """
+
+    :param args:
+    :return:
+    """
+    defaults = MacsyDefaults(pack_name=args.package_name, tool_name=args.tool_name)
+    config = Config(defaults, args)
+    model_dirs = config.models_dir()
+    registry = ModelRegistry()
+    found = False
+    for model_dir in model_dirs:
+        try:
+            for model_loc in scan_models_dir(model_dir, profile_suffix=config.profile_suffix()):
+                if model_loc.name == args.model_name:
+                    break
+
+        except PermissionError as err:
+            _log.warning(f"{model_dir} is not readable: {err} : skip it.")
+    if not found:
+        msg = f"{args.model_name} not found in {' '.join(model_dirs)}"
+        _log.error(msg)
+        sys.tracebacklimit = 0
+        raise ValueError() from None
+    return str(registry)
 
 def do_show_definition(args: argparse.Namespace) -> None:
     """
@@ -1057,18 +1082,18 @@ Before to publish your package you can use `macsydata check` to verify it's inte
 def _cmde_line_header():
     return textwrap.dedent(r'''
 
-         *            *               *              
-    *           *               *   *   *  *    **   
-      **     *    *   *  *     *        *           
-                *      _      *   _   *   _      *  
-      *  _ __ ___  ___| |      __| | __ _| |_ __ _ 
+         *            *               *
+    *           *               *   *   *  *    **
+      **     *    *   *  *     *        *
+                *      _      *   _   *   _      *
+      *  _ __ ___  ___| |      __| | __ _| |_ __ _
         | '_ ` _ \/ __| |     / _` |/ _` | __/ _` |
         | | | | | \__ \ |    | (_| | (_| | || (_| |
         |_| |_| |_|___/_|_____\__,_|\__,_|\__\__,_|
-               *        |_____|          *  
-     *      *   * *     *   **         *   *  *     
-      *      *         *        *    *              
-    *                           *  *           *   
+               *        |_____|          *
+     *      *   * *     *   **         *   *  *
+      *      *         *        *    *
+    *                           *  *           *
 
 
     msl_data - Model Management Tool
