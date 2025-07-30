@@ -6,7 +6,10 @@
 MacSyLib is a package library that allow to model and detect macromolecular systems, genetic pathways…
 by similarity search in prokaryotes datasets.
 
+[![Build Status](https://github.com/gem-pasteur/macsylib/actions/workflows/testing.yml/badge.svg?branch=main)](https://github.com/gem-pasteur/macsylib/actions/workflows/testing.yml)
+[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/macsylib)](https://pypi.org/project/macsylib/)
 [![Open Source License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://opensource.org/licenses/GPL-3.0)
+[![Doc](https://readthedocs.org/projects/macsylib/badge/?version=latest)](http://macsylib.readthedocs.org/en/latest/#)
 [![FAIR checklist badge](https://fairsoftwarechecklist.net/badge.svg)](https://fairsoftwarechecklist.net/v0.2?f=31&a=32113&i=32321&r=133)
 
 ## Citations
@@ -47,7 +50,7 @@ We distinguish 3 kind of MacSyLib users:
 - The **modeler**, who want to modelize new macromolecular systems
 - The **developer** who want to add or fix methods in the macsylib code
 
-By default the installation is for the end user, if you are modeler or developper there is a specific pip target.
+By default the installation is for the end user, if you are modeler or developer there is a specific pip target.
 
 For instance for the *modelers*
 ```bash
