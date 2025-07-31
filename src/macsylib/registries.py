@@ -353,46 +353,6 @@ class ModelLocation:
         return self.name
 
 
-    def pretty_print(self) -> str:
-
-        def def_loc_to_str(def_loc: DefinitionLocation, pad:int, char:str, pipe:int|None = None):
-            if def_loc.subdefinitions:
-                defloc_str = f"{' ' * pad}{char}- {def_loc.name}\n" # for node
-                pipe = pad
-                pad = pad + len(def_loc.name) - 1
-                all_subdefs = sorted(def_loc.subdefinitions.values())
-                chars = ['├'] * len(all_subdefs)
-                chars[-1] = '└'
-                for sub_def, char in zip(all_subdefs, chars):
-                    defloc_str += def_loc_to_str(sub_def, pad, char, pipe=pipe)
-            else:
-                if pipe:
-                    prefix = [' '] * pad
-                    prefix[pipe] = '│'
-                    prefix.append(char)
-                    prefix = ''.join(prefix)
-                else:
-                    prefix = f"{' ' * pad}{char}"
-                defloc_str = f"{prefix}- {def_loc.name}\n" # for leaves
-            return defloc_str
-
-        str_repr = self.name + '\n'
-        all_defs = self.get_definitions()
-        chars = ['├'] * len(all_defs)
-        chars[-1] = '└'
-        for definition ,char in zip(self.get_definitions(), chars):
-            pad = len(self.name) - 1
-            str_repr += def_loc_to_str(definition, pad, char)
-
-        # ugly workaround to remove the last '│'
-        ugly_list = str_repr.rstrip().split('\n')
-        ugly_list[-1] = ugly_list[-1].replace('│', '')
-        str_repr = '\n'.join(ugly_list)
-
-        str_repr += f"\n\n{self.name} {self.version}: {len(self.get_all_definitions())} models"
-        return str_repr
-
-
 class MetaDefLoc(type):
 
     @property

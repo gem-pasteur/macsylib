@@ -50,7 +50,7 @@ import macsylib
 from macsylib import get_version_message
 from macsylib.error import MacsydataError, MacsyDataLimitError
 from macsylib.config import MacsyDefaults, Config
-from macsylib.registries import ModelRegistry, ModelLocation, scan_models_dir
+from macsylib.registries import ModelRegistry, ModelLocation, scan_models_dir, DefinitionLocation
 from macsylib.model_package import RemoteModelIndex, LocalModelIndex, ModelPackage, parse_arch_path
 from macsylib.metadata import Metadata, Maintainer
 from macsylib import licenses
@@ -623,31 +623,91 @@ I'll be really happy, if you fix warnings above, before to publish these models.
                      "https://macsylib.readthedocs.io/en/latest/modeler_guide/publish_package.html#sharing-your-models")
         _log.log(25, "\tgit push origin <tag vers>")
 
-def do_sow_package(args: argparse.Namespace) -> None:
-    """
 
-    :param args:
-    :return:
+def do_show_package(args: argparse.Namespace) -> None:
     """
-    defaults = MacsyDefaults(pack_name=args.package_name, tool_name=args.tool_name)
-    config = Config(defaults, args)
-    model_dirs = config.models_dir()
-    registry = ModelRegistry()
-    found = False
-    for model_dir in model_dirs:
-        try:
-            for model_loc in scan_models_dir(model_dir, profile_suffix=config.profile_suffix()):
-                if model_loc.name == args.model_name:
-                    break
+    Display the structure of an installed model package. The family , sub families and models in tree-like format
 
-        except PermissionError as err:
-            _log.warning(f"{model_dir} is not readable: {err} : skip it.")
-    if not found:
-        msg = f"{args.model_name} not found in {' '.join(model_dirs)}"
-        _log.error(msg)
+    :param args: the passed on the command line (the package name)
+    :return: None
+    :raise ValueError: if the package is not find.
+    """
+    inst_pack_loc = _find_installed_package(args.model,
+                                            models_dir=args.models_dir,
+                                            package_name=args.package_name)
+    if not inst_pack_loc:
+        _log.error(f"Model Package '{args.model}' not found.")
         sys.tracebacklimit = 0
         raise ValueError() from None
-    return str(registry)
+    else:
+        lines = []
+        def_count = 0
+
+        def prefix(indent:int, char:str, prev_indent:int, pipe:bool = True) -> str:
+            """
+
+            :param indent: the number of indentation
+            :param char: the char that link this item to the previous
+            :param prev_indent: the indentation of the item at the previous level
+            :param pipe: if the pipe must be draw or not
+            :return: what to display before the name of the definition
+            """
+            pad = [' '] * indent
+            if indent :
+                if prev_indent and pipe:
+                    pad[prev_indent] = '│'
+                pad.append(char)
+                pad.append('-')
+            return ''.join(pad)
+
+        def explore_def(def_loc: DefinitionLocation, indent:int = 0, prev_indent:int = 0, char:str = '', pipe:bool = True) -> None:
+            """
+            explore recursively the tree structure of DefintionLocation with subdefinition. and compute what to dispaly for each line
+
+            :param def_loc: The definition location to explore
+            :param indent: the indentation of the label
+            :param prev_indent: the indentation of the previous level label
+            :param char: the char which link tis item to the previous
+            :param pipe: if it is needed or not to draw a pipe
+            :return: None
+            """
+            nonlocal def_count
+            if def_loc.subdefinitions:  # it's a node
+                pad = prefix(indent, char, prev_indent, pipe=pipe)
+                line = pad + def_loc.name
+                lines.append(line)
+                prev_indent = indent
+                indent = indent + (len(def_loc.name) // 2) + 1
+
+                childs = sorted(def_loc.subdefinitions.values())
+                for sub_def in childs[:-1]:
+                    # internal node
+                    if char == '├':
+                        explore_def(sub_def, indent=indent, prev_indent=prev_indent, char='├', pipe=True)
+                    else:
+                        explore_def(sub_def, indent=indent, prev_indent=prev_indent, char='├', pipe=pipe)
+                # last node
+                if char == '├':
+                    explore_def(childs[-1], indent=indent, prev_indent=prev_indent, char='└', pipe=True)
+                else:
+                    explore_def(childs[-1], indent=indent, prev_indent=prev_indent, char='└', pipe=False)
+            else: # it's a leaf'
+                pad = prefix(indent, char, prev_indent, pipe=pipe)
+                line = pad + def_loc.name
+                lines.append(line)
+                def_count += 1
+
+        print(inst_pack_loc.name)
+        indent = (len(inst_pack_loc.name) // 2) + 1
+        all_def = inst_pack_loc.get_definitions()
+        for def_loc in all_def[:-1]:
+            explore_def(def_loc, indent=indent, char= '├', pipe=True)
+        explore_def(all_def[-1], indent=indent, char= '└', pipe=False)
+
+        print( '\n'.join(lines))
+        print()
+        print(f"{inst_pack_loc.name} ({inst_pack_loc.version}) : {def_count} models")
+
 
 def do_show_definition(args: argparse.Namespace) -> None:
     """
@@ -1316,7 +1376,17 @@ def build_arg_parser(header:str, version:str,
                                  nargs='?',
                                  default=os.getcwd(),
                                  help='the path to root directory models to check')
-
+    ########
+    # show #
+    ########
+    show_subparser = subparsers.add_parser('show',
+                                            help='show the structure of model package')
+    show_subparser.set_defaults(func=do_show_package)
+    show_subparser.add_argument('model',
+                               help='a model package name eg: TXSScan or CasFinder')
+    show_subparser.add_argument('--models-dir',
+                               help='the path to the alternative root directory containing packages instead to the '
+                                    'canonical locations')
     ##############
     # definition #
     ##############
