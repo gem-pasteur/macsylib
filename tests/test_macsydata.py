@@ -54,7 +54,7 @@ except ModuleNotFoundError:
 class TestMacsydata(MacsyTest):
 
     def setUp(self):
-        self._tmpdir = tempfile.TemporaryDirectory(prefix='test_msf_macsydata_')
+        self._tmpdir = tempfile.TemporaryDirectory(prefix='test_msl_macsydata_')
         self.tmpdir = self._tmpdir.name
         self.models_dir = [os.path.join(self.tmpdir, 'models')]
         os.mkdir(self.models_dir[0])
