@@ -98,6 +98,41 @@ To know how to cite a model package::
 
     msl_data cite <model name>
 
+To show the name of the models and the structure of installed model package::
+
+   msl_data show <model package name>
+
+for instance :code:`msl_data show TXSScan`
+
+.. code-block:: text
+
+   TXSScan
+       ├-archaea
+       │   └-Archaeal-T4P
+       └-bacteria
+            ├-diderm
+            │   ├-Flagellum
+            │   ├-MSH
+            │   ├-T1SS
+            │   ├-T2SS
+            │   ├-T3SS
+            │   ├-T4aP
+            │   ├-T4bP
+            │   ├-T5aSS
+            │   ├-T5bSS
+            │   ├-T5cSS
+            │   ├-T6SSi
+            │   ├-T6SSii
+            │   ├-T6SSiii
+            │   ├-T9SS
+            │   ├-Tad
+            │   ├-pT4SSi
+            │   └-pT4SSt
+            └-monoderm
+                 └-ComM
+
+   TXSScan (1.1.3) : 19 models
+
 To show the model definition::
 
     msl_data definition <package or subpackage> model1 [model2, ...]
@@ -114,7 +149,7 @@ To create a git repository with a skeleton for your own model package::
 
     msl_data init --pack-name <MY_PACK_NAME> --maintainer <"mantainer name"> --email <maintainer email> --authors <"author1, author2, ..">
 
-above msl_data with required options. Below I add optioanl but recommended options. ::
+above msl_data with required options. Below I add optional but recommended options. ::
 
     msl_data init --pack-name <MY_PACK_NAME> --maintainer <"mantainer name"> --email <maintainer email> --authors <"author1, author2, .."> \
     --license cc-by-nc-sa --holders <"the copyright holders"> --desc <"one line package description">

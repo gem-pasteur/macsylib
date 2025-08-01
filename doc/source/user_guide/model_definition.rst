@@ -58,6 +58,7 @@ The main sub-commands are
 * ``msl_data search`` to search a model given its name or a pattern in its description
 * ``msl_data install`` to install a macsy-model package (the installed version can be set see --help)
 * ``msl_data cite`` to retrieve information on how to cite the model
+* ``msl_data show`` to show the structure of model package
 * ``msl_data definition`` to display one or a set of model defintion
 * ``msl_data --help`` to get the extended list of available subcommands
 * ``msl_data <subcommand> --help`` to get help about the specified subcommand
@@ -86,18 +87,19 @@ The packages installed in user land is added to the system-wide packages.
 
 
 .. note::
-	If two packages have the same name, the package in the user land supersedes the system-wide package.
+
+   If two packages have the same name, the package in the user land supersedes the system-wide package.
 
 
 project-wide installation
 -------------------------
 
 If you cannot install macsy-model packages in system or user land locations,
-you can install models in specific directory with the `--target` option.
+you can install models in specific directory with the `--target` option.::
 
     msl_data install --target <my_models>
 
-The specify this specific location with the ``--models-dir`` :ref:`command-line option <path-options>`.
+The specify this specific location with the ``--models-dir`` :ref:`command-line option <path-options>`.::
 
     MacSyLib --db-type ordered_replicon --models-dir=my_models --models TFF-SF all --sequence-db my_genome.fasta
 
