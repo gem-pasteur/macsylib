@@ -103,7 +103,8 @@ class TestMacsydata(MacsyTest):
                             vers=True,
                             readme=True,
                             license=True,
-                            dest=''):
+                            dest='',
+                            complex=False):
         pack_path = os.path.join(self.tmpdir, dest, model)
         os.makedirs(pack_path)
         if definitions:
@@ -117,6 +118,11 @@ class TestMacsydata(MacsyTest):
                 f.write(self.definition_1)
             with open(os.path.join(sub_fam_2, "model_2.xml"), 'w') as f:
                 f.write(self.definition_2)
+            if complex:
+                with open(os.path.join(sub_fam_1, "model_1_2.xml"), 'w') as f:
+                    f.write(self.definition_1)
+                with open(os.path.join(sub_fam_2, "model_2_2.xml"), 'w') as f:
+                    f.write(self.definition_2)
 
         if profiles:
             profile_dir = os.path.join(pack_path, 'profiles')
@@ -606,6 +612,7 @@ To cite MacSyLib:
 
         self.assertEqual(log_msg, f"Model Package '{pack_name}' not found.")
 
+
     def test_definition_bad_subfamily(self):
         pack_name = 'fake_1'
         self.args.model = ['/'.join([pack_name, 'niportnaoik'])]
@@ -623,6 +630,52 @@ To cite MacSyLib:
 
         self.assertEqual(log_msg,
                          f"'niportnaoik' not found in package '{pack_name}'.")
+
+
+    def test_show_package(self):
+        pack_name = 'fake_1'
+        self.args.model = pack_name
+        self.args.models_dir = None
+        fake_pack_path = self.create_fake_package(pack_name, complex=True)
+
+        find_local_package = macsydata._find_installed_package
+        macsydata._find_installed_package = lambda model_pack_name, models_dir, package_name: macsylib.registries.ModelLocation(path=fake_pack_path)
+        try:
+            with self.catch_io(out=True):
+                macsydata.do_show_package(self.args)
+                stdout = sys.stdout.getvalue().strip()
+        finally:
+            macsydata._find_installed_package = find_local_package
+
+        expected_output = """fake_1
+    ├-sub_fam_1
+    │    ├-model_1
+    │    └-model_1_2
+    └-sub_fam_2
+         ├-model_2
+         └-model_2_2
+
+fake_1 (0.0b2) : 4 models"""
+
+        self.assertEqual(expected_output,
+                         stdout)
+
+
+    def test_show_package_bad_name(self):
+        pack_name = 'fake_1'
+        self.args.model = pack_name + '_KO'
+        self.create_fake_package(pack_name)
+        self.args.models_dir = self.models_dir[0]
+
+        with self.catch_log(log_name='macsylib'):
+            # macsylib.registry throw a warning if metadata is not found
+            # silenced it
+            with self.catch_log(log_name='macsydata') as log:
+                with self.assertRaises(ValueError):
+                    macsydata.do_show_package(self.args)
+                log_msg = log.get_value().strip()
+
+        self.assertEqual(log_msg, f"Model Package '{pack_name}_KO' not found.")
 
 
     def test_check(self):
