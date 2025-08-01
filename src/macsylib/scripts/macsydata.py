@@ -788,11 +788,12 @@ def do_init_package(args: argparse.Namespace) -> None:
     try:
         import git  # pylint: disable=import-outside-toplevel
     except ModuleNotFoundError:
-        import warnings # pylint: disable=import-outside-toplevel
-        warnings.warn(f"GitPython is not installed, `{args.tool_name} init` is disabled.\n"
-                      "To turn this feature ON:\n"
-                      "  - install git\n"
-                      f"  - then run `python -m pip install {args.package_name}[model]` in your activated environment.")
+        _log.error(f"""GitPython is not installed, `{args.tool_name} init` is disabled.
+To turn this feature ON:
+  - install git
+  - then run `python -m pip install {args.package_name}[model]` in your activated environment.
+""")
+        sys.tracebacklimit = 0
         sys.exit(1)
 
     def add_metadata(pack_dir: str, maintainer: str, email: str,
