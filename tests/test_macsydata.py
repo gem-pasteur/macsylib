@@ -1883,6 +1883,47 @@ Maybe you can use --user option to install in your HOME.""")
             macsydata.time.localtime = local_time_ori
 
 
+    def test_init_no_git(self):
+        ori_imp = __import__
+
+        def fake_import(name, *args):
+            if name =='git':
+                raise ModuleNotFoundError()
+            return ori_imp(name, *args)
+
+        globals()['__builtins__']['__import__'] = fake_import
+
+        real_exit = sys.exit
+        macsydata.sys.exit = self.fake_exit
+
+        self.args.model_package = 'minimal_pack'
+        self.args.maintainer = 'John Doe'
+        self.args.email = 'john.doe@domain.org'
+        self.args.authors = 'Jim Doe, John Doe'
+        self.args.license = None
+        self.args.holders = None
+        self.args.desc = None
+        self.args.models_dir = self.models_dir[0]
+        self.args.no_clean = False
+        self.args.tool_name = 'msl_data'
+
+        try:
+            with self.catch_log(log_name='macsydata') as log:
+                with self.assertRaises(TypeError):
+                    macsydata.do_init_package(self.args)
+                log_msg = log.get_value().strip()
+        finally:
+            globals()['__builtins__']['__import__'] = ori_imp
+            macsydata.sys.exit = real_exit
+
+        expected_log = """GitPython is not installed, `msl_data init` is disabled.
+To turn this feature ON:
+  - install git
+  - then run `python -m pip install macsylib[model]` in your activated environment."""
+        self.maxDiff = None
+        self.assertEqual(log_msg, expected_log)
+
+
     def test_build_argparser(self):
         tool_name = 'msl_data'
         cmd = f"{tool_name} install toto>1"
