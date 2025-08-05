@@ -40,7 +40,7 @@ from tests import MacsyTest
 class TestProfileFactory(MacsyTest):
 
     def setUp(self):
-        self._tmp_dir = tempfile.TemporaryDirectory(prefix='test_msf_ProfileFactory_')
+        self._tmp_dir = tempfile.TemporaryDirectory(prefix='test_msl_ProfileFactory_')
         args = argparse.Namespace()
         args.sequence_db = self.find_data("base", "test_1.fasta")
         args.db_type = 'gembase'

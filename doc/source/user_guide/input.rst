@@ -263,7 +263,7 @@ General options:
 ----------------
 
 worker
-    Number of workers to be used by MacSylib. In the case the user wants to run MacSyFinder in a multi-thread mode.
+    Number of workers to be used by MacSylib. In the case the user wants to run MacSyFLib in a multi-thread mode.
     (0 mean all threads available will be used (compliant with use of cluster scheduler)). (default: 1)
 
 verbosity

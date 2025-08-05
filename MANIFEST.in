@@ -2,7 +2,7 @@ recursive-exclude data *
 include data/models/README
 
 recursive-include doc/build/html *
-include doc/build/latex/macsyfinder.pdf
+include doc/build/latex/macsylib.pdf
 
 recursive-include utils *
 

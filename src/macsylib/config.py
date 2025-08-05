@@ -37,7 +37,7 @@ from  macsylib.model_conf_parser import ModelConfParser
 from typing import Any, TextIO, Literal, TypeAlias, Iterable
 
 """
-Module to manage both default values and configuration needed by macsyfinder
+Module to manage both default values and configuration needed by macsylib
 """
 
 _log = logging.getLogger(__name__)

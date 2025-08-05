@@ -37,7 +37,7 @@ from tests import MacsyTest
 class TestMetadata(MacsyTest):
 
     def setUp(self) -> None:
-        self._tmp_dir = tempfile.TemporaryDirectory(prefix='test_msf_metadata_')
+        self._tmp_dir = tempfile.TemporaryDirectory(prefix='test_msl_metadata_')
         self.tmpdir = self._tmp_dir.name
         if os.path.exists(self.tmpdir) and os.path.isdir(self.tmpdir):
             shutil.rmtree(self.tmpdir)

@@ -25,7 +25,7 @@
 #########################################################################
 
 """
-Main entrypoint to macsyfinder
+MacSyLib high level functions search systems in ordered and non-ordered replicons
 """
 import os
 import logging

@@ -52,14 +52,14 @@ class TestRepliconDB(MacsyTest):
 
 
     def setUp(self):
-        self._tmp_dir = tempfile.TemporaryDirectory(prefix='test_msf_RepliconDB_')
+        self._tmp_dir = tempfile.TemporaryDirectory(prefix='test_msl_RepliconDB_')
         self.args = argparse.Namespace()
         self.args.db_type = 'gembase'
         self.args.models_dir = self.find_data('models')
         self.args.res_search_dir = self._tmp_dir.name
         self.args.log_level = 30
         self.args.out_dir = os.path.join(self.args.res_search_dir,
-                                         'test_macsyfinder_repliconDB')
+                                         'test_macsylib_repliconDB')
         os.mkdir(self.args.out_dir)
 
         seq_db = self.find_data("base", "test_base.fa")

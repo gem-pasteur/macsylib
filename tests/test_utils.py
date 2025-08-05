@@ -68,7 +68,7 @@ set_2
         # on gitlab it is not allowed to change the permission of a directory
         # located in tests/data
         # So I need to copy it in /tmp
-        tmp_dir= tempfile.TemporaryDirectory(prefix='test_msf_Config_')
+        tmp_dir= tempfile.TemporaryDirectory(prefix='test_msl_Config_')
         model_dir_name = 'fake_model_dir'
         src_model_dir = self.find_data(model_dir_name)
         dst_model_dir = os.path.join(tmp_dir.name, 'fake_model_dir')

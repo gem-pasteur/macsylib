@@ -42,7 +42,7 @@ from tests import MacsyTest
 class TestModel(MacsyTest):
 
     def setUp(self):
-        self._tmp_dir = tempfile.TemporaryDirectory(prefix='test_msf_Model_')
+        self._tmp_dir = tempfile.TemporaryDirectory(prefix='test_msl_Model_')
         self.args = argparse.Namespace()
         self.args.sequence_db = self.find_data("base", "test_1.fasta")
         self.args.db_type = 'gembase'
@@ -50,7 +50,7 @@ class TestModel(MacsyTest):
         self.args.res_search_dir = self._tmp_dir.name
         self.args.log_level = 30
         self.args.out_dir = os.path.join(self.args.res_search_dir,
-                                         'test_macsyfinder_Model')
+                                         'test_macsylib_Model')
         if os.path.exists(self.args.out_dir):
             shutil.rmtree(self.args.out_dir)
         os.mkdir(self.args.out_dir)

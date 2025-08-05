@@ -27,9 +27,9 @@ to help explain your problem.
  - [ ] Windows
  - [ ] Mac
 
-***MacSyFinder Version:***
+***MacSyLib Version:***
 
-  copy/paste here the output of macsyfinder --version
+  copy/paste here the output of `python -c "from macsylib import __version__; print(__version__)"`
 
 **Additional context**
 Add any other context about the problem here.

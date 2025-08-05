@@ -42,7 +42,7 @@ class TestConfig(MacsyTest):
 
     def setUp(self):
         self._current_dir = os.getcwd()
-        self._tmp_dir = tempfile.TemporaryDirectory(prefix='test_msf_Config_')
+        self._tmp_dir = tempfile.TemporaryDirectory(prefix='test_msl_Config_')
         self.tmp_dir = self._tmp_dir.name
         self.defaults = MacsyDefaults()
         self.parsed_args = Namespace()

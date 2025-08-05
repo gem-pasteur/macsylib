@@ -26,8 +26,8 @@
 
 
 """
-This is the entrypoint to the macsydata command
-macsydata allow the user to manage the MacSyFinder models
+This is the entrypoint to the msl_data command
+mmsl_data allow the user to manage the MacSylib models
 """
 
 import sys
@@ -239,7 +239,7 @@ def _find_installed_package(model_pack_name: str,
 
 def do_install(args: argparse.Namespace) -> None:
     """
-    Install new models in macsyfinder local models repository.
+    Install new models in macsylib local models repository.
 
     :param args: the arguments passed on the command line
     :raise RuntimeError: if there is problem is installed package
@@ -442,7 +442,7 @@ def _get_remote_available_versions(model_pack_name: str, org: str) -> list[str]:
 
 def do_uninstall(args: argparse.Namespace) -> None:
     """
-    Remove models from macsyfinder local models repository.
+    Remove models from macsylib local models repository.
 
     :param args: the arguments passed on the command line
     :raise ValueError: if the package is not found locally
@@ -1084,7 +1084,7 @@ https://docs.github.com/en/get-started/writing-on-github/getting-started-with-wr
         if os.listdir(def_dir):
             # def_dir is not empty
             _log.warning("Do not forget to add model_license in each xml definition file \n"
-                         "https://macsyfinder.readthedocs.io/en/latest/modeler_guide/package.html")
+                         "https://macsylib.readthedocs.io/en/latest/modeler_guide/package.html")
         else:
             add_def_skeleton(model_license=license_text)
     else:
@@ -1123,9 +1123,9 @@ The package is located at {pack_dir}
 - Edit metadata.yml and fill how to cite your package and where to find documentation about it.
 - Add hmm profiles in {pack_dir}/profiles directory
 - A skeleton of model definitions has been added in {pack_dir}/definitions.
-  For complete documentation about model grammar read https://macsyfinder.readthedocs.io/en/latest/modeler_guide/modeling.html
+  For complete documentation about model grammar read https://macsylib.readthedocs.io/en/latest/modeler_guide/modeling.html
 - A configuration file has been added (model_conf.xml) with default value tweak this file if needed.
-  (https://macsyfinder.readthedocs.io/en/latest/modeler_guide/package.html#model-configuration)
+  (https://macsylib.readthedocs.io/en/latest/modeler_guide/package.html#model-configuration)
 
 Before to publish your package you can use `macsydata check` to verify it's integrity.
 """
@@ -1174,7 +1174,7 @@ def build_arg_parser(header:str, version:str,
     """
 
     parser = argparse.ArgumentParser(
-        epilog="For more details, visit the MacSyFinder website and see the MacSyFinder documentation.",
+        epilog="For more details, visit the MacSyLib website and see the MacSyLib documentation.",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         description=header)
 
@@ -1240,7 +1240,7 @@ def build_arg_parser(header:str, version:str,
     install_dest.add_argument('-u', '--user',
                               action='store_true',
                               default=False,
-                              help='Install to the MacSYFinder user install directory for your platform. '
+                              help='Install for the user install directory for your platform. '
                                    f'Typically ~/.{package_name}/data')
     install_dest.add_argument('-t', '--target', '--models-dir',
                               dest='target',

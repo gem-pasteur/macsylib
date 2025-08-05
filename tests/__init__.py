@@ -260,11 +260,11 @@ class MacsyTest(unittest.TestCase):
 
     @staticmethod
     def get_tmp_dir_name():
-        return os.path.join(tempfile.gettempdir(), "macsyfinder_test_run")
+        return os.path.join(tempfile.gettempdir(), "macsylib_test_run")
 
     @staticmethod
     def get_uniq_tmp_dir_name():
-        return os.path.join(tempfile.gettempdir(), "macsyfinder-{}".format(uuid.uuid4()))
+        return os.path.join(tempfile.gettempdir(), "macsylib-{}".format(uuid.uuid4()))
 
     @staticmethod
     def rmtree(path):

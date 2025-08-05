@@ -52,7 +52,7 @@ from tests import MacsyTest
 class TestSearchSystems(MacsyTest):
 
     def setUp(self):
-        self._tmp_dir = tempfile.TemporaryDirectory(prefix='test_msf_macsylib_')
+        self._tmp_dir = tempfile.TemporaryDirectory(prefix='test_msl_macsylib_')
         self.tmp_dir = self._tmp_dir.name
         self._reset_id()
 
@@ -153,7 +153,7 @@ class TestSearchSystems(MacsyTest):
 
     def test_hits_but_no_systems(self):
         # test hits but No Systems
-        logger = logging.getLogger('macsylib.macsyfinder')
+        logger = logging.getLogger('macsylib')
         macsylib.logger_set_level(level='ERROR')
         defaults = MacsyDefaults()
 
@@ -240,7 +240,7 @@ class TestSearchSystems(MacsyTest):
 
     def test_no_hits(self):
         # test No hits
-        logger = logging.getLogger('macsylib.macsyfinder')
+        logger = logging.getLogger('macsylib')
         macsylib.logger_set_level(level='ERROR')
         defaults = MacsyDefaults()
 
@@ -270,7 +270,7 @@ class TestSearchSystems(MacsyTest):
         # test multisystems
         # multisytem hit are not in System (to small cluster)
         # no system
-        logger = logging.getLogger('macsylib.macsyfinder')
+        logger = logging.getLogger('macsylib')
         macsylib.logger_set_level(level='ERROR')
         defaults = MacsyDefaults()
 
@@ -300,7 +300,7 @@ class TestSearchSystems(MacsyTest):
     def test_multisystems_in_sys(self):
         # multisystem is in System, so it can play role for other cluster
         # 2 systems found
-        logger = logging.getLogger('macsylib.macsyfinder')
+        logger = logging.getLogger('macsylib')
         macsylib.logger_set_level(level='ERROR')
         defaults = MacsyDefaults()
 

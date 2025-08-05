@@ -38,7 +38,7 @@ class TestModelBank(MacsyTest):
 
 
     def setUp(self):
-        self._tmp_dir = tempfile.TemporaryDirectory(prefix='test_msf_ModelBank_')
+        self._tmp_dir = tempfile.TemporaryDirectory(prefix='test_msl_ModelBank_')
         args = argparse.Namespace()
         args.sequence_db = self.find_data("base", "test_1.fasta")
         args.db_type = 'gembase'

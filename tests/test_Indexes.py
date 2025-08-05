@@ -47,7 +47,7 @@ class TestFastaIter(MacsyTest):
             ('seq1', 'comment 1', 'ATGCATGC' ),
             ('seq2', 'comment 2', 'GGGGCCCCTT')
         ]
-        self._tmp_dir = tempfile.TemporaryDirectory(prefix='test_msf_FastaIter_')
+        self._tmp_dir = tempfile.TemporaryDirectory(prefix='test_msl_FastaIter_')
         self.tmpdir = self._tmp_dir.name
 
 
@@ -95,7 +95,7 @@ class TestIndex(MacsyTest):
         args = argparse.Namespace()
         args.db_type = 'gembase'
         args.models_dir = self.find_data('models')
-        self._tmp_dir = tempfile.TemporaryDirectory(prefix='test_msf_Index_')
+        self._tmp_dir = tempfile.TemporaryDirectory(prefix='test_msl_Index_')
         args.out_dir = self._tmp_dir.name
         seq_db = self.find_data("base", "test_1.fasta")
         shutil.copy(seq_db, args.out_dir)
@@ -127,7 +127,7 @@ class TestIndex(MacsyTest):
         args = argparse.Namespace()
         args.db_type = 'gembase'
         args.models_dir = self.find_data('models')
-        args.out_dir = os.path.join(self._tmp_dir.name, 'test_msf_indexes')
+        args.out_dir = os.path.join(self._tmp_dir.name, 'test_msl_indexes')
         os.mkdir(args.out_dir)
         seq_db_ori = self.find_data("base", "test_1.fasta")
         seq_db_gz = os.path.join(args.out_dir, os.path.basename(seq_db_ori)) + ".gz"

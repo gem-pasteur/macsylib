@@ -28,7 +28,7 @@ MacSyLib is developed and released under [![Open Source License: GPL v3](https:/
 
 > [!IMPORTANT]
 > MacSyLib requires hmmer >= 3.1 (http://hmmer.org/).
-> You need to install hmmer by yourself (except if you install macsyfinder via *conda/mamba*).
+> You need to install hmmer by yourself (except if you install macsylib via *conda/mamba*).
 > If you are a modeler, you will need also `git`
 > The other dependencies are managed by the python package manager *pip*.
 
@@ -78,8 +78,8 @@ pre-commit install
 ## Models installation
 
 Models are no longer shipped along macsyfinder nor macsylib packages.
-To install Models you can use `macsydata` (shipped with MacSyLib).
-*macsydata* allow to manage models stored in [macsy-models](https://github.com/macsy-models).
+To install Models you can use `msl_data` (shipped with MacSyLib).
+*msl_data* (formely *macsydata*) allow to manage models stored in [macsy-models](https://github.com/macsy-models).
 Below some most useful commands.
 
   * available: List Models available on macsy-models.
@@ -90,13 +90,13 @@ Below some most useful commands.
   * ...
 
 For complete documentation see
-[macsydata section on readthedoc](https://macsyfinder.readthedocs.io/en/latest/user_guide/installation.html#models-installation-with-macsydata)
+[macsydata section on readthedoc](https://macsylib.readthedocs.io/en/latest/user_guide/installation.html#models-installation-with-macsydata)
 
 For models not stored in macsy-models the commands *available*, *search*, *installation from remote* or *upgrade from remote*
 are **NOT** available.
 
 For models **Not** stored in *macsy-models*, you have to manage them semi-manually.
-Download the archive (do not unarchive it), then use *macsydata* for the installation.
+Download the archive (do not unarchive it), then use *msl_data* for the installation.
 
 ## Use MacSyLib
 

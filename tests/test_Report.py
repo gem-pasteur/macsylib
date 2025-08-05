@@ -51,7 +51,7 @@ class TestReport(MacsyTest):
 
 
     def setUp(self):
-        self._tmp_dir = tempfile.TemporaryDirectory(prefix='test_msf_Report_')
+        self._tmp_dir = tempfile.TemporaryDirectory(prefix='test_msl_Report_')
         os.chdir(self._tmp_dir.name)
         args = argparse.Namespace()
         args.db_type = 'gembase'
@@ -59,7 +59,7 @@ class TestReport(MacsyTest):
         args.res_search_dir = self._tmp_dir.name
         args.log_level = 30
         args.out_dir = os.path.join(args.res_search_dir,
-                                    'test_macsyfinder_Report')
+                                    'test_macsylib_Report')
         os.mkdir(args.out_dir)
 
         self.seq_db = self.find_data("base", "test_base.fa")

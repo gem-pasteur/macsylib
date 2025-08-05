@@ -87,7 +87,7 @@ class TestLocalModelIndex(MacsyTest):
 class TestRemoteModelIndex(MacsyTest):
 
     def setUp(self) -> None:
-        self._tmp_dir = tempfile.TemporaryDirectory(prefix='test_msf_package_')
+        self._tmp_dir = tempfile.TemporaryDirectory(prefix='test_msl_package_')
         self.tmpdir = self._tmp_dir.name
 
 
@@ -419,7 +419,7 @@ Please wait before to try again.""")
 class TestModelPackage(MacsyTest):
 
     def setUp(self) -> None:
-        self._tmp_dir = tempfile.TemporaryDirectory(prefix='test_msf_package_')
+        self._tmp_dir = tempfile.TemporaryDirectory(prefix='test_msl_package_')
         self.tmpdir = self._tmp_dir.name
 
         macsylib.init_logger()

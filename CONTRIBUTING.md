@@ -35,7 +35,7 @@ Fill out [the required template](.github/ISSUE_TEMPLATE.md), the information it 
 
 #### Before Submitting A Bug Report
 
-* **Perform a [cursory search](https://github.com/gem-pasteur/macsyfinder/issues?q=is%3Aopen+is%3Aissue+label%3Abug)**
+* **Perform a [cursory search](https://github.com/gem-pasteur/macsylib/issues?q=is%3Aopen+is%3Aissue+label%3Abug)**
 to see if the problem has already been reported.
 If it has **and the issue is still open**, add a comment to the existing issue instead of opening a new one.
 
@@ -55,7 +55,7 @@ Explain the problem and include additional details to help maintainers reproduce
   If you're providing snippets in the issue, use [Markdown code blocks](https://help.github.com/articles/markdown-basics/#multiple-lines).
 * **Describe the behavior you observed after following the steps** and point out what exactly is the problem with that behavior.
 * **Explain which behavior you expected to see instead and why.**
-* **If you're reporting that MacSyFinder crashed**,
+* **If you're reporting that MacSyLib crashed**,
   include a crash report with a stack trace from the operating system.
   Include the crash report in the issue in a [code block](https://help.github.com/articles/markdown-basics/#multiple-lines),
   a [file attachment](https://help.github.com/articles/file-attachments-on-issues-and-pull-requests/),
@@ -65,16 +65,16 @@ Explain the problem and include additional details to help maintainers reproduce
 
 ##### Provide more context by answering these questions:
 
-* **Did the problem start happening recently** (e.g. after updating to a new version of macsyfinder) or was this always a problem?
-* If the problem started happening recently, **can you reproduce the problem in an older version of macsyfinder?**
-  What's the most recent version in which the problem doesn't happen? You can download older versions of macsyfinder from
-  [the releases page](https://github.com/gem-pasteur/macsyfinder/releases).
+* **Did the problem start happening recently** (e.g. after updating to a new version of macsylib) or was this always a problem?
+* If the problem started happening recently, **can you reproduce the problem in an older version of macsylib?**
+  What's the most recent version in which the problem doesn't happen? You can download older versions of macsylib from
+  [the releases page](https://github.com/gem-pasteur/macsylib/releases).
 * **Can you reliably reproduce the issue?** If not, provide details about how often the problem happens and under which conditions it normally happens.
 * If the problem is related to working with files (e.g. opening and editing files),
 
 ### Suggesting Enhancements
 
-This section guides you through submitting an enhancement suggestion for macsyfinder,
+This section guides you through submitting an enhancement suggestion for macsylib,
 including completely new features and minor improvements to existing functionality.
 Following these guidelines helps maintainers and the community understand your suggestion :pencil:
 and find related suggestions :mag_right:.
@@ -86,8 +86,8 @@ Fill in [the template](.github/ISSUE_TEMPLATE.md), including the steps that you 
 
 #### Before Submitting An Enhancement Suggestion
 
-* **Check if you're using [the latest version of macsyfinder](https://github.com/gem-pasteur/macsyfinder/releases)**.
-* **Perform a [cursory search](https://github.com/gem-pasteur/macsyfinder/issues?q=is%3Aopen+is%3Aissue+label%3Aenhancement)**
+* **Check if you're using [the latest version of macsylib](https://github.com/gem-pasteur/macsylib/releases)**.
+* **Perform a [cursory search](https://github.com/gem-pasteur/macsylib/issues?q=is%3Aopen+is%3Aissue+label%3Aenhancement)**
   to see if the enhancement has already been suggested.
   If it has, add a comment to the existing issue instead of opening a new one.
 
@@ -100,13 +100,13 @@ Enhancement suggestions are tracked as [GitHub issues](https://guides.github.com
 * **Provide specific examples to demonstrate the steps**.
   Include copy/pasteable snippets which you use in those examples, as [Markdown code blocks](https://help.github.com/articles/markdown-basics/#multiple-lines).
 * **Describe the current behavior** and **explain which behavior you expected to see instead** and why.
-* **Explain why this enhancement would be useful** to most macsyfinder users.
-* **Specify which version of macsylib you're using.** You can get the exact version by running `macsyfinder --version` in your terminal.
+* **Explain why this enhancement would be useful** to most macsylib users.
+* **Specify which version of macsylib you're using.** You can get the exact version by running `python -c "from macsylib import __version__; print(__version__)"` in your terminal.
 * **Specify the name and version of the OS you're using.**
 
 ### Your First Code Contribution
 
-Unsure where to begin contributing to macsyfinder? You can start by looking through these `beginner` and `help-wanted` issues:
+Unsure where to begin contributing to macsylib? You can start by looking through these `beginner` and `help-wanted` issues:
 
 * [Beginner issues][beginner] - issues which should only require a few lines of code, and a test or two.
 * [Help wanted issues][help-wanted] - issues which should be a bit more involved than `beginner` issues.
@@ -130,7 +130,7 @@ Unsure where to begin contributing to macsyfinder? You can start by looking thro
 5. Is the code human understandable? This can be accomplished via a clear code
    style as well as documentation and/or comments.
 6. The pull request will be reviewed by others, and the final merge must be
-   done by the MacSyFinder project lead.
+   done by the MacSyLib project lead.
 7. Documentation must be provided if necessary ([next section](#documentation-style-guide))
 8. Fill in [the required template](.github/PULL_REQUEST_TEMPLATE.md)
 9. Do not include issue numbers in the PR title
@@ -154,7 +154,7 @@ Unsure where to begin contributing to macsyfinder? You can start by looking thro
 
 ### Python Style guide
 
-*MacSyFinder* (from version 2.1.4) is written in Python3.10 or above
+*MacSyLib* (from version 1.0) is written in Python3.10 or above
 We try to follow the [zen of python](https://www.python.org/dev/peps/pep-0020/) principles,
 and we adopted the [pep8](https://www.python.org/dev/peps/pep-0008/) coding style.
 All the code is typed.
@@ -178,7 +178,7 @@ def foo(param_1: str, param_2: int) -> list[str]:
     ...
 ```
 
-MacsyFinder project adopt ruff as linter, all the code must pass the `ruff check` step.
+MacSyLib project adopt ruff as linter, all the code must pass the `ruff check` step.
 To avoid to push incorrect code *MSF* *use pre-commit*. So perform `pre-commit install` once you set up your environment
 (see developper_guide/installation for more details)
 ### Documentation Style guide

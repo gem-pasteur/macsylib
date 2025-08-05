@@ -87,7 +87,7 @@ class ModelLocationTest(MacsyTest):
         macsylib.init_logger()
         logger = colorlog.getLogger('macsylib.registries')
         registries._log = logger
-        self._tmp_dir = tempfile.TemporaryDirectory(prefix='test_msf_ModelLocation_')
+        self._tmp_dir = tempfile.TemporaryDirectory(prefix='test_msl_ModelLocation_')
         self.tmp_dir = self._tmp_dir.name
         self.root_models_dir = os.path.join(self.tmp_dir, 'models')
         os.mkdir(self.root_models_dir)
@@ -471,11 +471,11 @@ class ModelRegistryTest(MacsyTest):
 
 
     def setUp(self):
-        self._tmp_dir = tempfile.TemporaryDirectory(prefix='test_msf_Modelregistry_')
+        self._tmp_dir = tempfile.TemporaryDirectory(prefix='test_msl_Modelregistry_')
         self.tmp_dir = self._tmp_dir.name
         os.chdir(self.tmp_dir)
         registries._prefix_data = self.tmp_dir
-        self.root_models_dir = os.path.join(self.tmp_dir, 'macsyfinder', 'models')
+        self.root_models_dir = os.path.join(self.tmp_dir, 'macsylib', 'models')
         self.cfg = Config(MacsyDefaults(models_dir=self.root_models_dir),
                           argparse.Namespace())
 

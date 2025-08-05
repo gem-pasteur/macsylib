@@ -47,7 +47,7 @@ class Test(MacsyTest):
         args.sequence_db = self.find_data("base", "test_1.fasta")
         args.db_type = 'gembase'
         args.models_dir = self.find_data('models')
-        self._tmp_dir = tempfile.TemporaryDirectory(prefix='test_msf_GeneBank_')
+        self._tmp_dir = tempfile.TemporaryDirectory(prefix='test_msl_GeneBank_')
         args.res_search_dir = self._tmp_dir.name
         args.log_level = 30
         self.cfg = Config(MacsyDefaults(), args)
