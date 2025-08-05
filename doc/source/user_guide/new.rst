@@ -29,7 +29,7 @@ provide 2 scripts
 features
 --------
 
-* add new subcommand to msl_data ``msl_data show`` to show the structure of a package model :ref:`msl_data`
+* add new subcommand to msl_data ``msl_data show`` to show the structure of an installed package model :ref:`msl_data`
 
 
 For older changelog see `https://macsyfinder.readthedocs.io/en/latest/ <macsyfinder documentation>`_.
