@@ -133,7 +133,7 @@
         "gene functional annotation"
     ],
     "license": "https://spdx.org/licenses/GPL-3.0+",
-    "name": "macsylib",
+    "name": "MacSyLib",
     "operatingSystem": [
         "Linux",
         "BSD",
