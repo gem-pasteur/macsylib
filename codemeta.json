@@ -119,8 +119,8 @@
         }
     ],
     "dateCreated": "2025-07-01",
-    "dateModified": "2025-08-01",
-    "datePublished": "2025-08-01",
+    "dateModified": "2025-08-06",
+    "datePublished": "2025-08-06",
     "description": "MacSyLib is a python library to model and detect macromolecular systems, genetic pathways… in prokaryotes protein datasets.",
     "downloadUrl": "https://pypi.org/project/MacSyLib/",
     "funder": {
