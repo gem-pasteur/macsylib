@@ -7,9 +7,20 @@ MacSyLib is a python package library that allow to model and detect macromolecul
 by similarity search in prokaryotes datasets.
 
 [![Build Status](https://github.com/gem-pasteur/macsylib/actions/workflows/testing.yml/badge.svg?branch=main)](https://github.com/gem-pasteur/macsylib/actions/workflows/testing.yml)
-[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/macsylib)](https://pypi.org/project/macsylib/)
-[![Open Source License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://opensource.org/licenses/GPL-3.0)
+
 [![Doc](https://readthedocs.org/projects/macsylib/badge/?version=latest)](http://macsylib.readthedocs.org/en/latest/#)
+
+[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/macsylib)](https://pypi.org/project/macsylib/)
+
+[![Open Source License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://opensource.org/licenses/GPL-3.0)
+
+[![PyPI](https://img.shields.io/pypi/v/macsylib)](https://pypi.org/project/macsylib/)
+[![Conda](https://img.shields.io/conda/vn/bioconda/macsylib?style=plastic)](https://github.com/bioconda/bioconda-recipes/tree/master/recipes/macsylib)
+
+[![SWH](https://archive.softwareheritage.org/badge/origin/https://github.com/gem-pasteur/macsylib/)](https://archive.softwareheritage.org/browse/origin/?origin_url=https://github.com/gem-pasteur/macsylib)
+[![SWH](https://archive.softwareheritage.org/badge/swh:1:dir:cbb7c2e40ba02825297590edf6734ee64800d3e1/)](https://archive.softwareheritage.org/swh:1:dir:cbb7c2e40ba02825297590edf6734ee64800d3e1;origin=https://github.com/gem-pasteur/macsylib;visit=swh:1:snp:c1e51a6ffb6ac45cae6aecde26217fa05003f225;anchor=swh:1:rev:5da144b39117f614543edfc5b06aba099d97f586)
+
+[![OpenSSF Best Practices](https://www.bestpractices.dev/projects/10994/badge)](https://www.bestpractices.dev/projects/10994)
 [![FAIR checklist badge](https://fairsoftwarechecklist.net/badge.svg)](https://fairsoftwarechecklist.net/v0.2?f=31&a=32113&i=32321&r=133)
 
 ## Citations
