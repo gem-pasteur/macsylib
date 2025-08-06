@@ -3,7 +3,7 @@
 
 # MacSyLib
 
-MacSyLib is a package library that allow to model and detect macromolecular systems, genetic pathways…
+MacSyLib is a python package library that allow to model and detect macromolecular systems, genetic pathways…
 by similarity search in prokaryotes datasets.
 
 [![Build Status](https://github.com/gem-pasteur/macsylib/actions/workflows/testing.yml/badge.svg?branch=main)](https://github.com/gem-pasteur/macsylib/actions/workflows/testing.yml)
