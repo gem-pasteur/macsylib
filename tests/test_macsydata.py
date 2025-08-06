@@ -1855,6 +1855,7 @@ Maybe you can use --user option to install in your HOME.""")
             macsydata.time.localtime = local_time_ori
 
 
+    @unittest.skipIf(git is None, "GitPython is not installed")
     def test_init_existing_file(self):
         self.args.model_package = 'init_pack'
         self.args.maintainer = 'John Doe'
