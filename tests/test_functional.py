@@ -41,12 +41,6 @@ class Test_msl_data(MacsyTest):
         # on some execution some lines ar wrapped
         # on some other no
         # so I test only the beginning of the help message
-        print()
-        print("##" * 70)
-        print(p.stdout)
-        print("##" * 70)
-        print(expected_output)
-        print("##" * 70)
         self.assertTrue(p.stdout.startswith(expected_output))
 
 
