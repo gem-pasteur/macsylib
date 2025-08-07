@@ -662,7 +662,7 @@ def do_show_package(args: argparse.Namespace) -> None:
 
         def explore_def(def_loc: DefinitionLocation, indent:int = 0, prev_indent:int = 0, char:str = '', pipe:bool = True) -> None:
             """
-            explore recursively the tree structure of DefintionLocation with subdefinition. and compute what to dispaly for each line
+            explore recursively the tree structure of DefintionLocation with subdefinition. and compute what to display for each line
 
             :param def_loc: The definition location to explore
             :param indent: the indentation of the label
@@ -1112,7 +1112,7 @@ add files:
     pre_push_path = impresources.files('macsylib') / 'data' / 'pre-push'
     dest = os.path.join(repo.git_dir, 'hooks', 'pre-push')
     if os.path.exists(dest):
-        _log.warning(f"A git hook '{pre_push_path}' already exists cannot install macsydata prepush hook.")
+        _log.warning(f"A git hook '{pre_push_path}' already exists cannot install msl_data prepush hook.")
         _log.warning("Do it manually, check documentation: ")
     else:
         shutil.copy(pre_push_path, dest)
@@ -1127,7 +1127,7 @@ The package is located at {pack_dir}
 - A configuration file has been added (model_conf.xml) with default value tweak this file if needed.
   (https://macsylib.readthedocs.io/en/latest/modeler_guide/package.html#model-configuration)
 
-Before to publish your package you can use `macsydata check` to verify it's integrity.
+Before to publish your package you can use `msl_data check` to verify it's integrity.
 """
               )
     _log.warning("To share your models with the MacSyModels community.")
@@ -1166,7 +1166,7 @@ def build_arg_parser(header:str, version:str,
     """
     Build argument parser.
 
-    :param header: the header of console scriot
+    :param header: the header of console script
     :param args: The arguments provided on the command line
     :param package_name: the name of the higher package that embed the macsylib (eg 'macsyfinder')
     :param tool_name: the name of this tool as it appear in pyproject.toml
@@ -1233,7 +1233,7 @@ def build_arg_parser(header:str, version:str,
                                    help='Reinstall Model package even if it is already up-to-date.')
     install_subparser.add_argument('--org',
                                    default="macsy-models",
-                                   help="The name of Model orgagnization"
+                                   help="The name of Model organization"
                                         "(default 'macsy-models'))"
                                    )
     install_dest = install_subparser.add_mutually_exclusive_group()
