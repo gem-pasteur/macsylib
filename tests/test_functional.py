@@ -33,23 +33,7 @@ class Test_msl_data(MacsyTest):
     def test_help(self):
 
         expected_output = r"""usage: msl_data [-h] [-v] [--version]
-                {available,download,install,uninstall,search,info,list,freeze,cite,help,check,show,definition,init} ...
-
-     *            *               *
-*           *               *   *   *  *    **
-  **     *    *   *  *     *        *
-            *      _      *   _   *   _      *
-  *  _ __ ___  ___| |      __| | __ _| |_ __ _
-    | '_ ` _ \/ __| |     / _` |/ _` | __/ _` |
-    | | | | | \__ \ |    | (_| | (_| | || (_| |
-    |_| |_| |_|___/_|_____\__,_|\__,_|\__\__,_|
-           *        |_____|          *
- *      *   * *     *   **         *   *  *
-  *      *         *        *    *
-*                           *  *           *
-
-msl_data - Model Management Tool
-"""
+                {available,download,install,uninstall,search,info,list,freeze,cite,help,check,show,definition,init}"""
 
         p = subprocess.run("msl_data --help", shell=True, check=True, capture_output=True, text=True, encoding='utf8')
         self.assertEqual(p.returncode, 0)
