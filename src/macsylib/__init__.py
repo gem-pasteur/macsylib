@@ -35,7 +35,7 @@ import subprocess
 from typing import Literal
 
 
-__version__ = '1.0'
+__version__ = '1.0.1'
 
 
 __citation__ = """Néron, Bertrand; Denise, Rémi; Coluzzi, Charles; Touchon, Marie; Rocha, Eduardo P.C.; Abby, Sophie S.
