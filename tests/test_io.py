@@ -44,7 +44,7 @@ from macsylib.cluster import Cluster
 from macsylib.system import System, HitSystemTracker, RejectedCandidate, AbstractUnordered, LikelySystem, UnlikelySystem
 from macsylib.solution import Solution
 
-from src.macsylib.io import loner_warning
+from macsylib.io import loner_warning
 from tests import MacsyTest
 
 
