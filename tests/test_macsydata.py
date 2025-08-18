@@ -156,6 +156,53 @@ class TestMacsydata(MacsyTest):
         shutil.rmtree(unarch_pack_path)
         return arch_path
 
+    def test_find_all_installed_packages_w_models_dir(self):
+        fake_pack = 'fake_1'
+        self.create_fake_package(fake_pack, dest=self.models_dir[0])
+        reg = macsydata._find_all_installed_packages(models_dir=self.models_dir[0])
+        self.assertEqual([m.name for m in reg.models()], [fake_pack])
+
+
+    def test_find_all_installed_packages_wo_models_dir(self):
+        fake_pack = 'fake_1'
+        venv = os.environ.get('VIRTUAL_ENV')
+
+        os.environ['VIRTUAL_ENV'] = self.tmpdir + 'VENV'
+        try:
+            pack_name = 'macsylib'
+            common_path = os.path.join('share', pack_name, 'models')
+            models_dir = os.path.join(os.environ.get('VIRTUAL_ENV'), common_path)
+            os.makedirs(models_dir)
+            self.create_fake_package(fake_pack, dest=models_dir)
+
+            reg = macsydata._find_all_installed_packages()
+            self.assertEqual([m.name for m in reg.models()], [fake_pack])
+        finally:
+            if venv is None:
+                del os.environ['VIRTUAL_ENV']
+            else:
+                os.environ['VIRTUAL_ENV'] = venv
+
+    def test_find_all_installed_packages_wo_models_dir_w_other_package(self):
+        fake_pack = 'fake_2'
+        venv = os.environ.get('VIRTUAL_ENV')
+
+        os.environ['VIRTUAL_ENV'] = self.tmpdir + 'VENV'
+        try:
+            pack_name = 'macsyfinder'
+            common_path = os.path.join('share', pack_name, 'models')
+            models_dir = os.path.join(os.environ.get('VIRTUAL_ENV'), common_path)
+            os.makedirs(models_dir)
+            self.create_fake_package(fake_pack, dest=models_dir)
+
+            reg = macsydata._find_all_installed_packages(package_name='macsyfinder')
+            self.assertEqual([m.name for m in reg.models()], [fake_pack])
+        finally:
+            if venv is None:
+                del os.environ['VIRTUAL_ENV']
+            else:
+                os.environ['VIRTUAL_ENV'] = venv
+
 
     def test_available(self):
         list_pack = macsydata.RemoteModelIndex.list_packages
