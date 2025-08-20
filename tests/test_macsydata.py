@@ -1976,8 +1976,14 @@ To turn this feature ON:
         tool_name = 'msl_data'
         cmd = f"{tool_name} install toto>1"
         version = f"{tool_name} version message"
-        parser = macsydata.build_arg_parser(macsydata._cmde_line_header(), version)
-        args = parser.parse_args(cmd.split()[1:])
+        msl_parser = macsydata.build_arg_parser(macsydata._cmde_line_header(), version)
+        msf_parser = macsydata.build_arg_parser(macsydata._cmde_line_header(), version,
+                                                package_name='macsyfinder', tool_name='msf_data')
+
+        ###########
+        # install #
+        ###########
+        args = msl_parser.parse_args(cmd.split()[1:])
         self.assertEqual(args.func.__name__, 'do_install')
         self.assertEqual(args.model_package, 'toto>1')
         self.assertEqual(args.org, 'macsy-models')
@@ -1985,22 +1991,28 @@ To turn this feature ON:
         self.assertFalse(args.upgrade)
         self.assertFalse(args.user)
 
-        cmd = f"{tool_name} install --org foo --user --force toto>1"
-        args = parser.parse_args(cmd.split()[1:])
+        cmd = f"{tool_name} install --org foo --user --force toto_1"
+        args = msl_parser.parse_args(cmd.split()[1:])
         self.assertEqual(args.func.__name__, 'do_install')
-        self.assertEqual(args.model_package, 'toto>1')
+        self.assertEqual(args.model_package, 'toto_1')
         self.assertEqual(args.org, 'foo')
         self.assertTrue(args.force)
         self.assertFalse(args.upgrade)
         self.assertTrue(args.user)
 
+        #############
+        # uninstall #
+        #############
         cmd = f"{tool_name} uninstall toto"
-        args = parser.parse_args(cmd.split()[1:])
+        args = msl_parser.parse_args(cmd.split()[1:])
         self.assertEqual(args.func.__name__, 'do_uninstall')
         self.assertEqual(args.model_package, 'toto')
 
+        ##########
+        # search #
+        ##########
         cmd = f"{tool_name} search TXSS"
-        args = parser.parse_args(cmd.split()[1:])
+        args = msl_parser.parse_args(cmd.split()[1:])
         self.assertEqual(args.func.__name__, 'do_search')
         self.assertEqual(args.pattern, 'TXSS')
         self.assertEqual(args.org, 'macsy-models')
@@ -2008,33 +2020,126 @@ To turn this feature ON:
         self.assertFalse(args.match_case)
 
         cmd = f"{tool_name} search -S --match-case TXSS"
-        args = parser.parse_args(cmd.split()[1:])
+        args = msl_parser.parse_args(cmd.split()[1:])
         self.assertEqual(args.func.__name__, 'do_search')
         self.assertEqual(args.pattern, 'TXSS')
         self.assertEqual(args.org, 'macsy-models')
         self.assertTrue(args.careful)
         self.assertTrue(args.match_case)
 
+        ############
+        # download #
+        ############
         cmd = f"{tool_name} download foo"
-        args = parser.parse_args(cmd.split()[1:])
+        args = msl_parser.parse_args(cmd.split()[1:])
         self.assertEqual(args.func.__name__, 'do_download')
         self.assertEqual(args.model_package, 'foo')
         self.assertEqual(args.dest, os.getcwd())
         self.assertEqual(args.org, 'macsy-models')
 
+        #############
+        # available #
+        #############
         cmd = f"{tool_name} available"
-        args = parser.parse_args(cmd.split()[1:])
+        args = msl_parser.parse_args(cmd.split()[1:])
         self.assertEqual(args.func.__name__, 'do_available')
 
+        ########
+        # init #
+        ########
         if git is not None:
             cmd = f"{tool_name} init --model-package foo --authors 'john Doe' --maintainer 'Jim Doe' " \
                   "--email 'jim.doe@my_domain.com'"
-            args = parser.parse_args(shlex.split(cmd)[1:])
+            args = msl_parser.parse_args(shlex.split(cmd)[1:])
             self.assertEqual(args.func.__name__, 'do_init_package')
             self.assertEqual(args.model_package, 'foo')
             self.assertEqual(args.authors, 'john Doe')
             self.assertEqual(args.maintainer, 'Jim Doe')
             self.assertEqual(args.email, 'jim.doe@my_domain.com')
+
+        ########
+        # cite #
+        ########
+        cmd = f"{tool_name} cite PACKAGE_NAME"
+        args = msl_parser.parse_args(cmd.split()[1:])
+        self.assertEqual(args.func.__name__, 'do_cite')
+        self.assertEqual(args.package_name, 'macsylib')
+        self.assertEqual(args.tool_name, 'msl_data')
+        self.assertEqual(args.model_package, 'PACKAGE_NAME')
+        args = msf_parser.parse_args(cmd.split()[1:])
+        self.assertEqual(args.package_name, 'macsyfinder')
+        self.assertEqual(args.tool_name, 'msf_data')
+
+        ########
+        # info #
+        ########
+        cmd = f"{tool_name} info PACKAGE_NAME"
+        args = msl_parser.parse_args(cmd.split()[1:])
+        self.assertEqual(args.func.__name__, 'do_info')
+        self.assertEqual(args.package_name, 'macsylib')
+        self.assertEqual(args.tool_name, 'msl_data')
+        self.assertEqual(args.model_package, 'PACKAGE_NAME')
+
+        ########
+        # list #
+        ########
+        cmd = f"{tool_name} list"
+        args = msl_parser.parse_args(cmd.split()[1:])
+        self.assertEqual(args.func.__name__, 'do_list')
+        self.assertEqual(args.package_name, 'macsylib')
+        self.assertEqual(args.tool_name, 'msl_data')
+        self.assertFalse(args.outdated)
+        self.assertFalse(args.long)
+
+        cmd = f"{tool_name} list --outdated --long --models-dir MODEL_DIR"
+        args = msl_parser.parse_args(cmd.split()[1:])
+        self.assertTrue(args.outdated)
+        self.assertTrue(args.long)
+        self.assertEqual(args.models_dir, 'MODEL_DIR')
+
+        cmd = f"{tool_name} list -v"
+        args = msl_parser.parse_args(cmd.split()[1:])
+        self.assertFalse(args.outdated)
+        self.assertTrue(args.long)
+
+        ##########
+        # freeze #
+        ##########
+        cmd = f"{tool_name} freeze"
+        args = msl_parser.parse_args(cmd.split()[1:])
+        self.assertEqual(args.func.__name__, 'do_freeze')
+        self.assertIsNone(args.models_dir)
+
+        cmd = f"{tool_name} freeze --models-dir MODEL_DIR"
+        args = msl_parser.parse_args(cmd.split()[1:])
+        self.assertEqual(args.models_dir, 'MODEL_DIR')
+
+        #########
+        # check #
+        #########
+        cmd = f"{tool_name} check"
+        args = msl_parser.parse_args(cmd.split()[1:])
+        self.assertEqual(args.func.__name__, 'do_check')
+        self.assertEqual(args.path, os.getcwd())
+
+        cmd = f"{tool_name} check /tmp"
+        args = msl_parser.parse_args(cmd.split()[1:])
+        self.assertEqual(args.path, '/tmp')
+
+        ##############
+        # definition #
+        ##############
+        cmd = f"{tool_name} definition MODEL_1 FAM_1/MODEL_2"
+        args = msl_parser.parse_args(cmd.split()[1:])
+        self.assertEqual(args.func.__name__, 'do_show_definition')
+        self.assertEqual(args.model, ['MODEL_1', 'FAM_1/MODEL_2'])
+        self.assertIsNone(args.models_dir)
+
+        cmd = f"{tool_name} definition --models-dir MODEL_DIR MODEL_1 FAM_1/MODEL_2"
+        args = msl_parser.parse_args(cmd.split()[1:])
+        self.assertEqual(args.model, ['MODEL_1', 'FAM_1/MODEL_2'])
+        self.assertEqual(args.models_dir, 'MODEL_DIR')
+
 
     def test_cmd_name(self):
         version = "msl version message"
