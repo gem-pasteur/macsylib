@@ -1354,7 +1354,7 @@ def build_arg_parser(header:str, version:str,
     cite_subparser.add_argument('--models-dir',
                                 help='the path of the alternative root directory containing package instead used '
                                      'canonical locations')
-    cite_subparser.add_argument('package',
+    cite_subparser.add_argument('model_package',
                                 help='ModelPackage name.')
     ########
     # help #
