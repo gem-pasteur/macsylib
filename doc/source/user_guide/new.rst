@@ -14,10 +14,16 @@
 What's new in MacSyLib
 **********************
 
+V 1.0.3
+=======
+
+Fix bug in `msl_data cite`
+
+
 V 1.0.2
 =======
 
-Fix bug im `msl_data` when library used by third partite as `MacSyFinder`.
+Fix bug in `msl_data` when library used by third partite as `MacSyFinder`.
 
 
 V 1.0.1
