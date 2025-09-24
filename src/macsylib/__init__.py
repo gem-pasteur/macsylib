@@ -96,7 +96,11 @@ def init_logger(name: str = 'macsylib', log_file: str = None, out: bool = True) 
     import logging
     import colorlog
 
-    logger = colorlog.getLogger(name)
+    if name == 'macsylib':
+        log_names = ['macsylib']
+    else:
+        log_names = ['macsylib', name]
+    loggers = [colorlog.getLogger(name) for name in log_names]
     handlers = []
     if out:
         stdout_handler = colorlog.StreamHandler(sys.stdout)
@@ -114,19 +118,24 @@ def init_logger(name: str = 'macsylib', log_file: str = None, out: bool = True) 
                                                      style='%'
                                                      )
         stdout_handler.setFormatter(stdout_formatter)
-        logger.addHandler(stdout_handler)
+        for logger in loggers:
+            logger.addHandler(stdout_handler)
         handlers.append(stdout_handler)
     else:
         null_handler = logging.NullHandler()
-        logger.addHandler(null_handler)
+        for logger in loggers:
+            logger.addHandler(null_handler)
         handlers.append(null_handler)
     if log_file:
         file_handler = logging.FileHandler(log_file)
         file_formatter = logging.Formatter("%(levelname)-8s : %(message)s")
         file_handler.setFormatter(file_formatter)
-        logger.addHandler(file_handler)
+        for logger in loggers:
+            logger.addHandler(file_handler)
         handlers.append(file_handler)
-    logger.setLevel(logging.WARNING)
+    for logger in loggers:
+        logger.setLevel(logging.WARNING)
+
     return handlers
 
 
@@ -156,12 +165,18 @@ def logger_set_level(name: str = 'macsylib', level: Literal['NOTSET', 'DEBUG', '
               'ERROR': logging.ERROR,
               'CRITICAL': logging.CRITICAL,
               }
+    if name == 'macsylib':
+        log_names = ['macsylib']
+    else:
+        log_names = ['macsylib', name]
+
     if level in levels:
         level = levels[level]
     elif not isinstance(level, int) or level < 0:
         raise ValueError(f"Level must be {', '.join(levels.keys())} or a positive integer")
 
-    logger = colorlog.getLogger(name)
+    loggers = [colorlog.getLogger(name) for name in log_names]
+
     if level <= logging.DEBUG:
         stdout_formatter = colorlog.ColoredFormatter(
             "%(log_color)s%(levelname)-8s : %(module)s: L %(lineno)d :%(reset)s %(message)s",
@@ -177,12 +192,12 @@ def logger_set_level(name: str = 'macsylib', level: Literal['NOTSET', 'DEBUG', '
             secondary_log_colors={},
             style='%'
             )
-        stdout_handler = logger.handlers[0]
+        stdout_handler = loggers[0].handlers[0]
         stdout_handler.setFormatter(stdout_formatter)
 
-        if len(logger.handlers) > 1:
+        if len(loggers[0].handlers) > 1:
             file_formatter = logging.Formatter("%(levelname)-8s : %(module)s: L %(lineno)d : %(message)s")
-            file_handler = logger.handlers[1]
+            file_handler = loggers[0].handlers[1]
             file_handler.setFormatter(file_formatter)
-
-    logger.setLevel(level)
+    for logger in loggers:
+        logger.setLevel(level)
