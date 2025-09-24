@@ -428,7 +428,7 @@ class Cluster:
         :param model: the model associated to this cluster
         :param hit_weights: the weight of the hit to compute the score
         """
-        self._hits = hits
+        self._hits = sorted(hits, key=attrgetter('position'))
         self.model = model
         self._check_replicon_consistency()
         self._score = None
@@ -591,6 +591,7 @@ class Cluster:
             else:
                 self._hits.extend(cluster.hits)
 
+
     @property
     def replicon_name(self) -> str:
         """
@@ -668,7 +669,7 @@ class Cluster:
 
         :return: a string representation of this cluster
         """
-        rep = f"""Cluster:
+        rep = f"""{self.__class__.__name__}:
 - model = {self.model.name}
 - replicon = {self.replicon_name}
 - hits = {', '.join([f"({h.id}, {h.gene.name}, {h.position})" for h in self.hits])}"""
