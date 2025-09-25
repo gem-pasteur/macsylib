@@ -809,7 +809,6 @@ class OrderedMatchMaker(MatchMaker):
         """
         # count the hits
         # and track for each hit for which gene it counts for
-        valid_clusters = []
         forbidden_hits = []
         for cluster in clusters:
             # sort model hits between forbidden and the other
@@ -819,8 +818,6 @@ class OrderedMatchMaker(MatchMaker):
             # merge MANDATORY, ACCESSORY, NEUTRAL ModelHit
             one_clst_allowed_hits = [mh for hits in one_clst_allowed_hits for mh in hits]
             one_clst_allowed_hits.sort(key=attrgetter('position'))
-            valid_clusters.append(Cluster(one_clst_allowed_hits + one_clst_forbidden_hits,
-                                          self._model, cluster.hit_weights))
 
         mandatory_genes, accessory_genes, neutral_genes, forbidden_genes = self.present_genes()
         # the count is finished
@@ -857,10 +854,10 @@ class OrderedMatchMaker(MatchMaker):
             _log.debug(msg)
 
         if is_a_system:
-            res = System(self._model, valid_clusters, self._redundancy_penalty)
+            res = System(self._model, list(clusters), self._redundancy_penalty)
             _log.debug("is a system")
         else:
-            res = RejectedCandidate(self._model, valid_clusters, reasons)
+            res = RejectedCandidate(self._model, list(clusters), reasons)
         _log.debug("#" * 50)
         return res
 
