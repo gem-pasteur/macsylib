@@ -148,7 +148,7 @@ class TestMacsyDefaults(MacsyTest):
         self.defaults['pack_name'] = pack_name
         self.defaults['log_file'] = f"{pack_name}.log"
         try:
-            defaults = MacsyDefaults(pack_name=pack_name, tool_name=tool_name)
+            defaults = MacsyDefaults(package_name=pack_name, tool_name=tool_name)
             self.maxDiff = None
             self.assertDictEqual(defaults, self.defaults)
         finally:
