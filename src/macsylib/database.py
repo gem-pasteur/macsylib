@@ -274,7 +274,7 @@ handle information about a replicon
 .. py:attribute:: genes
     :noindex:
 
-    A list of genes beloging to the replicon. Each genes is representing by a tuple (str seq_id, int length)
+    A list of genes belonging to the replicon. Each genes is representing by a tuple (str seq_id, int length)
 """
 
 
