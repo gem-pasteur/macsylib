@@ -53,7 +53,7 @@ class MacsyDefaults(dict):
     the argument parser or config must use a MacsyDefaults object
     """
 
-    def __init__(self, tool_name:str|None = None, pack_name:str = 'macsylib', **kwargs) -> None:
+    def __init__(self, tool_name:str|None = None, package_name:str = 'macsylib', **kwargs) -> None:
         """
         :param kwargs: allow to overwrite a default value.
                        It mainly used in unit tests
@@ -63,7 +63,7 @@ class MacsyDefaults(dict):
         super().__init__()
         self.__dict__ = self
 
-        common_path = os.path.join('share', pack_name, 'models')
+        common_path = os.path.join('share', package_name, 'models')
         virtual_env = os.environ.get('VIRTUAL_ENV')
         if virtual_env:
             system_models_dir = os.path.join(virtual_env, common_path)
@@ -78,8 +78,8 @@ class MacsyDefaults(dict):
             # depending on distrib it's installed in /share or /usr/local/share
             # if it's installed with --user
             # install models in ~/.<program name> instead of ~/.local/share/<program name>
-        self.pack_name = pack_name
-        self.tool_name = tool_name if tool_name is not None else pack_name
+        self.pack_name = package_name
+        self.tool_name = tool_name if tool_name is not None else self.pack_name
         self.cfg_file = kwargs.get('cfg_file', None)
         self.coverage_profile = kwargs.get('coverage_profile', 0.5)
         self.e_value_search = kwargs.get('e_value_search', 0.1)
@@ -91,7 +91,7 @@ class MacsyDefaults(dict):
         self.index_dir = kwargs.get('index_dir', None)
         self.inter_gene_max_space = kwargs.get('inter_gene_max_space', None)
         self.log_level = kwargs.get('log_level', logging.INFO)
-        self.log_file = kwargs.get('log_file', f'{pack_name}.log')
+        self.log_file = kwargs.get('log_file', f'{self.pack_name}.log')
         self.max_nb_genes = kwargs.get('max_nb_genes', None)
         self.min_genes_required = kwargs.get('min_genes_required', None)
         self.min_mandatory_genes_required = kwargs.get('min_mandatory_genes_required', None)
@@ -99,7 +99,7 @@ class MacsyDefaults(dict):
         self.system_models_dir = kwargs.get('system_models_dir', [path for path in
                                                                   (system_models_dir,
                                                                    os.path.join(os.path.expanduser('~'),
-                                                                                f'.{pack_name}', 'models'))
+                                                                                f'.{self.pack_name}', 'models'))
                                                                   if os.path.exists(path)]
                                             )
         self.models_dir = kwargs.get('models_dir', None)
