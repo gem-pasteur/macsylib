@@ -203,7 +203,7 @@ def _find_all_installed_packages(models_dir: str | None = None, package_name: st
     :param package_name: the name of the high level tool that embed macsylib
     :return: all models installed
     """
-    defaults = MacsyDefaults(pack_name=package_name)
+    defaults = MacsyDefaults(package_name=package_name)
     args = argparse.Namespace()
     if models_dir is not None:
         args.models_dir = models_dir
