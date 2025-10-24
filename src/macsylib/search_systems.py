@@ -195,14 +195,15 @@ def search_in_ordered_replicon(hits_by_replicon: dict[str: list[macsylib.hit.Cor
             logger.debug("#" * 80)
             logger.info("Searching systems")
             clusters_combination = combine_clusters(true_clusters, true_loners, multi_loci=model.multi_loci)
+
             for one_clust_combination in clusters_combination:
                 ordered_matcher = OrderedMatchMaker(model, redundancy_penalty=config.redundancy_penalty())
                 res = ordered_matcher.match(one_clust_combination)
                 if isinstance(res, System):
+                    logger.debug(f"The clusters {res} is a potential system occurrence of {model.fqn}")
                     one_model_systems.append(res)
                 else:
                     one_model_rejected_candidates.append(res)
-
             ###############################
             # MultiSystem Hits Management #
             ###############################
@@ -230,8 +231,10 @@ def search_in_ordered_replicon(hits_by_replicon: dict[str: list[macsylib.hit.Cor
                 ordered_matcher = OrderedMatchMaker(model, redundancy_penalty=config.redundancy_penalty())
                 res = ordered_matcher.match(one_clust_combination)
                 if isinstance(res, System):
+                    logger.debug(f"The clusters {res} has been rescued during multi_systems phase")
                     one_model_systems.append(res)
                 else:
+                    logger.debug(f"The clusters {res} is rejected")
                     one_model_rejected_candidates.append(res)
             all_systems.extend(one_model_systems)
             all_rejected_candidates.extend(one_model_rejected_candidates)
