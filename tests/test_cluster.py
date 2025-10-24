@@ -702,6 +702,22 @@ class TestBuildCluster(MacsyTest):
         self.assertEqual(len(got_clusters), 1)
         self.assertListEqual(got_clusters[0].hits, [mh20, mh25, mh29])
 
+        # case replicon is circular
+        # there is one cluster with 2 hits
+        # but the replicon is so small that colocates works directly or over origin
+        #   ori h1 h2    d(h1, h2) < inter_genes_max_spces  d(h2, h1) < inter_genes_max_space
+
+        rep_info = RepliconInfo('circular', 1, 20, [(f"g_{i}", i ) for i in range(1, 20)])
+        h05 = CoreHit(core_genes[0], "h10", 10, "replicon_1", 5, 1.0, 80.0, 1.0, 1.0, 10, 20)
+        mh05 = ModelHit(h05, gene_ref=model_genes[0], gene_status=GeneStatus.MANDATORY)
+        h15 = CoreHit(core_genes[1], "h15", 10, "replicon_1", 15, 1.0, 80.0, 1.0, 1.0, 10, 20)
+        mh15 = ModelHit(h15, gene_ref=model_genes[1], gene_status=GeneStatus.MANDATORY)
+        hits = [mh05, mh15]
+        random.shuffle(hits)
+        got_clusters = clusterize_hits_on_distance_only(hits, model, self.hit_weights, rep_info)
+        self.assertEqual(len(got_clusters), 1)
+        self.assertListEqual(got_clusters[0].hits, [mh05, mh15])
+
 
     def test_split_cluster_on_key_genes(self):
         model = Model("foo/T2SS", 11)
