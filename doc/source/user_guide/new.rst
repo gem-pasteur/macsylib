@@ -14,8 +14,14 @@
 What's new in MacSyLib
 **********************
 
-V 1.0
-=====
+V 1.0.2
+=======
+
+Fix bug im `msl_data` when library used by third partite as `MacSyFinder`.
+
+
+V 1.0.1
+=======
 
 | Now MacSyFinder and MacSyLib are two separated packages.
 | MacSyFinder is build on top of MacSyLib.

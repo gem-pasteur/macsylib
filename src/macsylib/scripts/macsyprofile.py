@@ -361,17 +361,17 @@ def verbosity_to_log_level(verbosity: int) -> int:
 def _cmde_line_header():
     return dedent(r'''
          *            *               *                   * *
-                *               *   *   *  *    **           
-      **     *    *   *  *     *                    *        
-                *       _   *             **    __ _ _     *         
-          _ __ ___  ___| |     _ __  _ __ ___  / _(_) | ___          
-         | '_ ` _ \/ __| |    | '_ \| '__/ _ \| |_| | |/ _ \       
+                *               *   *   *  *    **
+      **     *    *   *  *     *                    *
+                *       _   *             **    __ _ _     *
+          _ __ ___  ___| |     _ __  _ __ ___  / _(_) | ___
+         | '_ ` _ \/ __| |    | '_ \| '__/ _ \| |_| | |/ _ \
          | | | | | \__ \ |    | |_) | | | (_) |  _| | |  __/
          |_| |_| |_|___/_|____| .__/|_|  \___/|_| |_|_|\___|
                *         |_____|_|        *                  *
             *   * *     *   **         *   *  *           *
-      *      *         *        *    *              *        
-                 *                           *  *           * 
+      *      *         *        *    *              *
+                 *                           *  *           *
 
 
     msl_profile - MacSyLib profile helper tool
@@ -390,7 +390,7 @@ def parse_args(header:str, args: list[str], package_name='macsylib', tool_name: 
     """
     msl_def = MacsyDefaults(pack_name=package_name)
     parser = argparse.ArgumentParser(
-        epilog="For more details, visit the MacSyLib website and see the MacSyLib documentation.",
+        epilog=f"For more details, visit the {package_name} website and see the {package_name} documentation.",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         description=header)
 

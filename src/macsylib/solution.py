@@ -150,7 +150,7 @@ def find_best_solutions(systems: list[System]) -> tuple[list[Solution], float]:
     # but each time I ask for next item (in the loop below for instance)
     # nx compute the next clique so it can take time.
     # the number of maximal clique grow exponentiamly with the number of node
-    # for instance for geneome  SYDY001.0321.00001.C001 ther is
+    # for instance for genome  SYDY001.0321.00001.C001 ther is
     # 261 nodes, 22566 edges
     # 124 015 680 cliques
     cliques = nx.algorithms.clique.find_cliques(G)
@@ -222,7 +222,6 @@ def combine_clusters(clusters: list[Cluster],
         combination_w_loners.append(tuple(loners))
 
     cluster_combinations += combination_w_loners
-
     return cluster_combinations
 
 

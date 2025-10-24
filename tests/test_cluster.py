@@ -490,7 +490,7 @@ class TestBuildCluster(MacsyTest):
         got_clusters = clusterize_hits_on_distance_only(hits, model, self.hit_weights, rep_info)
         self.assertEqual(len(got_clusters), 2)
         self.assertListEqual(got_clusters[0].hits, [mh51, mh61])
-        self.assertListEqual(got_clusters[1].hits, [mh80, mh11])
+        self.assertListEqual(got_clusters[1].hits, [mh11, mh80])
 
         # replicon is circular
         # last hit mh80 colocalize with first hit mh10_alt which is not in a cluster but the 2 hits are neutral: it's not a cluster

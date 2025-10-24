@@ -196,14 +196,14 @@ def do_download(args: argparse.Namespace) -> str | None:
         _log.critical(str(err))
         return None
 
-def _find_all_installed_packages(models_dir: list[str] | None = None, package_name: str = 'macsylib') -> ModelRegistry:
+def _find_all_installed_packages(models_dir: str | None = None, package_name: str = 'macsylib') -> ModelRegistry:
     """
 
-    :param models_dir: list of path where package can be find.
+    :param models_dir: The path where packages can be find.
     :param package_name: the name of the high level tool that embed macsylib
     :return: all models installed
     """
-    defaults = MacsyDefaults(package_name=package_name)
+    defaults = MacsyDefaults(pack_name=package_name)
     args = argparse.Namespace()
     if models_dir is not None:
         args.models_dir = models_dir
@@ -220,13 +220,13 @@ def _find_all_installed_packages(models_dir: list[str] | None = None, package_na
 
 
 def _find_installed_package(model_pack_name: str,
-                            models_dir: list[str] | None = None,
+                            models_dir: str | None = None,
                             package_name: str = 'macsylib') -> ModelLocation | None:
     """
     search if a package names *pack_name* is already installed
 
     :param model_pack_name: the name of the family model to search
-    :param models_dir: list of path where package can be find.
+    :param models_dir: The path where package can be find.
     :param package_name: the name of the high level tool that embed macsylib, for instance: 'macsyfinder'
     :return: The model location corresponding to the `pack_name`
     """
@@ -1174,7 +1174,7 @@ def build_arg_parser(header:str, version:str,
     """
 
     parser = argparse.ArgumentParser(
-        epilog="For more details, visit the MacSyLib website and see the MacSyLib documentation.",
+        epilog=f"For more details, visit the {package_name} website and read the {package_name} documentation.",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         description=header)
 
