@@ -179,7 +179,7 @@ def clusterize_hits_on_distance_only(hits: list[ModelHit], model: Model, hit_wei
                     if cluster is not None:
                         clusters.append(cluster)
         # handle circularity
-        if rep_info.topology == 'circular' and len(clusters):
+        if rep_info.topology == 'circular' and len(clusters) > 1:
             if _colocates(clusters[-1].hits[-1], clusters[0].hits[0], rep_info):
                 clusters[0].merge(clusters[-1], before=True)
                 clusters = clusters[:-1]
