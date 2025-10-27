@@ -34,7 +34,8 @@ described in the :ref:`input_options`.
         * *unordered* : a set of sequences corresponding to a complete genome
           (*e.g.* an unassembled complete genome)
         * *ordered_replicon* : a set of sequences corresponding to an ordered complete replicon
-          (*e.g.* an assembled complete genome)
+          (*e.g.* an assembled complete genome, but **only** one genome;
+           for multiple genomes, the data must be formatted in *gembase* format.)
         * *gembase* : a set of multiple ordered replicons, which format follows the convention described
           in :ref:`gembase_convention`.
 
