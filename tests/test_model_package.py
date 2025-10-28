@@ -229,12 +229,14 @@ Please wait before to try again.""")
         remote.org_name = "remote_exists_server_error"
         with self.assertRaises(urllib.error.HTTPError) as ctx:
             remote.remote_exists()
+        ctx.exception.close()
         self.assertEqual(str(ctx.exception),
                          "HTTP Error 500: Server Error")
 
         remote.org_name = "remote_exists_unexpected_error"
         with self.assertRaises(urllib.error.HTTPError) as ctx:
             remote.remote_exists()
+        ctx.exception.close()
         self.assertEqual(str(ctx.exception),
                          "HTTP Error 204: No Content")
 
@@ -316,6 +318,7 @@ Please wait before to try again.""")
 
         with self.assertRaises(urllib.error.HTTPError) as ctx:
             _ = remote.list_package_vers('model_3')
+        ctx.exception.close()
         self.assertEqual(str(ctx.exception), "HTTP Error 500: Server Error")
 
 
@@ -367,6 +370,7 @@ Please wait before to try again.""")
                 _ = remote.download("bad_pack", "0.2")
             self.assertEqual(str(ctx.exception),
                              "package 'bad_pack-0.2' does not exists on repos 'package_download'")
+
         finally:
             model_package.RemoteModelIndex.remote_exists = rem_exists
 
@@ -613,7 +617,6 @@ ligne 3 et bbbbb
         errors, warnings = pack._check_structure()
         self.assertListEqual(errors, ["The model package 'foobar' is not a directory "])
         self.assertListEqual(warnings, [])
-
 
     def test_check_structure_no_def(self):
         fake_pack_path = self.create_fake_package('fake_model', definitions=False)
