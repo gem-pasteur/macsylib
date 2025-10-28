@@ -14,6 +14,26 @@
 What's new in MacSyLib
 **********************
 
+V 1.0.4
+=======
+
+Test MacSyFinder with python 3.14
+
+Bug fix
+-------
+
+Moderate
+""""""""
+
+Fix bug during the cluster building step, with circularization
+see https://github.com/gem-pasteur/macsyfinder/issues/81 and https://github.com/macsy-models/CONJScan/issues/1
+
+Minor
+"""""
+
+small internal bugs with no incidences on results
+
+
 V 1.0.2
 =======
 
