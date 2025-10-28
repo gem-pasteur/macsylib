@@ -166,15 +166,16 @@ class RemoteModelIndex(AbstractModelIndex):
         :return: the json corresponding to the response url
         """
         try:
-            req = urllib.request.urlopen(url, context=self._context).read()
+            with urllib.request.urlopen(url, context=self._context) as response:
+                return json.loads(response.read().decode('utf-8'))
         except urllib.error.HTTPError as err:
             if err.code == 403:
+                err.close()
                 raise MacsyDataLimitError("You reach the maximum number of request per hour to github.\n"
                                           "Please wait before to try again.") from None
             else:
                 raise err
-        data = json.loads(req.decode('utf-8'))
-        return data
+
 
     @property
     def repos_url(self) -> str:
@@ -194,6 +195,7 @@ class RemoteModelIndex(AbstractModelIndex):
             return remote["type"] == 'Organization'
         except urllib.error.HTTPError as err:
             if 400 <= err.code < 500:
+                err.close()
                 return False
             elif err.code >= 500:
                 raise err from None
@@ -226,6 +228,7 @@ class RemoteModelIndex(AbstractModelIndex):
                 metadata = response.read().decode("utf-8")
         except urllib.error.HTTPError as err:
             if 400 < err.code < 500:
+                err.close()
                 raise MacsydataError(f"cannot fetch '{metadata_url}' check '{pack_name}'")
             elif err.code >= 500:
                 raise err from None
@@ -260,6 +263,7 @@ class RemoteModelIndex(AbstractModelIndex):
         try:
             tags = self._url_json(url)
         except urllib.error.HTTPError as err:
+            err.close()
             if 400 <= err.code < 500:
                 raise ValueError(f"package '{pack_name}' does not exists on repos '{self.org_name}'") from None
             else:
@@ -298,6 +302,7 @@ class RemoteModelIndex(AbstractModelIndex):
                 shutil.copyfileobj(response, out_file)
         except urllib.error.HTTPError as err:
             if 400 <= err.code < 500:
+                err.close()
                 raise ValueError(f"package '{pack_name}-{vers}' does not exists on repos '{self.org_name}'") \
                     from None
             else:
