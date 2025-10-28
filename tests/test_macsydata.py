@@ -2054,7 +2054,9 @@ To turn this feature ON:
         cmd = "msl_data"
         parser = macsydata.build_arg_parser(macsydata._cmde_line_header(),
                                             'msl_data version message',
-                                            package_name='macsylib', tool_name='msl_data')
+                                            package_name='macsylib',
+                                            tool_name='msl_data',
+                                            color=False)
         out = io.StringIO()
         parser.print_help(file=out)
 

@@ -1162,7 +1162,9 @@ def _cmde_line_header():
 
 
 def build_arg_parser(header:str, version:str,
-                     package_name:str = 'macsylib', tool_name:str = 'msl_data') -> argparse.ArgumentParser:
+                     package_name:str = 'macsylib',
+                     tool_name:str = 'msl_data',
+                     color:bool=True) -> argparse.ArgumentParser:
     """
     Build argument parser.
 
@@ -1172,11 +1174,20 @@ def build_arg_parser(header:str, version:str,
     :param tool_name: the name of this tool as it appear in pyproject.toml
     :return: The arguments parsed
     """
-
-    parser = argparse.ArgumentParser(
-        epilog=f"For more details, visit the {package_name} website and read the {package_name} documentation.",
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-        description=header)
+    if sys.version_info.minor >= 14:
+        # allow to disable color for unittest to have the same output whatever the version of python
+        # as the output is highlight from python > 3.14
+        parser = argparse.ArgumentParser(
+            epilog=f"For more details, visit the {package_name} website and read the {package_name} documentation.",
+            formatter_class=argparse.RawDescriptionHelpFormatter,
+            description=header,
+            color=color
+        )
+    else:
+        parser = argparse.ArgumentParser(
+            epilog=f"For more details, visit the {package_name} website and read the {package_name} documentation.",
+            formatter_class=argparse.RawDescriptionHelpFormatter,
+            description=header)
 
     # -- general options -- #
 
