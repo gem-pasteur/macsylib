@@ -73,7 +73,7 @@ class CoreHit:
         self.sequence_coverage = sequence_coverage
         self.begin_match = begin_match
         self.end_match = end_match
-        self._systems = set()
+        # self._systems = set()
 
     def __hash__(self) -> int:
         """To be hashable, it's needed to be put in a set or used as dict key"""
