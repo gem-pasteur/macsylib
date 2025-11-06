@@ -1,0 +1,51 @@
+<?xml version="1.0"?>
+<xs:schema attributeFormDefault="unqualified"
+           elementFormDefault="qualified"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    <xs:element name="model" type="modelType"/>
+
+    <xs:complexType name="modelType">
+        <xs:sequence>
+            <xs:element type="geneModelType" name="gene" maxOccurs="unbounded" minOccurs="1"/>
+        </xs:sequence>
+        <xs:attribute type="xs:positiveInteger" name="inter_gene_max_space" use="required"/>
+        <xs:attribute type="xs:positiveInteger" name="min_mandatory_genes_required" use="required"/>
+        <xs:attribute type="xs:positiveInteger" name="min_genes_required" use="required"/>
+        <xs:attribute type="xs:positiveInteger" name="max_nb_genes" use="optional"/>
+        <xs:attribute type="xs:boolean" name="multi_loci" default="false" use="optional"/>
+        <xs:attribute type="xs:float" name="vers" use="required"/>
+    </xs:complexType>
+
+    <xs:complexType name="geneModelType" mixed="true">
+        <xs:sequence>
+            <xs:element type="exchangeablesType" name="exchangeables" minOccurs="0"/>
+        </xs:sequence>
+        <xs:attribute type="xs:string" name="name" use="required"/>
+        <xs:attribute name="presence" use="required">
+            <xs:simpleType>
+                <xs:restriction base="xs:string">
+                    <xs:enumeration value="mandatory"/>
+                    <xs:enumeration value="accessory"/>
+                    <xs:enumeration value="neutral"/>
+                    <xs:enumeration value="forbidden"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+        <xs:attribute type="xs:boolean" name="loner" default="false" use="optional"/>
+        <xs:attribute type="xs:boolean" name="multi_system" default="false" use="optional"/>
+        <xs:attribute type="xs:boolean" name="multi_model" default="false" use="optional"/>
+        <xs:attribute type="xs:positiveInteger" name="inter_gene_max_space" use="optional"/>
+    </xs:complexType>
+
+    <xs:complexType name="exchangeablesType">
+        <xs:sequence>
+            <xs:element type="geneExchangeableType" name="gene" maxOccurs="unbounded" minOccurs="1"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="geneExchangeableType">
+        <xs:attribute type="xs:string" name="name" use="required"/>
+        <xs:attribute type="xs:positiveInteger" name="inter_gene_max_space" use="optional"/>
+    </xs:complexType>
+
+</xs:schema>
