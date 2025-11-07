@@ -44,6 +44,10 @@ from functools import partialmethod
 from importlib import resources as impresources
 
 import colorlog
+try:
+    from lxml import etree
+except ImportError:
+    etree = None
 from packaging import requirements, specifiers, version
 
 import macsylib
@@ -588,6 +592,11 @@ def do_check(args: argparse.Namespace) -> None:
     :param args: the arguments passed on the command line
     :rtype: None
     """
+    if etree is None:
+        _log.warning("lxml is not installed grammar checking is basic. "
+                    f"To deep checking install 'lxml' or install {args.package_name} with target 'model': "
+                     f"pip install {args._pack_name}[model] ")
+
     model_pack = ModelPackage(args.path)
     errors, warnings = model_pack.check()
     if errors:

@@ -34,10 +34,16 @@ import urllib.parse
 import json
 import shutil
 import tarfile
+from importlib import resources as impresources
 
 import certifi
 import yaml
 import colorlog
+
+try:
+    from lxml import etree
+except ImportError:
+    etree = None
 
 from .config import NoneConfig
 from .registries import ModelLocation, ModelRegistry
@@ -374,7 +380,7 @@ class ModelPackage:
         """
         all_warnings = []
         all_errors = []
-        for meth in (self._check_structure, self._check_metadata, self._check_model_consistency,
+        for meth in (self._check_structure, self._check_metadata, self._check_model_grammar, self._check_model_consistency,
                      self._check_profiles, self._check_model_conf):
             errors, warnings = meth()
             all_errors.extend(errors)
@@ -422,13 +428,36 @@ class ModelPackage:
         return errors, warnings
 
 
+    def _check_model_grammar(self) -> tuple[list[str], list[str]]:
+        """
+        check the compliance of models of a given package with the model grammar
+
+        :return: the errors and the warnings
+        """
+        errors = []
+        if etree:
+            model_schema_doc = etree.parse(impresources.files('macsylib') / 'data' / 'model.xsd')
+            model_schema = etree.XMLSchema(model_schema_doc)
+            _log.info(f"Checking grammar for '{self.name}' Model definitions")
+            model_loc = ModelLocation(path=self.path)
+            all_def = model_loc.get_all_definitions()
+            for one_def in all_def:
+                doc = etree.parse(one_def.path)
+                if not model_schema.validate(doc):
+                    try:
+                        model_schema.assertValid(doc)
+                    except etree.DocumentInvalid as err:
+                        errors.append(f"{one_def.name} is not valid: {err}")
+        return errors, []
+
+
     def _check_model_consistency(self) -> tuple[list, list]:
         """
         check if each xml seems well write, each genes have an associated profile, etc.
 
         :return:
         """
-        _log.info(f"Checking '{self.name}' Model definitions")
+        _log.info(f"Checking consistency for '{self.name}' Model definitions")
         errors = []
         warnings = []
         model_loc = ModelLocation(path=self.path)
@@ -508,6 +537,24 @@ class ModelPackage:
         return errors, warnings
 
 
+    def _check_model_conf_grammar(self,model_name:str, model_conf_path:str) -> list[str]:
+        """
+
+        :return:
+        :rtype:
+        """
+        errors = []
+        if etree:
+            model_schema_doc = etree.parse(impresources.files('macsylib') / 'data' / 'model_conf.xsd')
+            model_schema = etree.XMLSchema(model_schema_doc)
+            doc = etree.parse(model_conf_path)
+            if not model_schema.validate(doc):
+                try:
+                    model_schema.assertValid(doc)
+                except etree.DocumentInvalid as err:
+                    errors.append(f"{model_name} configuration is not valid: {err}")
+        return errors
+
     def _check_model_conf(self) -> tuple[list[str], list[str]]:
         """
         check if a model configuration file is present in the package (model_conf.xml)
@@ -517,17 +564,19 @@ class ModelPackage:
         """
         _log.info(f"Checking '{self.name}' model configuration")
         errors = []
-        warnings = []
         conf_file = os.path.join(self.path, 'model_conf.xml')
         if os.path.exists(conf_file):
-            mcp = ModelConfParser(conf_file)
-            try:
-                mcp.parse()
-            except (ValueError, MacsylibError) as err:
-                errors.append(str(err))
+            if etree is not None:
+                errors = self._check_model_conf_grammar(self.name, conf_file)
+            if not errors:
+                mcp = ModelConfParser(conf_file)
+                try:
+                    mcp.parse()
+                except (ValueError, MacsylibError) as err:
+                    errors.append(str(err))
         else:
             _log.info(f"There is no model configuration for package {self.name}.")
-        return errors, warnings
+        return errors, []
 
 
     def _check_metadata(self) -> tuple[list[str], list[str]]:
@@ -552,8 +601,8 @@ class ModelPackage:
                 warnings.append(f"It's better if the field '{item}' is setup in '{self.metadata_path}' file.")
 
         if data.vers:
-            warnings.append("The field 'vers' is not required anymore.\n"
-                            "  It will be ignored and set by macsydata during installation phase according "
+            warnings.append("The field 'vers' is not required anymore in metadata.\n"
+                            "  It will be ignored and set by msl_data during installation phase according "
                             "to the git tag.")
         return errors, warnings
 
