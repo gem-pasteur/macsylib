@@ -74,8 +74,8 @@ class TestMacsydata(MacsyTest):
     </gene>
 </model>"""
         self.definition_2 = """<model inter_gene_max_space="20" min_mandatory_genes_required="1" min_genes_required="2" vers="2.0">
-    <gene name="fliE" presence="mandatory" multi_system="True"/>
-    <gene name="tadZ" presence="accessory" loner="True"/>
+    <gene name="fliE" presence="mandatory" multi_system="true"/>
+    <gene name="tadZ" presence="accessory" loner="true"/>
     <gene name="sctC" presence="forbidden"/>
 </model>"""
 
@@ -732,6 +732,7 @@ fake_1 (0.0b2) : 4 models"""
         with self.catch_log(log_name='macsydata') as log:
             macsydata.do_check(self.args)
             log_msg = log.get_value().strip()
+
         expected_msg = f"""If everyone were like you, I'd be out of business
 To push the models in organization:
 \tcd {os.path.join(self.tmpdir, pack_name)}
@@ -759,8 +760,8 @@ for instance if you want to add the models to 'macsy-models'
             log_msg = log.get_value().strip()
         expected_msg = """The model package 'fake_1' have not any LICENSE file. May be you have not right to use it.
 The model package 'fake_1' have not any README file.
-The field 'vers' is not required anymore.
-  It will be ignored and set by macsydata during installation phase according to the git tag.
+The field 'vers' is not required anymore in 'metadata.yml'.
+  It will be ignored and set by msl_data during installation phase according to the git tag.
 
 msl_data says: You're only giving me a partial QA payment?
 I'll take it this time, but I'm not happy.
@@ -782,6 +783,39 @@ I'll be really happy, if you fix warnings above, before to publish these models.
 The model package 'fake_1' have no 'profiles' directory.
 Please fix issues above, before publishing these models."""
         self.assertEqual(expected_msg, log_msg)
+
+
+    def test_check_with_errors_bad_syntax(self):
+        pack_name = 'fake_1'
+        pack_path = self.create_fake_package(pack_name, definitions=False)
+        self.args.path = pack_path
+        def_dir = os.path.join(pack_path, 'definitions')
+        os.mkdir(def_dir)
+        shutil.copy(self.find_data('models', 'foo', 'definitions', 'gene_no_name.xml'), def_dir)
+        with self.catch_log(log_name='macsydata') as log:
+            with self.assertRaises(ValueError):
+                macsydata.do_check(self.args)
+            log_msg = log.get_value().strip()
+        expected_msg = """gene_no_name is not valid: Element 'gene': The attribute 'name' is required but missing., line 7
+Please fix issues above, before publishing these models."""
+        self.assertEqual(expected_msg, log_msg)
+
+
+    def test_check_bad_syntax_model_conf(self):
+        pack_name = 'fake_1'
+        pack_path = self.create_fake_package(pack_name)
+        self.args.path = pack_path
+        self.args.tool_name='msl_data'
+        shutil.copy(self.find_data('conf_files', 'model_conf_bad_value.xml'),
+                    os.path.join(pack_path, 'model_conf.xml'))
+        with self.catch_log(log_name='macsydata') as log:
+            with self.assertRaises(ValueError):
+                macsydata.do_check(self.args)
+            log_msg = log.get_value().strip()
+        expected_msg = f"""{pack_name} configuration is not valid: Element 'itself': 'false' is not a valid value of the atomic type 'xs:float'., line 3
+Please fix issues above, before publishing these models."""
+        self.assertEqual(expected_msg, log_msg)
+
 
 
     def test_download(self):
