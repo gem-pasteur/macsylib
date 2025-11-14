@@ -4,7 +4,7 @@
            <gene name="sctJ" />
        </exchangeables>
     </gene>
-    <gene name="sctN_FLG" presence="mandatory" multi-system="True"/>
+    <gene name="sctN_FLG" presence="mandatory" multi-system="true"/>
     <gene name="flgB" presence="mandatory" />
     <gene name="flgC" presence="mandatory" />
     <gene name="fliE" presence="mandatory" />

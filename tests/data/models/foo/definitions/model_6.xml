@@ -2,7 +2,7 @@
        max_nb_genes="3" vers="2.0">
     <gene name="flgB" presence="mandatory" />
     <gene inter_gene_max_space="12" name="flgC" presence="mandatory" />
-    <gene multi_system="True" name="fliE" presence="mandatory" />
+    <gene multi_system="true" name="fliE" presence="mandatory" />
     <gene name="tadZ" presence="accessory" />
     <gene name="sctC" presence="forbidden" />
 </model>

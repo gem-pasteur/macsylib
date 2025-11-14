@@ -30,5 +30,5 @@
     <gene name="T1SS_omf" presence="mandatory"/>
     <gene name="T1SS_mfp" presence="accessory"/>
     <gene name="T1SS_abc" presence="accessory"/>
-    <gene name="T2SS_gspD" presence="accessory" multi_model="True"/>
+    <gene name="T2SS_gspD" presence="accessory" multi_model="true"/>
 </model>
