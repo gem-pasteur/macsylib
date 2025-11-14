@@ -475,8 +475,8 @@ ligne 3 et bbbbb
 </model>""")
             with open(os.path.join(def_dir, "model_2.xml"), 'w') as f:
                 f.write("""<model inter_gene_max_space="20" min_mandatory_genes_required="1" min_genes_required="2" vers="2.0">
-    <gene name="fliE" presence="mandatory" multi_system="True"/>
-    <gene name="tadZ" presence="accessory" loner="True"/>
+    <gene name="fliE" presence="mandatory" multi_system="true"/>
+    <gene name="tadZ" presence="accessory" loner="true"/>
     <gene name="sctC" presence="forbidden"/>
 </model>""")
         if bad_definitions:
@@ -524,7 +524,7 @@ ligne 3 et bbbbb
         <e_value_search>0.12</e_value_search>
         <i_evalue_sel>0.012</i_evalue_sel>
         <coverage_profile>0.55</coverage_profile>
-        <cut_ga>False</cut_ga>
+        <cut_ga>false</cut_ga>
     </filtering>
 </model_config>
 """
@@ -589,13 +589,14 @@ ligne 3 et bbbbb
         self.assertListEqual(warnings, [])
 
     def test_check_model_conf_bad_conf(self):
-        fake_pack_path = self.create_fake_package('fake_model', conf=False, bad_conf=True)
+        model_name = 'fake_model'
+        fake_pack_path = self.create_fake_package(model_name, conf=False, bad_conf=True)
         pack = model_package.ModelPackage(fake_pack_path)
         with self.catch_log(log_name='macsylib'):
             errors, warnings = pack._check_model_conf()
         self.maxDiff =None
-        self.assertListEqual(errors, [f"The model configuration file '{fake_pack_path}/model_conf.xml' "
-                                      f"cannot be parsed: could not convert string to float: 'FOO'"])
+        self.assertListEqual(errors, [f"{model_name} configuration is not valid: Element 'itself': 'FOO' "
+                                      "is not a valid value of the atomic type 'xs:float'., line 3"])
         self.assertListEqual(warnings, [])
 
     def test_check_structure(self):
@@ -718,6 +719,19 @@ ligne 3 et bbbbb
                                   "min_mandatory_genes_required '2'"])
 
 
+    def test_check_model_conf_unknown_elt(self):
+        pack_name = 'fake_model'
+        fake_pack_path = self.create_fake_package(pack_name, conf=False)
+        pack = model_package.ModelPackage(fake_pack_path)
+        shutil.copy(self.find_data('conf_files', 'model_conf_bad_element.xml'),
+                    os.path.join(fake_pack_path, 'model_conf.xml'))
+        with self.catch_log(log_name='macsylib'):
+            errors, warnings = pack._check_model_conf()
+        self.assertEqual(warnings, [])
+        self.assertEqual(errors, [f"{pack_name} configuration is not valid: Element 'nimportnoik':"
+                                  f" This element is not expected., line 10"])
+
+
     def test_check_no_readme_n_no_license(self):
         fake_pack_path = self.create_fake_package('fake_model', readme=False, license=False, vers=False)
         pack = model_package.ModelPackage(fake_pack_path)
@@ -780,8 +794,8 @@ ligne 3 et bbbbb
         pack = model_package.ModelPackage(fake_pack_path)
         errors, warnings = pack._check_metadata()
         self.assertEqual(errors, [])
-        self.assertEqual(warnings, ["The field 'vers' is not required anymore."
-                                    "\n  It will be ignored and set by macsydata during installation phase according"
+        self.assertEqual(warnings, ["The field 'vers' is not required anymore in 'metadata.yml'."
+                                    "\n  It will be ignored and set by msl_data during installation phase according"
                                     " to the git tag."])
 
     def test_check_metadata_no_cite(self):
