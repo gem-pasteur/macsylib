@@ -5,14 +5,14 @@
     <xs:element name="model_config" type="configType"/>
 
     <xs:complexType name="configType">
-        <xs:sequence>
+        <xs:all>
             <xs:element type="weightType" name="weights" minOccurs="0" maxOccurs="1" />
             <xs:element type="filterType" name="filtering" minOccurs="0" maxOccurs="1" />
-        </xs:sequence>
+        </xs:all>
     </xs:complexType>
 
     <xs:complexType name="weightType" mixed="true">
-        <xs:sequence>
+        <xs:all>
             <xs:element type="xs:float" name="itself" minOccurs="0" maxOccurs="1" />
             <xs:element type="xs:float" name="mandatory" minOccurs="0" maxOccurs="1" />
             <xs:element type="xs:float" name="accessory" minOccurs="0" maxOccurs="1" />
@@ -20,16 +20,16 @@
             <xs:element type="xs:float" name="exchangeable" minOccurs="0" maxOccurs="1" />
             <xs:element type="xs:float" name="out_of_cluster" minOccurs="0" maxOccurs="1" />
             <xs:element type="xs:float" name="redundancy_penalty" minOccurs="0" maxOccurs="1" />
-        </xs:sequence>
+        </xs:all>
     </xs:complexType>
 
     <xs:complexType name="filterType">
-        <xs:sequence>
+        <xs:all>
             <xs:element type="xs:float" name="e_value_search" minOccurs="0" maxOccurs="1" />
             <xs:element type="xs:float" name="i_evalue_sel" minOccurs="0" maxOccurs="1" />
             <xs:element type="xs:float" name="coverage_profile" minOccurs="0" maxOccurs="1" />
             <xs:element type="xs:boolean" name="cut_ga" minOccurs="0" maxOccurs="1" />
-        </xs:sequence>
+        </xs:all>
     </xs:complexType>
 
 </xs:schema>
