@@ -601,7 +601,7 @@ class ModelPackage:
                 warnings.append(f"It's better if the field '{item}' is setup in '{self.metadata_path}' file.")
 
         if data.vers:
-            warnings.append("The field 'vers' is not required anymore in metadata.\n"
+            warnings.append("The field 'vers' is not required anymore in 'metadata.yml'.\n"
                             "  It will be ignored and set by msl_data during installation phase according "
                             "to the git tag.")
         return errors, warnings
