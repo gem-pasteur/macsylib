@@ -33,6 +33,12 @@ import io
 import shutil
 import tarfile
 import glob
+
+try:
+    import lxml
+except ModuleNotFoundError:
+    lxml = None
+
 import yaml
 import colorlog
 from unittest.mock import patch
@@ -595,8 +601,15 @@ ligne 3 et bbbbb
         with self.catch_log(log_name='macsylib'):
             errors, warnings = pack._check_model_conf()
         self.maxDiff =None
-        self.assertListEqual(errors, [f"{model_name} configuration is not valid: Element 'itself': 'FOO' "
-                                      "is not a valid value of the atomic type 'xs:float'., line 3"])
+        if lxml:
+            exp_errors = [f"{model_name} configuration is not valid: Element 'itself': 'FOO' "
+                                      "is not a valid value of the atomic type 'xs:float'., line 3"]
+        else:
+            def_path = os.path.join(fake_pack_path, "model_conf.xml")
+            exp_errors = [f"The model configuration file '{def_path}' "
+                          "cannot be parsed: could not convert string to float: 'FOO'"]
+
+        self.assertListEqual(errors, exp_errors)
         self.assertListEqual(warnings, [])
 
     def test_check_structure(self):
@@ -728,8 +741,11 @@ ligne 3 et bbbbb
         with self.catch_log(log_name='macsylib'):
             errors, warnings = pack._check_model_conf()
         self.assertEqual(warnings, [])
-        self.assertEqual(errors, [f"{pack_name} configuration is not valid: Element 'nimportnoik':"
+        if lxml:
+            self.assertEqual(errors, [f"{pack_name} configuration is not valid: Element 'nimportnoik':"
                                   f" This element is not expected., line 10"])
+        else:
+            self.assertEqual(errors, [])
 
 
     def test_check_no_readme_n_no_license(self):
