@@ -68,7 +68,7 @@ def get_def_to_detect(models: list[tuple[str, tuple[str]]],
     :type models: list of tuple with the following structure:
                   [('model_fqn', ('def1, def2, ...)), ('model_2', ('def1', ...)), ...]
     :param model_registry: the models registry for this run.
-    :return: the definitions to parse
+    :return: the definitions to parse the model family name and the version
     :raise ValueError: if a model name provided in models is not in model_registry.
     """
     root, def_names = models
