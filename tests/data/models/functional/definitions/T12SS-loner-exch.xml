@@ -5,9 +5,10 @@
     	    <gene name="T2SS_gspD"/>
 	    </exchangeables>
     </gene>
-    <gene name="T1SS_omf" presence="mandatory" loner="1">
+    <gene name="T1SS_omf" presence="mandatory" loner="true">
         <exchangeables>
             <gene name="T2SS_gspF"/>
         </exchangeables>
     </gene>
+
 </model>
