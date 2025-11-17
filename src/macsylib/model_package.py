@@ -475,7 +475,7 @@ class ModelPackage:
             for one_def in all_def:
                 try:
                     parser.parse([one_def])
-                except MacsylibError as err:
+                except (MacsylibError , SyntaxError) as err:
                     errors.append(str(err))
 
             if not errors:
