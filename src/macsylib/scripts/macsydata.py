@@ -595,7 +595,7 @@ def do_check(args: argparse.Namespace) -> None:
     if etree is None:
         _log.warning("lxml is not installed grammar checking is basic. "
                     f"To deep checking install 'lxml' or install {args.package_name} with target 'model': "
-                     f"pip install {args.package_name}[model] ")
+                     f"pip install {args.package_name}[model]")
 
     model_pack = ModelPackage(args.path)
     errors, warnings = model_pack.check()
