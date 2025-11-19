@@ -1,0 +1,59 @@
+<model inter_gene_max_space="10" min_genes_required="3" min_mandatory_genes_required="2"  vers="2.0">
+
+    <gene name="abc" presence="mandatory" />
+    <gene name="sctJ" presence="mandatory" inter_gene_max_space="5">
+        <exchangeables>
+            <gene name="sctJ_FLG" />
+        </exchangeables>
+    </gene>
+
+    <gene name="sctN" presence="accessory">
+        <exchangeables>
+            <gene name="sctN_FLG" inter_gene_max_space="7"/>
+        </exchangeables>
+    </gene>
+
+     <gene name="flgB" presence="accessory" inter_gene_max_space="8">
+        <exchangeables>
+            <gene name="flgC" inter_gene_max_space="9"/>
+        </exchangeables>
+    </gene>
+
+    <gene name="Tad_rcpA" presence="accessory">
+        <exchangeables>
+            <gene name="Tad_rcpB" loner="true" />
+            <gene name="Tad_rcpC" />
+        </exchangeables>
+    </gene>
+
+    <gene name="Tad_tadD" presence="accessory">
+        <exchangeables>
+            <gene name="Tad_tadE" multi_model="true" />
+            <gene name="Tad_tadF" />
+        </exchangeables>
+    </gene>
+
+    <gene name="Tad_tadG" presence="accessory" multi_model="true">
+        <exchangeables>
+            <gene name="Tad_flp" multi_model="false" />
+            <gene name="Tad_tadV" />
+        </exchangeables>
+    </gene>
+
+    <gene name="Tad_tadA" presence="accessory" multi_system="true">
+        <exchangeables>
+            <gene name="Tad_tadB" multi_system="false" />
+        </exchangeables>
+    </gene>
+
+    <gene name="fliE" presence="accessory" loner="true" multi_model="true" multi_system="true"/>
+
+    <gene name="PF05930.13" presence="accessory" loner="true" multi_model="true" multi_system="true">
+        <exchangeables>
+            <gene name="T5aSS_PF03797"/>
+        </exchangeables>
+    </gene>
+
+    <gene name="gspD" presence="neutral" />
+    <gene name="tadZ" presence="forbidden" />
+</model>

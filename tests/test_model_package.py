@@ -26,6 +26,7 @@
 
 import os
 import tempfile
+import unittest
 import urllib.request
 import urllib.error
 import json
@@ -612,13 +613,95 @@ ligne 3 et bbbbb
         self.assertListEqual(errors, exp_errors)
         self.assertListEqual(warnings, [])
 
+    @unittest.skipIf(not lxml, 'lxml is not installed')
+    def test_check_grammar(self):
+        model_name = 'fake_model'
+        pack_path = self.create_fake_package(model_name, definitions=False)
+        def_dir = os.path.join(pack_path, 'definitions')
+        os.mkdir(def_dir)
+        df_name = 'all_features_model'
+        shutil.copy(self.find_data('models', 'foo', 'definitions', f'{df_name}.xml'),
+                        def_dir)
+        pack = model_package.ModelPackage(pack_path)
+        with self.catch_log(log_name='macsylib'):
+            errors, warnings = pack._check_model_grammar()
+        self.maxDiff =None
+        self.assertListEqual(errors, [])
+        self.assertListEqual(warnings, [])
+
+    @unittest.skipIf(not lxml, 'lxml is not installed')
+    def test_check_gene_no_name(self):
+        model_name = 'fake_model'
+        pack_path = self.create_fake_package(model_name, definitions=False)
+        def_dir = os.path.join(pack_path, 'definitions')
+        os.mkdir(def_dir)
+        df_name = 'gene_no_name'
+        shutil.copy(self.find_data('models', 'foo', 'definitions', f'{df_name}.xml'),
+                        def_dir)
+        pack = model_package.ModelPackage(pack_path)
+        with self.catch_log(log_name='macsylib'):
+            errors, warnings = pack._check_model_grammar()
+        self.maxDiff =None
+        self.assertListEqual(errors, ["gene_no_name is not valid: Element 'gene': "
+                                      "The attribute 'name' is required but missing., line 7"])
+        self.assertListEqual(warnings, [])
+
+    @unittest.skipIf(not lxml, 'lxml is not installed')
+    def test_check_gene_twice(self):
+        model_name = 'fake_model'
+        pack_path = self.create_fake_package(model_name, definitions=False)
+        def_dir = os.path.join(pack_path, 'definitions')
+        os.mkdir(def_dir)
+        df_name = 'gene_twice'
+        shutil.copy(self.find_data('models', 'foo', 'definitions', f'{df_name}.xml'),
+                        def_dir)
+        pack = model_package.ModelPackage(pack_path)
+        with self.catch_log(log_name='macsylib'):
+            errors, warnings = pack._check_model_grammar()
+        self.maxDiff =None
+        self.assertListEqual(errors, ["gene_twice is not valid: Element 'gene': Duplicate key-sequence ['flgB'] "
+                                      "in unique identity-constraint 'UniqueGene'., line 9"])
+        self.assertListEqual(warnings, [])
+
+    @unittest.skipIf(not lxml, 'lxml is not installed')
+    def test_check_exchangeable_twice(self):
+        model_name = 'fake_model'
+        pack_path = self.create_fake_package(model_name, definitions=False)
+        def_dir = os.path.join(pack_path, 'definitions')
+        os.mkdir(def_dir)
+        df_name = 'exchangeable_twice'
+        shutil.copy(self.find_data('models', 'foo', 'definitions', f'{df_name}.xml'),
+                        def_dir)
+        pack = model_package.ModelPackage(pack_path)
+        with self.catch_log(log_name='macsylib'):
+            errors, warnings = pack._check_model_grammar()
+        self.maxDiff =None
+        self.assertListEqual(errors, [])
+        self.assertListEqual(warnings, [])
+
+    @unittest.skipIf(not lxml, 'lxml is not installed')
+    def test_check_gene_and_exchangeable(self):
+        model_name = 'fake_model'
+        pack_path = self.create_fake_package(model_name, definitions=False)
+        def_dir = os.path.join(pack_path, 'definitions')
+        os.mkdir(def_dir)
+        df_name = 'gene_and_exchangeable'
+        shutil.copy(self.find_data('models', 'foo', 'definitions', f'{df_name}.xml'),
+                        def_dir)
+        pack = model_package.ModelPackage(pack_path)
+        with self.catch_log(log_name='macsylib'):
+            errors, warnings = pack._check_model_grammar()
+        self.maxDiff =None
+        self.assertListEqual(errors, [])
+        self.assertListEqual(warnings, [])
+
+
     def test_check_structure(self):
         fake_pack_path = self.create_fake_package('fake_model')
         pack = model_package.ModelPackage(fake_pack_path)
         errors, warnings = pack._check_structure()
         self.assertListEqual(errors, [])
         self.assertListEqual(warnings, [])
-
 
     def test_check_structure_bad_path(self):
         foobar = os.path.join(self.tmpdir, "foobar")

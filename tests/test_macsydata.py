@@ -103,6 +103,7 @@ class TestMacsydata(MacsyTest):
     def create_fake_package(self, model,
                             definitions=True,
                             profiles=True,
+                            gen_profiles=('flgB', 'flgC', 'fliE', 'tadZ', 'sctC', 'abc'),
                             metadata=True,
                             vers=True,
                             readme=True,
@@ -131,7 +132,7 @@ class TestMacsydata(MacsyTest):
         if profiles:
             profile_dir = os.path.join(pack_path, 'profiles')
             os.mkdir(profile_dir)
-            for name in ('flgB', 'flgC', 'fliE', 'tadZ', 'sctC', 'abc'):
+            for name in gen_profiles:
                 shutil.copyfile(self.find_data('models', 'foo', 'profiles', f'{name}.hmm'),
                                 os.path.join(profile_dir, f"{name}.hmm")
                                 )
@@ -833,6 +834,116 @@ Please fix issues above, before publishing these models."""
 Invalid model definition 'fake_1/gene_no_name': gene without name
 Please fix issues above, before publishing these models."""
 
+        self.assertEqual(expected_msg, log_msg)
+
+
+    def test_check_gene_twice(self):
+        pack_name = 'fake_1'
+        pack_path = self.create_fake_package(pack_name, vers=False, definitions=False,
+                                             gen_profiles=('flgB', 'flgC', 'fliE'))
+        self.args.path = pack_path
+        self.args.tool_name='msl_data'
+        def_dir = os.path.join(pack_path, 'definitions')
+        os.mkdir(def_dir)
+        shutil.copy(self.find_data('models', 'foo', 'definitions', 'gene_twice.xml'), def_dir)
+        if lxml:
+            with self.catch_log(log_name='macsydata') as log:
+                with self.assertRaises(ValueError):
+                    macsydata.do_check(self.args)
+                log_msg = log.get_value().strip()
+            expected_msg = """gene_twice is not valid: Element 'gene': Duplicate key-sequence ['flgB'] in unique identity-constraint 'UniqueGene'., line 9
+Please fix issues above, before publishing these models."""
+            self.assertEqual(expected_msg, log_msg)
+        else:
+            with self.catch_log(log_name='macsydata') as log:
+                macsydata.do_check(self.args)
+                log_msg = log.get_value().strip()
+            expected_msg = f"""lxml is not installed grammar checking is basic. To deep checking install 'lxml' or install macsylib with target 'model': pip install macsylib[model]
+If everyone were like you, I'd be out of business
+To push the models in organization:
+\tcd {pack_path}
+Transform the models into a git repository
+\tgit init .
+\tgit add .
+\tgit commit -m 'initial commit'
+add a remote repository to host the models
+for instance if you want to add the models to 'macsy-models'
+\tgit remote add origin https://github.com/macsy-models/
+\tgit tag -a <tag vers>  # check https://macsylib.readthedocs.io/en/latest/modeler_guide/publish_package.html#sharing-your-models
+\tgit push origin <tag vers>"""
+            self.maxDiff = None
+            self.assertEqual(expected_msg, log_msg)
+
+
+    def test_check_exchangeable_twice(self):
+        pack_name = 'fake_1'
+        pack_path = self.create_fake_package(pack_name, vers=False, definitions=False,
+                                             gen_profiles=('flgB', 'flgC', 'fliE'))
+        self.args.path = pack_path
+        self.args.tool_name = 'msl_data'
+        def_dir = os.path.join(pack_path, 'definitions')
+        os.mkdir(def_dir)
+        shutil.copy(self.find_data('models', 'foo', 'definitions', 'exchangeable_twice.xml'), def_dir)
+        with self.catch_log(log_name='macsydata') as log:
+                macsydata.do_check(self.args)
+                log_msg = log.get_value().strip()
+        if lxml:
+            expected_msg = ""
+        else:
+            with self.catch_log(log_name='macsydata') as log:
+                macsydata.do_check(self.args)
+                log_msg = log.get_value().strip()
+            expected_msg = "lxml is not installed grammar checking is basic. To deep checking install 'lxml' or install macsylib with target 'model': pip install macsylib[model]\n"
+
+        expected_msg += f"""If everyone were like you, I'd be out of business
+To push the models in organization:
+\tcd {pack_path}
+Transform the models into a git repository
+\tgit init .
+\tgit add .
+\tgit commit -m 'initial commit'
+add a remote repository to host the models
+for instance if you want to add the models to 'macsy-models'
+\tgit remote add origin https://github.com/macsy-models/
+\tgit tag -a <tag vers>  # check https://macsylib.readthedocs.io/en/latest/modeler_guide/publish_package.html#sharing-your-models
+\tgit push origin <tag vers>"""
+        self.maxDiff = None
+        self.assertEqual(expected_msg, log_msg)
+
+
+    def test_check_gene_and_exchangeable(self):
+        pack_name = 'fake_1'
+        pack_path = self.create_fake_package(pack_name, vers=False, definitions=False,
+                                             gen_profiles=('flgB', 'flgC', 'fliE'))
+        self.args.path = pack_path
+        self.args.tool_name = 'msl_data'
+        def_dir = os.path.join(pack_path, 'definitions')
+        os.mkdir(def_dir)
+        shutil.copy(self.find_data('models', 'foo', 'definitions', 'gene_and_exchangeable.xml'), def_dir)
+        with self.catch_log(log_name='macsydata') as log:
+            macsydata.do_check(self.args)
+            log_msg = log.get_value().strip()
+        if lxml:
+            expected_msg = ""
+        else:
+            with self.catch_log(log_name='macsydata') as log:
+                macsydata.do_check(self.args)
+                log_msg = log.get_value().strip()
+            expected_msg = "lxml is not installed grammar checking is basic. To deep checking install 'lxml' or install macsylib with target 'model': pip install macsylib[model]\n"
+
+        expected_msg += f"""If everyone were like you, I'd be out of business
+To push the models in organization:
+\tcd {pack_path}
+Transform the models into a git repository
+\tgit init .
+\tgit add .
+\tgit commit -m 'initial commit'
+add a remote repository to host the models
+for instance if you want to add the models to 'macsy-models'
+\tgit remote add origin https://github.com/macsy-models/
+\tgit tag -a <tag vers>  # check https://macsylib.readthedocs.io/en/latest/modeler_guide/publish_package.html#sharing-your-models
+\tgit push origin <tag vers>"""
+        self.maxDiff = None
         self.assertEqual(expected_msg, log_msg)
 
 
