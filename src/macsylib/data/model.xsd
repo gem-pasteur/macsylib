@@ -2,7 +2,13 @@
 <xs:schema attributeFormDefault="unqualified"
            elementFormDefault="qualified"
            xmlns:xs="http://www.w3.org/2001/XMLSchema">
-    <xs:element name="model" type="modelType"/>
+
+    <xs:element name="model" type="modelType">
+        <xs:unique name="UniqueGene">
+            <xs:selector xpath="gene" />
+            <xs:field xpath="@name" />
+        </xs:unique>
+    </xs:element>
 
     <xs:complexType name="modelType">
         <xs:sequence>
@@ -46,6 +52,9 @@
     <xs:complexType name="geneExchangeableType">
         <xs:attribute type="xs:string" name="name" use="required"/>
         <xs:attribute type="xs:positiveInteger" name="inter_gene_max_space" use="optional"/>
+        <xs:attribute type="xs:boolean" name="loner" use="optional"/>
+        <xs:attribute type="xs:boolean" name="multi_system" use="optional"/>
+        <xs:attribute type="xs:boolean" name="multi_model" use="optional"/>
     </xs:complexType>
 
 </xs:schema>
