@@ -86,7 +86,12 @@ namespaces = false
 version = {attr = "macsylib.__version__"}
 
 [tool.setuptools.package-data]
-macsylib = ["data/pre-push"]
+
+macsylib = [
+    "data/pre-push",
+    "data/model.xsd",
+    "data/model_conf.xsd"
+]
 
 
 [tool.coverage.run]
