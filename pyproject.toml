@@ -44,6 +44,12 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+
+model = [
+    "GitPython",
+    "lxml"
+]
+
 dev = [
     "sphinx",
     "sphinx_rtd_theme",
@@ -52,12 +58,9 @@ dev = [
     "coverage[toml]",
     "build",
     "ruff",
-    "GitPython",
     "pre-commit",
-]
-
-model = [
-    "GitPython"
+    "GitPython",
+    "lxml",
 ]
 
 [project.scripts]
