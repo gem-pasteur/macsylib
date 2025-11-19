@@ -51,6 +51,7 @@ model = [
 ]
 
 dev = [
+    "macsylib[model]",
     "sphinx",
     "sphinx_rtd_theme",
     "sphinx-autodoc-typehints",
@@ -59,8 +60,6 @@ dev = [
     "build",
     "ruff",
     "pre-commit",
-    "GitPython",
-    "lxml",
 ]
 
 [project.scripts]
