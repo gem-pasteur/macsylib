@@ -14,10 +14,20 @@
 What's new in MacSyLib
 **********************
 
+
+
 V 1.0.4
 =======
 
 Test MacSyFinder with python 3.14
+
+Features
+--------
+
+Use new model definition validation system.
+This system check more carefully the xml models definitions. This feature require to install `lxml` library.
+Which is automatically done if you install macsylib with target `[model]` or `[dev]`
+`pip install macsylib[model]`
 
 Bug fix
 -------
