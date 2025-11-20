@@ -19,7 +19,13 @@
         <xs:attribute type="xs:positiveInteger" name="min_genes_required" use="required"/>
         <xs:attribute type="xs:positiveInteger" name="max_nb_genes" use="optional"/>
         <xs:attribute type="xs:boolean" name="multi_loci" default="false" use="optional"/>
-        <xs:attribute type="xs:float" name="vers" use="required"/>
+        <xs:attribute name="vers" use="required">
+            <xs:simpleType>
+                <xs:restriction base="xs:string">
+                    <xs:pattern value="\d(.\d){0,2}"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
     </xs:complexType>
 
     <xs:complexType name="geneModelType" mixed="true">
