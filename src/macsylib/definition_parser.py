@@ -32,6 +32,8 @@ import os.path
 import xml.etree.ElementTree as Et
 import logging
 
+from packaging import specifiers, version
+
 from .model import Model, ModelBank
 from .gene import ModelGene, GeneBank
 from .gene import Exchangeable
@@ -49,6 +51,8 @@ class DefinitionParser:
     """
     Build a Model instance from the corresponding model definition described in the XML file.
     """
+
+    supported_vers = specifiers.SpecifierSet(">=2, <3")
 
     def __init__(self,
                  cfg: Config | NoneConfig,
@@ -125,16 +129,17 @@ class DefinitionParser:
 
         vers = model_node.get('vers')
         msg = None
-        if vers is None:
+        if model_node.tag == 'system':
+            msg = f"The model definition {os.path.basename(path)} is obsolete. Please update your model."
+        elif vers is None:
             msg = f"The model definition {os.path.basename(path)} is not versioned. " \
                   f"Please update your model."
-        elif vers != '2.0':
-            msg = f"The model definition {os.path.basename(path)} has not the right version. " \
-                  f"version supported is '2.0'. Please update your model."
-            raise ModelInconsistencyError(msg)
-        elif model_node.tag == 'system':
-            msg = f"The model definition {os.path.basename(path)} is obsolete. Please update your model."
-
+        else:
+            vers = version.Version(vers)
+            if vers not in self.supported_vers:
+                min_spe, max_spe = sorted(self.supported_vers, key=str, reverse=True)
+                msg = f"The model definition {os.path.basename(path)} has unsupported version: {vers} . " \
+                      f"Supported versions are {min_spe}, {max_spe} . Please update your model."
         if msg:
             raise ModelInconsistencyError(msg)
 
