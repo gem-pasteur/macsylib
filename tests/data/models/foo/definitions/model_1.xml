@@ -1,8 +1,8 @@
-<model inter_gene_max_space="20" min_genes_required="4" min_mandatory_genes_required="2" multi_loci="1" vers="2.0">
+<model inter_gene_max_space="20" min_genes_required="4" min_mandatory_genes_required="2" multi_loci="1" vers="2">
     <gene name="sctJ_FLG" presence="mandatory" loner="true" multi_system="1">
        <exchangeables>
            <gene name="sctJ" />
-           <gene name="abc" multi_system="False" />
+           <gene name="abc" multi_system="false" />
        </exchangeables>
     </gene>
     <gene name="sctN_FLG" presence="mandatory">

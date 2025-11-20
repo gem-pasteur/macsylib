@@ -629,6 +629,44 @@ ligne 3 et bbbbb
         self.assertListEqual(errors, [])
         self.assertListEqual(warnings, [])
 
+
+    @unittest.skipIf(not lxml, 'lxml is not installed')
+    def test_check_grammar_no_vers(self):
+        model_name = 'fake_model'
+        pack_path = self.create_fake_package(model_name, definitions=False)
+        def_dir = os.path.join(pack_path, 'definitions')
+        os.mkdir(def_dir)
+        df_name = 'model_no_vers'
+        shutil.copy(self.find_data('models', 'foo', 'definitions', f'{df_name}.xml'),
+                        def_dir)
+        pack = model_package.ModelPackage(pack_path)
+        with self.catch_log(log_name='macsylib'):
+            errors, warnings = pack._check_model_grammar()
+        self.maxDiff =None
+        self.assertListEqual(errors,
+                             [f"{df_name} is not valid: Element 'model': The attribute 'vers' is required but "
+                              "missing., line 1"])
+        self.assertListEqual(warnings, [])
+
+
+    def test_check_unsupported_vers(self):
+        model_name = 'fake_model'
+        pack_path = self.create_fake_package(model_name, definitions=False, vers=False)
+        def_dir = os.path.join(pack_path, 'definitions')
+        os.mkdir(def_dir)
+        df_name = 'model_unsupported_vers'
+        shutil.copy(self.find_data('models', 'foo', 'definitions', f'{df_name}.xml'),
+                    def_dir)
+        pack = model_package.ModelPackage(pack_path)
+        with self.catch_log(log_name='macsylib'):
+            errors, warnings = pack.check()
+        self.maxDiff = None
+        self.assertListEqual(errors,
+                             [f"unable to parse model definition '{model_name}/{df_name}' : The model definition {df_name}.xml "
+                              f"has unsupported version: 3 . Supported versions are >=2, <3 . Please update your model."])
+        self.assertListEqual(warnings, [])
+
+
     @unittest.skipIf(not lxml, 'lxml is not installed')
     def test_check_gene_no_name(self):
         model_name = 'fake_model'

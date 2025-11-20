@@ -30,7 +30,7 @@ import tempfile
 import argparse
 
 from macsylib.config import Config, MacsyDefaults
-from macsylib.model import ModelBank
+from macsylib.model import ModelBank, Model
 from macsylib.profile import ProfileFactory
 from macsylib.gene import GeneBank, CoreGene, ModelGene, Exchangeable
 from macsylib.registries import ModelRegistry, scan_models_dir
@@ -149,6 +149,41 @@ class TestModelParser(MacsyTest):
         self.assertTrue(gspD.multi_model)
         self.assertTrue(gspD.multi_system)
 
+    def test_no_vers(self):
+        fam_name = 'foo'
+        def_name = 'model_no_vers'
+        fqn =  f'{fam_name}/{def_name}'
+        model_2_detect = [self.model_registry[fam_name].get_definition(fqn)]
+        with self.assertRaises(MacsylibError) as context:
+            with self.catch_log():
+                self.parser.parse(model_2_detect)
+        self.assertEqual(str(context.exception),
+                         f"unable to parse model definition '{fqn}' : "
+                         f"The model definition {def_name}.xml is not versioned. Please update your model."
+                         )
+
+    def test_vers_with_minor(self):
+        fam_name = 'foo'
+        def_name = 'model_vers_minor'
+        fqn = f'{fam_name}/{def_name}'
+        model_2_detect = [self.model_registry[fam_name].get_definition(fqn)]
+        self.parser.parse(model_2_detect)
+        m = self.model_bank[fqn]
+        self.assertTrue(isinstance(m, Model))
+
+    def test_unsupported_vers(self):
+        fam_name = 'foo'
+        def_name = 'model_unsupported_vers'
+        fqn = f'{fam_name}/{def_name}'
+        model_2_detect = [self.model_registry[fam_name].get_definition(fqn)]
+        with self.assertRaises(MacsylibError) as context:
+            with self.catch_log():
+                self.parser.parse(model_2_detect)
+        self.maxDiff = None
+        self.assertEqual(str(context.exception),
+                         f"unable to parse model definition '{fqn}' : The model definition {def_name}.xml "
+                              f"has unsupported version: 3 . Supported versions are >=2, <3 . Please update your model."
+                         )
 
     def test_model_w_unkown_attr(self):
         model_2_detect = [self.model_registry['foo'].get_definition('foo/model_w_unknown_attribute')]
@@ -196,14 +231,14 @@ class TestModelParser(MacsyTest):
         self.assertEqual(str(context.exception),
                          "Invalid model definition 'foo/gene_no_name': gene without name")
 
-    def test_invalid_homolog(self):
+    def test_invalid_exchangeable(self):
         model_2_detect = [self.model_registry['foo'].get_definition('foo/invalid_homolog')]
         with self.assertRaises(MacsylibError) as context:
                 self.parser.parse(model_2_detect)
         self.assertEqual(str(context.exception),
                          "'foo/foo_bar': No such profile")
 
-    def test_invalid_homolog_2(self):
+    def test_invalid_exchangeable_2(self):
         model_2_detect = [self.model_registry['foo'].get_definition('foo/invalid_homolog_2')]
         with self.assertRaises(SyntaxError) as ctx:
             with self.catch_log():
@@ -538,7 +573,7 @@ class TestModelParser(MacsyTest):
 
 
     def test_parse_model_old_syntax(self):
-        # the attribute vers is not set
+        # the attribute root node of definition is 'system' instead of 'model'
         model_fqn = 'foo/model_old_1'
         models_2_detect = [self.model_registry['foo'].get_definition(model_fqn)]
         with self.catch_log(log_name='macsylib'):
@@ -548,7 +583,7 @@ class TestModelParser(MacsyTest):
         # otherwise the olg differ of test are ran from run_test.py or setup.py
         self.assertEqual(str(ctx.exception),
                          "unable to parse model definition 'foo/model_old_1' : "
-                         "The model definition model_old_1.xml is not versioned. Please update your model.")
+                         "The model definition model_old_1.xml is obsolete. Please update your model.")
 
         # the root is system instead of model
         model_fqn = 'foo/model_old_2'
