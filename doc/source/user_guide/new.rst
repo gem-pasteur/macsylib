@@ -24,10 +24,20 @@ Test MacSyFinder with python 3.14
 Features
 --------
 
-Use new model definition validation system.
-This system check more carefully the xml models definitions. This feature require to install `lxml` library.
+New version of the model definition grammar
+"""""""""""""""""""""""""""""""""""""""""""
+The version of the grammar is now 2.1. The **semantic** stay **unchanged**. But the **syntax** is little **more stringent**.
+We develop a new model definition validation system.
+This system check thoroughly the xml models definitions.
+Only valid xml comments are allowed :code:`<!-- comment -->`
+The boolean value (for attributes: loner, multi_system, multi_model, ...) must be `true` or `false` in lower case
+(`True` or `False` are not allowed any longer)
+This feature is used only for :code:`msl_data check` command. At run time *macsylib* can use grammar 2.0 or 2.1.
+
+This feature require to install `lxml` library.
 Which is automatically done if you install macsylib with target `[model]` or `[dev]`
-`pip install macsylib[model]`
+
+:code:`pip install macsylib[model]`
 
 Bug fix
 -------
