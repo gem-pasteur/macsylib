@@ -35,10 +35,14 @@ import json
 import shutil
 import tarfile
 from importlib import resources as impresources
+import xml.etree.ElementTree as Et
 
 import certifi
 import yaml
 import colorlog
+from packaging.specifiers import Specifier
+from packaging.version import Version
+
 
 try:
     from lxml import etree
@@ -374,12 +378,13 @@ class ModelPackage:
         return metadata
 
 
-    def check(self) -> tuple[list[str], list[str]]:
+    def check(self, grammar='2.0') -> tuple[list[str], list[str]]:
         """
         Check the QA of this package
         """
         all_warnings = []
         all_errors = []
+
         for meth in (self._check_structure, self._check_metadata, self._check_model_grammar, self._check_model_consistency,
                      self._check_profiles, self._check_model_conf):
             errors, warnings = meth()
@@ -428,26 +433,51 @@ class ModelPackage:
         return errors, warnings
 
 
-    def _check_model_grammar(self) -> tuple[list[str], list[str]]:
+    def _check_model_grammar(self, grammar="2.1") -> tuple[list[str], list[str]]:
         """
         check the compliance of models of a given package with the model grammar
+        this methods is useful if grammar >= 2.1
+        before this version no xml validation is done (only _ckeck_model_consitency)
 
         :return: the errors and the warnings
         """
+        def check_version(path):
+            tree = Et.parse(path)
+            model_node = tree.getroot()
+            try:
+                vers = model_node.get('vers')
+            except TypeError:
+                vers = None
+            return vers
+
         errors = []
-        if etree:
-            model_schema_doc = etree.parse(impresources.files('macsylib') / 'data' / 'model.xsd')
-            model_schema = etree.XMLSchema(model_schema_doc)
-            _log.info(f"Checking grammar for '{self.name}' Model definitions")
-            model_loc = ModelLocation(path=self.path)
-            all_def = model_loc.get_all_definitions()
-            for one_def in all_def:
-                doc = etree.parse(one_def.path)
-                if not model_schema.validate(doc):
-                    try:
-                        model_schema.assertValid(doc)
-                    except etree.DocumentInvalid as err:
-                        errors.append(f"{one_def.name} is not valid: {err}")
+        warnings = []
+        supported_grammar = Specifier(">=2.1")
+        if Version(grammar) in supported_grammar:
+            if etree:
+                model_schema_doc = etree.parse(impresources.files('macsylib') / 'data' / 'model.xsd')
+                model_schema = etree.XMLSchema(model_schema_doc)
+                _log.info(f"Checking grammar for '{self.name}' Model definitions")
+                model_loc = ModelLocation(path=self.path)
+                all_def = model_loc.get_all_definitions()
+                for one_def in all_def:
+                    doc = etree.parse(one_def.path)
+                    if not model_schema.validate(doc):
+                        try:
+                            model_schema.assertValid(doc)
+                        except etree.DocumentInvalid as err:
+                            errors.append(f"{one_def.name} is not valid: {err}")
+                    vers = check_version(one_def.path)
+                    if vers is not None and vers < Version("2.1"):
+                        # if there is no vers the error is already reported by schema validation
+                        # but the program is not stopped so check_version can return None
+                        errors.append(f"{one_def.name} use old grammar version {vers}, please upgrade to 2.1.")
+            else:
+                raise RuntimeError("To validate grammar >=2.1 you need to install `lxml` library".)
+        elif Version(grammar) == Version("2.0"):
+            warnings.append(f"Thorough grammar checking is available from 2.1 version. Please update your model to turn this feature on.")
+        else:
+            raise ValueError(f"Unsupported grammar version: {grammar}")
         return errors, []
 
 
