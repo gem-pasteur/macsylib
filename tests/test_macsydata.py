@@ -69,7 +69,7 @@ class TestMacsydata(MacsyTest):
         self._remote_exists = macsydata.RemoteModelIndex.remote_exists
         macsydata.RemoteModelIndex.remote_exists = lambda x: True
         macsydata._log = macsydata.init_logger(20)  # 20 logging.INFO
-        self.definition_1 = """<model inter_gene_max_space="20" min_mandatory_genes_required="1" min_genes_required="2" vers="2.0">
+        self.definition_1 = """<model inter_gene_max_space="20" min_mandatory_genes_required="1" min_genes_required="2" vers="2.1">
     <gene name="flgB" presence="mandatory"/>
     <gene name="flgC" presence="mandatory" inter_gene_max_space="2">
         <exchangeables>
@@ -77,7 +77,7 @@ class TestMacsydata(MacsyTest):
         </exchangeables>
     </gene>
 </model>"""
-        self.definition_2 = """<model inter_gene_max_space="20" min_mandatory_genes_required="1" min_genes_required="2" vers="2.0">
+        self.definition_2 = """<model inter_gene_max_space="20" min_mandatory_genes_required="1" min_genes_required="2" vers="2.1">
     <gene name="fliE" presence="mandatory" multi_system="true"/>
     <gene name="tadZ" presence="accessory" loner="true"/>
     <gene name="sctC" presence="forbidden"/>

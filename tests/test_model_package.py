@@ -469,6 +469,7 @@ ligne 3 et bbbbb
                             license=True,
                             conf=True,
                             vers=True,
+                            grammar="2.1",
                             bad_conf=False):
         pack_path = os.path.join(self.tmpdir, model)
         os.mkdir(pack_path)
@@ -476,19 +477,19 @@ ligne 3 et bbbbb
             def_dir = os.path.join(pack_path, 'definitions')
             os.mkdir(def_dir)
             with open(os.path.join(def_dir, "model_1.xml"), 'w') as f:
-                f.write("""<model inter_gene_max_space="20" min_mandatory_genes_required="1" min_genes_required="2" vers="2.0">
+                f.write(f"""<model inter_gene_max_space="20" min_mandatory_genes_required="1" min_genes_required="2" vers="{grammar}">
     <gene name="flgB" presence="mandatory"/>
     <gene name="flgC" presence="mandatory" inter_gene_max_space="2"/>
 </model>""")
             with open(os.path.join(def_dir, "model_2.xml"), 'w') as f:
-                f.write("""<model inter_gene_max_space="20" min_mandatory_genes_required="1" min_genes_required="2" vers="2.0">
+                f.write(f"""<model inter_gene_max_space="20" min_mandatory_genes_required="1" min_genes_required="2" vers="{grammar}">
     <gene name="fliE" presence="mandatory" multi_system="true"/>
     <gene name="tadZ" presence="accessory" loner="true"/>
     <gene name="sctC" presence="forbidden"/>
 </model>""")
         if bad_definitions:
             with open(os.path.join(def_dir, "model_3.xml"), 'w') as f:
-                f.write("""<model inter_gene_max_space="20" min_mandatory_genes_required="2" min_genes_required="1" vers="2.0">
+                f.write(f"""<model inter_gene_max_space="20" min_mandatory_genes_required="2" min_genes_required="1" vers="{grammar}">
     <gene name="flgB" presence="mandatory"/>
     <gene name="flgC" presence="mandatory" inter_gene_max_space="2"/>
 </model>""")

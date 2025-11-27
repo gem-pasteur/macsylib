@@ -41,7 +41,7 @@ import certifi
 import yaml
 import colorlog
 from packaging.specifiers import Specifier
-from packaging.version import Version
+from packaging.version import Version, InvalidVersion
 
 
 try:
@@ -358,6 +358,11 @@ class ModelPackage:
                 return path
         return None
 
+
+    @property
+    def supported_grammar(self) -> Specifier:
+        return Specifier(">=2.1")
+
     @property
     def metadata(self) -> dict[str: str]:
         """
@@ -446,8 +451,13 @@ class ModelPackage:
             model_node = tree.getroot()
             try:
                 vers = model_node.get('vers')
+                vers= Version(vers)
             except TypeError:
+                # There is no attribute vers
+                # but we have not check with schema yet
                 vers = None
+            except InvalidVersion, err:
+                raise ValueError
             return vers
 
         errors = []
@@ -467,15 +477,20 @@ class ModelPackage:
                             model_schema.assertValid(doc)
                         except etree.DocumentInvalid as err:
                             errors.append(f"{one_def.name} is not valid: {err}")
-                    vers = check_version(one_def.path)
+                    try:
+                        vers = check_version(one_def.path)
+                    except ValueError, err:
+                        errors.append(f"{one_def.name} is not valid: invalid 'vers'")
+                        vers = None
                     if vers is not None and vers < Version("2.1"):
                         # if there is no vers the error is already reported by schema validation
                         # but the program is not stopped so check_version can return None
                         errors.append(f"{one_def.name} use old grammar version {vers}, please upgrade to 2.1.")
             else:
-                raise RuntimeError("To validate grammar >=2.1 you need to install `lxml` library".)
+                raise RuntimeError("To validate grammar >=2.1 you need to install `lxml` library.")
         elif Version(grammar) == Version("2.0"):
-            warnings.append(f"Thorough grammar checking is available from 2.1 version. Please update your model to turn this feature on.")
+            warnings.append(f"Thorough grammar checking is available from 2.1 version. "
+                            f"Please update your model to turn this feature on.")
         else:
             raise ValueError(f"Unsupported grammar version: {grammar}")
         return errors, []
