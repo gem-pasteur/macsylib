@@ -358,11 +358,6 @@ class ModelPackage:
                 return path
         return None
 
-
-    @property
-    def supported_grammar(self) -> Specifier:
-        return Specifier(">=2.1")
-
     @property
     def metadata(self) -> dict[str: str]:
         """
@@ -450,20 +445,18 @@ class ModelPackage:
             tree = Et.parse(path)
             model_node = tree.getroot()
             try:
-                vers = model_node.get('vers')
-                vers= Version(vers)
-            except TypeError:
-                # There is no attribute vers
-                # but we have not check with schema yet
+                vers = Version(model_node.get('vers'))
+            except Exception:
+                # no version or bad value for a version are already reported by shema validation
                 vers = None
-            except InvalidVersion, err:
-                raise ValueError
             return vers
 
         errors = []
         warnings = []
+
         supported_grammar = Specifier(">=2.1")
-        if Version(grammar) in supported_grammar:
+        ask_grammar = Version(grammar)
+        if ask_grammar in supported_grammar:
             if etree:
                 model_schema_doc = etree.parse(impresources.files('macsylib') / 'data' / 'model.xsd')
                 model_schema = etree.XMLSchema(model_schema_doc)
@@ -477,23 +470,20 @@ class ModelPackage:
                             model_schema.assertValid(doc)
                         except etree.DocumentInvalid as err:
                             errors.append(f"{one_def.name} is not valid: {err}")
-                    try:
-                        vers = check_version(one_def.path)
-                    except ValueError, err:
-                        errors.append(f"{one_def.name} is not valid: invalid 'vers'")
-                        vers = None
-                    if vers is not None and vers < Version("2.1"):
-                        # if there is no vers the error is already reported by schema validation
-                        # but the program is not stopped so check_version can return None
-                        errors.append(f"{one_def.name} use old grammar version {vers}, please upgrade to 2.1.")
+                    vers_in_xml = check_version(one_def.path)
+                    if vers_in_xml and vers_in_xml != ask_grammar:
+                        warnings.append(f'You ask to check grammar vers {ask_grammar}. '
+                                        f'But in {one_def.name} you declare vers="{vers_in_xml}". '
+                                         'Please update your model.')
             else:
                 raise RuntimeError("To validate grammar >=2.1 you need to install `lxml` library.")
-        elif Version(grammar) == Version("2.0"):
-            warnings.append(f"Thorough grammar checking is available from 2.1 version. "
-                            f"Please update your model to turn this feature on.")
+        elif ask_grammar == Version("2.0"):
+                _log.warning("Thorough grammar checking is available from 2.1 version.")
         else:
-            raise ValueError(f"Unsupported grammar version: {grammar}")
-        return errors, []
+            raise MacsydataError("The grammar of your model is not supported. "
+                                 "Please refer to the 'modeler guide' documentation")
+
+        return errors, warnings
 
 
     def _check_model_consistency(self) -> tuple[list, list]:
