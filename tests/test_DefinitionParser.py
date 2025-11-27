@@ -158,7 +158,7 @@ class TestModelParser(MacsyTest):
             with self.catch_log():
                 self.parser.parse(model_2_detect)
         self.assertEqual(str(context.exception),
-                         f"unable to parse model definition '{fqn}' : "
+                         f"Unable to parse model definition '{fqn}' : "
                          f"The model definition {def_name}.xml is not versioned. Please update your model."
                          )
 
@@ -181,7 +181,7 @@ class TestModelParser(MacsyTest):
                 self.parser.parse(model_2_detect)
         self.maxDiff = None
         self.assertEqual(str(context.exception),
-                         f"unable to parse model definition '{fqn}' : The model definition {def_name}.xml "
+                         f"Unable to parse model definition '{fqn}' : The model definition {def_name}.xml "
                               f"has unsupported version: 3 . Supported versions are >=2, <3 . Please update your model."
                          )
 
@@ -191,7 +191,7 @@ class TestModelParser(MacsyTest):
             with self.catch_log():
                 self.parser.parse(model_2_detect)
         self.assertEqual(str(context.exception),
-                         "unable to parse model definition 'foo/model_w_unknown_attribute' : "
+                         "Unable to parse model definition 'foo/model_w_unknown_attribute' : "
                          "The model definition model_w_unknown_attribute.xml has an unknow attribute 'multi-loci'. "
                          "Please fix the definition.")
 
@@ -201,7 +201,7 @@ class TestModelParser(MacsyTest):
             with self.catch_log():
                 self.parser.parse(model_2_detect)
         self.assertEqual(str(context.exception),
-                         "unable to parse model definition 'foo/gene_w_unknown_attribute' : "
+                         "Unable to parse model definition 'foo/gene_w_unknown_attribute' : "
                          "The model definition gene_w_unknown_attribute.xml has an unknown attribute 'multi-system' for a gene."
                          " Please fix the definition.")
 
@@ -582,7 +582,7 @@ class TestModelParser(MacsyTest):
         # test the err msg not the log
         # otherwise the olg differ of test are ran from run_test.py or setup.py
         self.assertEqual(str(ctx.exception),
-                         "unable to parse model definition 'foo/model_old_1' : "
+                         "Unable to parse model definition 'foo/model_old_1' : "
                          "The model definition model_old_1.xml is obsolete. Please update your model.")
 
         # the root is system instead of model
@@ -592,7 +592,7 @@ class TestModelParser(MacsyTest):
             with self.assertRaises(MacsylibError) as ctx:
                 self.parser.parse(models_2_detect)
         self.assertEqual(str(ctx.exception),
-                         f"unable to parse model definition '{model_fqn}' : "
+                         f"Unable to parse model definition '{model_fqn}' : "
                          "The model definition model_old_2.xml is obsolete. Please update your model.")
 
         # there still system_ref attribute
@@ -602,7 +602,7 @@ class TestModelParser(MacsyTest):
             with self.assertRaises(MacsylibError) as ctx:
                 self.parser.parse(models_2_detect)
         self.assertEqual(str(ctx.exception),
-                         f"unable to parse model definition '{model_fqn}' : "
+                         f"Unable to parse model definition '{model_fqn}' : "
                          "The model definition model_old_3.xml is obsolete. Please update your model.")
 
         # there still homologs tag
@@ -612,7 +612,7 @@ class TestModelParser(MacsyTest):
             with self.assertRaises(MacsylibError) as ctx:
                 self.parser.parse(models_2_detect)
         self.assertEqual(str(ctx.exception),
-                         f"unable to parse model definition '{model_fqn}' : "
+                         f"Unable to parse model definition '{model_fqn}' : "
                          "The model definition model_old_4.xml is obsolete. Please update your model.")
 
         # there still analogs tag
@@ -622,5 +622,5 @@ class TestModelParser(MacsyTest):
             with self.assertRaises(MacsylibError) as ctx:
                 self.parser.parse(models_2_detect)
         self.assertEqual(str(ctx.exception),
-                         f"unable to parse model definition '{model_fqn}' : "
+                         f"Unable to parse model definition '{model_fqn}' : "
                          "The model definition model_old_5.xml is obsolete. Please update your model.")

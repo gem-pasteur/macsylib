@@ -643,10 +643,70 @@ ligne 3 et bbbbb
         pack = model_package.ModelPackage(pack_path)
         with self.catch_log(log_name='macsylib'):
             errors, warnings = pack._check_model_grammar()
-        self.maxDiff =None
+        self.maxDiff = None
+
         self.assertListEqual(errors,
                              [f"{df_name} is not valid: Element 'model': The attribute 'vers' is required but "
                               "missing., line 1"])
+        self.assertListEqual(warnings, [])
+
+
+    def test_check_grammar_20(self):
+        model_name = 'fake_model'
+        pack_path = self.create_fake_package(model_name, definitions=False)
+        def_dir = os.path.join(pack_path, 'definitions')
+        os.mkdir(def_dir)
+        df_name = 'model_6'
+        shutil.copy(self.find_data('models', 'foo', 'definitions', f'{df_name}.xml'),
+                        def_dir)
+        pack = model_package.ModelPackage(pack_path)
+        with self.catch_log(log_name='macsylib'):
+            errors, warnings = pack._check_model_grammar(grammar='2.1')
+        self.assertListEqual(errors,
+                             [])
+
+        self.assertListEqual(warnings,
+                             ['You ask to check grammar vers 2.1. '
+                              f'But in {df_name} you declare vers="2.0". Please update your model.'])
+
+        with self.catch_log(log_name='macsylib'):
+            errors, warnings = pack._check_model_grammar(grammar='2.0')
+        self.assertListEqual(errors,
+                             [])
+        self.assertListEqual(warnings,
+                             [])
+
+        mp_etree = model_package.etree
+        model_package.etree = None  # simultae no lxml
+        try:
+            with self.assertRaises(RuntimeError) as ctx:
+                errors, warnings = pack._check_model_grammar()
+        finally:
+            model_package.etree = mp_etree
+
+        self.assertEqual(str(ctx.exception),
+                         "To validate grammar >=2.1 you need to install `lxml` library.")
+        self.assertListEqual(errors,
+                             [])
+        self.assertListEqual(warnings, [])
+
+
+    def test_check_bad_vers(self):
+        model_name = 'fake_model'
+        pack_path = self.create_fake_package(model_name, definitions=False, vers=False)
+        def_dir = os.path.join(pack_path, 'definitions')
+        os.mkdir(def_dir)
+        df_name = 'model_bad_vers'
+        shutil.copy(self.find_data('models', 'foo', 'definitions', f'{df_name}.xml'),
+                    def_dir)
+        pack = model_package.ModelPackage(pack_path)
+        with self.catch_log(log_name='macsylib'):
+            errors, warnings = pack.check()
+        self.maxDiff = None
+        self.assertListEqual(errors,
+                             ["model_bad_vers is not valid: Element 'model', "
+                              "attribute 'vers': [facet 'pattern'] The value 'bad_vers' is not accepted by "
+                              "the pattern '\\d(.\\d){0,2}'., line 1"])
         self.assertListEqual(warnings, [])
 
 
@@ -663,9 +723,8 @@ ligne 3 et bbbbb
             errors, warnings = pack.check()
         self.maxDiff = None
         self.assertListEqual(errors,
-                             [f"unable to parse model definition '{model_name}/{df_name}' : The model definition {df_name}.xml "
-                              f"has unsupported version: 3 . Supported versions are >=2, <3 . Please update your model."])
-        self.assertListEqual(warnings, [])
+                             [f"Unable to parse model definition '{model_name}/{df_name}' : The model definition {df_name}.xml has unsupported version: 3 . Supported versions are >=2, <3 . Please update your model."])
+        self.assertListEqual(warnings, ['You ask to check grammar vers 2.1. But in model_unsupported_vers you declare vers="3". Please update your model.'])
 
 
     @unittest.skipIf(not lxml, 'lxml is not installed')
