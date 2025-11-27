@@ -111,7 +111,7 @@ class DefinitionParser:
             model_node = tree.getroot()
             self._check_syntax(model_node, path)
         except Exception as err:
-            msg = f"unable to parse model definition '{def_loc.fqn}' : {err}"
+            msg = f"Unable to parse model definition '{def_loc.fqn}' : {err}"
             _log.critical(msg)
             raise MacsylibError(msg) from None
         return model_node
