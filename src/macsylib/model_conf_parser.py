@@ -148,7 +148,7 @@ class ModelConfParser:
                 try:
                     value = allowed_elements[element](value)
                 except (TypeError, ValueError) as err:
-                    msg = f"The model configuration file '{self._path}' cannot be parsed: {err}"
+                    msg = f"The model configuration file '{self._path}' is not valid: {err}"
                     _log.critical(msg)
                     raise MacsylibError(msg) from None
             else:

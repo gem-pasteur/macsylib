@@ -587,7 +587,7 @@ class ModelPackage:
                 try:
                     model_schema.assertValid(doc)
                 except etree.DocumentInvalid as err:
-                    errors.append(f"{model_name} configuration is not valid: {err}")
+                    errors.append(f"The model configuration file '{model_conf_path}' is not valid: {err}")
         return errors
 
     def _check_model_conf(self) -> tuple[list[str], list[str]]:
