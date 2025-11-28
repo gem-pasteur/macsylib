@@ -947,7 +947,8 @@ for instance if you want to add the models to 'macsy-models'
         self.assertEqual(expected_msg, log_msg)
 
 
-    def test_check_bad_syntax_model_conf(self):
+    @unittest.skipIf(not lxml, 'lxml is not installed')
+    def test_check_bad_syntax_model_conf_lxml(self):
         pack_name = 'fake_1'
         pack_path = self.create_fake_package(pack_name)
         self.args.path = pack_path
@@ -959,14 +960,33 @@ for instance if you want to add the models to 'macsy-models'
                 with self.assertRaises(ValueError):
                     macsydata.do_check(self.args)
                 log_msg = log.get_value().strip()
-        if lxml:
-            expected_msg = f"""{pack_name} configuration is not valid: Element 'itself': 'false' is not a valid value of the atomic type 'xs:float'., line 3
+        expected_msg = f"""The model configuration file '{pack_path}/model_conf.xml' is not valid: Element 'itself': 'false' is not a valid value of the atomic type 'xs:float'., line 3
 Please fix issues above, before publishing these models."""
-        else:
-            expected_msg = F"""lxml is not installed grammar checking is basic. To deep checking install 'lxml' or install macsylib with target 'model': pip install macsylib[model]
-The model configuration file '{os.path.join(pack_path, "model_conf.xml")}' cannot be parsed: could not convert string to float: 'false'
+        self.assertEqual(expected_msg, log_msg)
+
+
+    def test_check_bad_syntax_model_conf_no_lxml(self):
+        pack_name = 'fake_1'
+        pack_path = self.create_fake_package(pack_name)
+        self.args.path = pack_path
+        self.args.tool_name='msl_data'
+        shutil.copy(self.find_data('conf_files', 'model_conf_bad_value.xml'),
+                    os.path.join(pack_path, 'model_conf.xml'))
+        m_etree = macsydata.etree
+        macsydata.etree = None
+        try:
+            with self.catch_log(log_name='macsylib'):
+                with self.catch_log(log_name='macsydata') as log:
+                    with self.assertRaises(ValueError):
+                        macsydata.do_check(self.args)
+                    log_msg = log.get_value().strip()
+        finally:
+            macsydata.etree = m_etree
+        expected_msg = F"""lxml is not installed grammar checking is basic. To deep checking install 'lxml' or install macsylib with target 'model': pip install macsylib[model]
+The model configuration file '{pack_path}/model_conf.xml' is not valid: Element 'itself': 'false' is not a valid value of the atomic type 'xs:float'., line 3
 Please fix issues above, before publishing these models."""
-            self.maxDiff = None
+        self.maxDiff = None
+        print("")
         self.assertEqual(expected_msg, log_msg)
 
 

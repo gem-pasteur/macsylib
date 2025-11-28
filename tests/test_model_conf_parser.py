@@ -180,7 +180,7 @@ class TestModelConfParser(MacsyTest):
         self.assertDictEqual(recieved_filters, expected_filters)
 
 
-    def test_parse_w_bad_value(self):
+    def test_parse_w_bad_value_lxml(self):
         conf_file = self.find_data('conf_files', 'model_conf.xml')
         tree = Et.parse(conf_file)
         model_node = tree.getroot()
@@ -192,7 +192,7 @@ class TestModelConfParser(MacsyTest):
         with self.catch_log(log_name='macsylib'):
             with self.assertRaises(MacsylibError) as ctx:
                 mcp.parse_filtering(model_node.find("./filtering"))
+
         self.assertEqual(str(ctx.exception),
-                         f"The model configuration file '{conf_file}' cannot be parsed: "
-                         f"could not convert string to float: 'FOO'"
+                         f"The model configuration file '{conf_file}' is not valid: could not convert string to float: 'FOO'"
                          )

@@ -596,23 +596,45 @@ ligne 3 et bbbbb
         self.assertListEqual(errors, [])
         self.assertListEqual(warnings, [])
 
-    def test_check_model_conf_bad_conf(self):
+
+    @unittest.skipIf(not lxml, 'lxml is not installed')
+    def test_check_model_conf_bad_conf_lxml(self):
         model_name = 'fake_model'
         fake_pack_path = self.create_fake_package(model_name, conf=False, bad_conf=True)
         pack = model_package.ModelPackage(fake_pack_path)
         with self.catch_log(log_name='macsylib'):
             errors, warnings = pack._check_model_conf()
-        self.maxDiff =None
-        if lxml:
-            exp_errors = [f"{model_name} configuration is not valid: Element 'itself': 'FOO' "
-                                      "is not a valid value of the atomic type 'xs:float'., line 3"]
-        else:
-            def_path = os.path.join(fake_pack_path, "model_conf.xml")
-            exp_errors = [f"The model configuration file '{def_path}' "
-                          "cannot be parsed: could not convert string to float: 'FOO'"]
+        self.maxDiff = None
+
+        exp_errors = [f"The model configuration file '{fake_pack_path}/model_conf.xml' is not valid: "
+                      f"Element 'itself': 'FOO' is not a valid value of the atomic type 'xs:float'., line 3"]
 
         self.assertListEqual(errors, exp_errors)
         self.assertListEqual(warnings, [])
+
+
+    def test_check_model_conf_bad_conf_no_lxml(self):
+        model_name = 'fake_model'
+        fake_pack_path = self.create_fake_package(model_name, conf=False, bad_conf=True)
+        pack = model_package.ModelPackage(fake_pack_path)
+        with self.catch_log(log_name='macsylib'):
+            errors, warnings = pack._check_model_conf()
+        self.maxDiff = None
+
+        mp_etree = model_package.etree
+        model_package.etree = None
+        try:
+            with self.catch_log(log_name='macsylib'):
+                errors, warnings = pack._check_model_conf()
+        finally:
+            model_package.etree = mp_etree
+
+        def_path = os.path.join(fake_pack_path, "model_conf.xml")
+        exp_errors = [f"The model configuration file '{def_path}' "
+                      "is not valid: could not convert string to float: 'FOO'"]
+        self.assertListEqual(errors, exp_errors)
+        self.assertListEqual(warnings, [])
+
 
     @unittest.skipIf(not lxml, 'lxml is not installed')
     def test_check_grammar(self):
@@ -913,7 +935,8 @@ ligne 3 et bbbbb
                                   "min_mandatory_genes_required '2'"])
 
 
-    def test_check_model_conf_unknown_elt(self):
+    @unittest.skipIf(lxml is None, 'lxml not installed')
+    def test_check_model_conf_unknown_elt_lxml(self):
         pack_name = 'fake_model'
         fake_pack_path = self.create_fake_package(pack_name, conf=False)
         pack = model_package.ModelPackage(fake_pack_path)
@@ -922,11 +945,28 @@ ligne 3 et bbbbb
         with self.catch_log(log_name='macsylib'):
             errors, warnings = pack._check_model_conf()
         self.assertEqual(warnings, [])
-        if lxml:
-            self.assertEqual(errors, [f"{pack_name} configuration is not valid: Element 'nimportnoik':"
-                                  f" This element is not expected., line 10"])
-        else:
-            self.assertEqual(errors, [])
+        self.assertEqual(errors, [
+            f"The model configuration file '{fake_pack_path}/model_conf.xml' is not valid: Element 'nimportnoik': "
+            f"This element is not expected., line 10"
+           ])
+
+
+    def test_check_model_conf_unknown_elt_no_lxml(self):
+        pack_name = 'fake_model'
+        fake_pack_path = self.create_fake_package(pack_name, conf=False)
+        pack = model_package.ModelPackage(fake_pack_path)
+        shutil.copy(self.find_data('conf_files', 'model_conf_bad_element.xml'),
+                    os.path.join(fake_pack_path, 'model_conf.xml'))
+        m_etree = model_package.etree
+        model_package.etree = None
+        try:
+            with self.catch_log(log_name='macsylib'):
+                errors, warnings = pack._check_model_conf()
+        finally:
+            model_package.etree = m_etree
+
+        self.assertEqual(warnings, [])
+        self.assertEqual(errors, [])
 
 
     def test_check_no_readme_n_no_license(self):
