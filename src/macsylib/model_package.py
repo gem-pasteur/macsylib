@@ -41,7 +41,7 @@ import certifi
 import yaml
 import colorlog
 from packaging.specifiers import Specifier
-from packaging.version import Version, InvalidVersion
+from packaging.version import Version
 
 
 try:
