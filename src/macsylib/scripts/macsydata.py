@@ -598,7 +598,7 @@ def do_check(args: argparse.Namespace) -> None:
                      f"pip install {args.package_name}[model]")
 
     model_pack = ModelPackage(args.path)
-    errors, warnings = model_pack.check()
+    errors, warnings = model_pack.check(grammar=args.grammar)
     if errors:
         for error in errors:
             _log.error(error)
@@ -1397,6 +1397,13 @@ def build_arg_parser(header:str, version:str,
                                  nargs='?',
                                  default=os.getcwd(),
                                  help='the path to root directory models to check')
+    check_subparser.add_argument('--grammar',
+                                 default='2.1',
+                                 choices=['2.0', '2.1'],
+                                 help="""The version of the target grammar. 
+                                 Note that for the grammar '2.0' only basic checking is performed. 
+                                 For thorough checking choose '2.1'. (default: '2.1')"""
+                                 )
     ########
     # show #
     ########

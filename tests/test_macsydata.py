@@ -735,6 +735,8 @@ fake_1 (0.0b2) : 4 models"""
         path = self.create_fake_package(pack_name, vers=False)
         self.args.path = path
         self.args.tool_name = 'msl_data'
+        self.args.grammar = '2.1'
+
         with self.catch_log(log_name='macsydata') as log:
             macsydata.do_check(self.args)
             log_msg = log.get_value().strip()
@@ -761,11 +763,40 @@ for instance if you want to add the models to 'macsy-models'
         self.assertEqual(expected_msg, log_msg)
 
 
+    def test_check_20(self):
+        pack_name = 'fake_1'
+        path = self.create_fake_package(pack_name, vers=False)
+        self.args.path = path
+        self.args.tool_name = 'msl_data'
+        self.args.grammar = '2.0'
+
+        with self.catch_log(log_name='macsydata') as log:
+            macsydata.do_check(self.args)
+            log_msg = log.get_value().strip()
+
+        expected_msg = f"""If everyone were like you, I'd be out of business
+To push the models in organization:
+\tcd {os.path.join(self.tmpdir, pack_name)}
+Transform the models into a git repository
+\tgit init .
+\tgit add .
+\tgit commit -m 'initial commit'
+add a remote repository to host the models
+for instance if you want to add the models to 'macsy-models'
+\tgit remote add origin https://github.com/macsy-models/
+\tgit tag -a <tag vers>  # check https://macsylib.readthedocs.io/en/latest/modeler_guide/publish_package.html#sharing-your-models
+\tgit push origin <tag vers>"""
+
+        self.maxDiff = None
+        self.assertEqual(expected_msg, log_msg)
+
+
     def test_check_with_warnings(self):
         pack_name = 'fake_1'
         path = self.create_fake_package(pack_name, readme=False, license=False)
         self.args.path = path
         self.args.tool_name = 'msl_data'
+        self.args.grammar = '2.1'
 
         with self.catch_log(log_name='macsydata') as log:
             macsydata.do_check(self.args)
@@ -788,11 +819,35 @@ I'll be really happy, if you fix warnings above, before to publish these models.
         self.assertEqual(expected_msg, log_msg)
 
 
+    def test_check_with_warnings_20(self):
+        pack_name = 'fake_1'
+        path = self.create_fake_package(pack_name, readme=False, license=False)
+        self.args.path = path
+        self.args.tool_name = 'msl_data'
+        self.args.grammar = '2.0'
+
+        with self.catch_log(log_name='macsydata') as log:
+            macsydata.do_check(self.args)
+            log_msg = log.get_value().strip()
+
+        expected_msg = """The model package 'fake_1' have not any LICENSE file. May be you have not right to use it.
+The model package 'fake_1' have not any README file.
+The field 'vers' is not required anymore in 'metadata.yml'.
+  It will be ignored and set by msl_data during installation phase according to the git tag.
+
+msl_data says: You're only giving me a partial QA payment?
+I'll take it this time, but I'm not happy.
+I'll be really happy, if you fix warnings above, before to publish these models."""
+
+        self.maxDiff = None
+        self.assertEqual(expected_msg, log_msg)
+
+
     def test_check_with_errors(self):
         pack_name = 'fake_1'
         path = self.create_fake_package(pack_name, profiles=False, definitions=False)
         self.args.path = path
-
+        self.args.grammar = '2.1'
         with self.catch_log(log_name='macsydata') as log:
             with self.assertRaises(ValueError):
                 macsydata.do_check(self.args)
@@ -810,10 +865,29 @@ Please fix issues above, before publishing these models."""
         self.assertEqual(expected_msg, log_msg)
 
 
+    def test_check_with_errors_20(self):
+        pack_name = 'fake_1'
+        path = self.create_fake_package(pack_name, profiles=False, definitions=False)
+        self.args.path = path
+        self.args.grammar = '2.1'
+        with self.catch_log(log_name='macsydata') as log:
+            with self.assertRaises(ValueError):
+                macsydata.do_check(self.args)
+            log_msg = log.get_value().strip()
+
+        expected_msg = """The model package 'fake_1' have no 'definitions' directory.
+The model package 'fake_1' have no 'profiles' directory.
+Please fix issues above, before publishing these models."""
+        self.maxDiff = None
+        self.assertEqual(expected_msg, log_msg)
+
+
     def test_check_with_errors_bad_syntax(self):
         pack_name = 'fake_1'
         pack_path = self.create_fake_package(pack_name, definitions=False)
         self.args.path = pack_path
+        self.args.grammar = '2.1'
+
         def_dir = os.path.join(pack_path, 'definitions')
         os.mkdir(def_dir)
         shutil.copy(self.find_data('models', 'foo', 'definitions', 'gene_no_name.xml'), def_dir)
@@ -837,12 +911,36 @@ Please fix issues above, before publishing these models."""
         self.assertEqual(expected_msg, log_msg)
 
 
+    def test_check_with_errors_bad_syntax_20(self):
+        pack_name = 'fake_1'
+        pack_path = self.create_fake_package(pack_name, definitions=False)
+        self.args.path = pack_path
+        self.args.grammar = '2.0'
+
+        def_dir = os.path.join(pack_path, 'definitions')
+        os.mkdir(def_dir)
+        shutil.copy(self.find_data('models', 'foo', 'definitions', 'gene_no_name.xml'), def_dir)
+        for name in ('sctJ', 'sctN'):
+            shutil.copyfile(self.find_data('models', 'foo', 'profiles', f'{name}.hmm'),
+                            os.path.join(pack_path, 'profiles', f"{name}.hmm")
+                            )
+        with self.catch_log(log_name='macsylib'):
+            with self.catch_log(log_name='macsydata') as log:
+                with self.assertRaises(ValueError):
+                    macsydata.do_check(self.args)
+                log_msg = log.get_value().strip()
+        expected_msg = """Invalid model definition 'fake_1/gene_no_name': gene without name
+Please fix issues above, before publishing these models."""
+        self.assertEqual(expected_msg, log_msg)
+
+
     def test_check_gene_twice(self):
         pack_name = 'fake_1'
         pack_path = self.create_fake_package(pack_name, vers=False, definitions=False,
                                              gen_profiles=('flgB', 'flgC', 'fliE'))
         self.args.path = pack_path
         self.args.tool_name='msl_data'
+        self.args.grammar = '2.1'
         def_dir = os.path.join(pack_path, 'definitions')
         os.mkdir(def_dir)
         shutil.copy(self.find_data('models', 'foo', 'definitions', 'gene_twice.xml'), def_dir)
@@ -875,12 +973,43 @@ for instance if you want to add the models to 'macsy-models'
             self.assertEqual(expected_msg, log_msg)
 
 
+    def test_check_gene_twice_20(self):
+        pack_name = 'fake_1'
+        pack_path = self.create_fake_package(pack_name, vers=False, definitions=False,
+                                             gen_profiles=('flgB', 'flgC', 'fliE'))
+        self.args.path = pack_path
+        self.args.tool_name = 'msl_data'
+        self.args.grammar = '2.0'
+        def_dir = os.path.join(pack_path, 'definitions')
+        os.mkdir(def_dir)
+        shutil.copy(self.find_data('models', 'foo', 'definitions', 'gene_twice.xml'), def_dir)
+
+        with self.catch_log(log_name='macsydata') as log:
+            macsydata.do_check(self.args)
+            log_msg = log.get_value().strip()
+        expected_msg = f"""If everyone were like you, I'd be out of business
+To push the models in organization:
+\tcd {pack_path}
+Transform the models into a git repository
+\tgit init .
+\tgit add .
+\tgit commit -m 'initial commit'
+add a remote repository to host the models
+for instance if you want to add the models to 'macsy-models'
+\tgit remote add origin https://github.com/macsy-models/
+\tgit tag -a <tag vers>  # check https://macsylib.readthedocs.io/en/latest/modeler_guide/publish_package.html#sharing-your-models
+\tgit push origin <tag vers>"""
+        self.maxDiff = None
+        self.assertEqual(expected_msg, log_msg)
+
     def test_check_exchangeable_twice(self):
         pack_name = 'fake_1'
         pack_path = self.create_fake_package(pack_name, vers=False, definitions=False,
                                              gen_profiles=('flgB', 'flgC', 'fliE'))
         self.args.path = pack_path
         self.args.tool_name = 'msl_data'
+        self.args.grammar = '2.1'
+
         def_dir = os.path.join(pack_path, 'definitions')
         os.mkdir(def_dir)
         shutil.copy(self.find_data('models', 'foo', 'definitions', 'exchangeable_twice.xml'), def_dir)
@@ -911,12 +1040,48 @@ for instance if you want to add the models to 'macsy-models'
         self.assertEqual(expected_msg, log_msg)
 
 
+    def test_check_exchangeable_twice_20(self):
+        pack_name = 'fake_1'
+        pack_path = self.create_fake_package(pack_name, vers=False, definitions=False,
+                                             gen_profiles=('flgB', 'flgC', 'fliE'))
+        self.args.path = pack_path
+        self.args.tool_name = 'msl_data'
+        self.args.grammar = '2.0'
+
+        def_dir = os.path.join(pack_path, 'definitions')
+        os.mkdir(def_dir)
+        shutil.copy(self.find_data('models', 'foo', 'definitions', 'exchangeable_twice.xml'), def_dir)
+        with self.catch_log(log_name='macsydata') as log:
+            macsydata.do_check(self.args)
+            log_msg = log.get_value().strip()
+        with self.catch_log(log_name='macsydata') as log:
+            macsydata.do_check(self.args)
+            log_msg = log.get_value().strip()
+
+        expected_msg = f"""If everyone were like you, I'd be out of business
+To push the models in organization:
+\tcd {pack_path}
+Transform the models into a git repository
+\tgit init .
+\tgit add .
+\tgit commit -m 'initial commit'
+add a remote repository to host the models
+for instance if you want to add the models to 'macsy-models'
+\tgit remote add origin https://github.com/macsy-models/
+\tgit tag -a <tag vers>  # check https://macsylib.readthedocs.io/en/latest/modeler_guide/publish_package.html#sharing-your-models
+\tgit push origin <tag vers>"""
+        self.maxDiff = None
+        self.assertEqual(expected_msg, log_msg)
+
+
     def test_check_gene_and_exchangeable(self):
         pack_name = 'fake_1'
         pack_path = self.create_fake_package(pack_name, vers=False, definitions=False,
                                              gen_profiles=('flgB', 'flgC', 'fliE'))
         self.args.path = pack_path
         self.args.tool_name = 'msl_data'
+        self.args.grammar = '2.1'
+
         def_dir = os.path.join(pack_path, 'definitions')
         os.mkdir(def_dir)
         shutil.copy(self.find_data('models', 'foo', 'definitions', 'gene_and_exchangeable.xml'), def_dir)
@@ -947,12 +1112,44 @@ for instance if you want to add the models to 'macsy-models'
         self.assertEqual(expected_msg, log_msg)
 
 
+    def test_check_gene_and_exchangeable_20(self):
+        pack_name = 'fake_1'
+        pack_path = self.create_fake_package(pack_name, vers=False, definitions=False,
+                                             gen_profiles=('flgB', 'flgC', 'fliE'))
+        self.args.path = pack_path
+        self.args.tool_name = 'msl_data'
+        self.args.grammar = '2.0'
+
+        def_dir = os.path.join(pack_path, 'definitions')
+        os.mkdir(def_dir)
+        shutil.copy(self.find_data('models', 'foo', 'definitions', 'gene_and_exchangeable.xml'), def_dir)
+        with self.catch_log(log_name='macsydata') as log:
+            macsydata.do_check(self.args)
+            log_msg = log.get_value().strip()
+        expected_msg = f"""If everyone were like you, I'd be out of business
+To push the models in organization:
+\tcd {pack_path}
+Transform the models into a git repository
+\tgit init .
+\tgit add .
+\tgit commit -m 'initial commit'
+add a remote repository to host the models
+for instance if you want to add the models to 'macsy-models'
+\tgit remote add origin https://github.com/macsy-models/
+\tgit tag -a <tag vers>  # check https://macsylib.readthedocs.io/en/latest/modeler_guide/publish_package.html#sharing-your-models
+\tgit push origin <tag vers>"""
+        self.maxDiff = None
+        self.assertEqual(expected_msg, log_msg)
+
+
     @unittest.skipIf(not lxml, 'lxml is not installed')
     def test_check_bad_syntax_model_conf_lxml(self):
         pack_name = 'fake_1'
         pack_path = self.create_fake_package(pack_name)
         self.args.path = pack_path
         self.args.tool_name='msl_data'
+        self.args.grammar = '2.1'
+
         shutil.copy(self.find_data('conf_files', 'model_conf_bad_value.xml'),
                     os.path.join(pack_path, 'model_conf.xml'))
         with self.catch_log(log_name='macsylib'):
@@ -970,6 +1167,8 @@ Please fix issues above, before publishing these models."""
         pack_path = self.create_fake_package(pack_name)
         self.args.path = pack_path
         self.args.tool_name='msl_data'
+        self.args.grammar = '2.1'
+
         shutil.copy(self.find_data('conf_files', 'model_conf_bad_value.xml'),
                     os.path.join(pack_path, 'model_conf.xml'))
         m_etree = macsydata.etree
