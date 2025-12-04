@@ -26,7 +26,7 @@ Features
 
 New version of the model definition grammar
 """""""""""""""""""""""""""""""""""""""""""
-The version of the grammar is now 2.1. The **semantic** stay **unchanged**. But the **syntax** is little **more stringent**.
+The version of the grammar is now `2.1`. The **semantic** stay **unchanged**. But the **syntax** is little **more stringent**.
 We develop a new model definition validation system.
 This system check thoroughly the xml models definitions.
 Only valid xml comments are allowed :code:`<!-- comment -->`
@@ -47,6 +47,7 @@ Moderate
 
 Fix bug during the cluster building step, with circularization
 see https://github.com/gem-pasteur/macsyfinder/issues/81 and https://github.com/macsy-models/CONJScan/issues/1
+Impacted versions: < 1.0.4
 
 Minor
 """""
