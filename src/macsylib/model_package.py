@@ -378,7 +378,7 @@ class ModelPackage:
         return metadata
 
 
-    def check(self, grammar='2.0') -> tuple[list[str], list[str]]:
+    def check(self, grammar='2.1') -> tuple[list[str], list[str]]:
         """
         Check the QA of this package
         """
@@ -387,7 +387,10 @@ class ModelPackage:
 
         for meth in (self._check_structure, self._check_metadata, self._check_model_grammar, self._check_model_consistency,
                      self._check_profiles, self._check_model_conf):
-            errors, warnings = meth()
+            if meth.__name__ == '_check_model_grammar':
+                errors, warnings = meth(grammar=grammar)
+            else:
+                errors, warnings = meth()
             all_errors.extend(errors)
             all_warnings.extend(warnings)
             if all_errors:
