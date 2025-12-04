@@ -102,16 +102,20 @@ in terms of Gene content and genomic architecture criteria.
 
 * The element root of a System's model is "model".
 
-  * It has a mandatory attribute: "inter_gene_max_space", an integer representing the maximal number of components
-    without a match between two components with a match for a component profile in order to consider them contiguous (part of a same *Cluster*).
-  * The version of the XML grammar (the actual version is "2.0")
+  * It has a mandatory attributes:
+
+     * *inter_gene_max_space*: an integer representing the maximal number of components
+       without a match between two components with a match for a component profile in order to consider them contiguous (part of a same *Cluster*).
+     * *vers*: The version of the XML grammar (the current version is "2.1", supported version: "2.0", "2.1")
+
   * The element "model" may have attributes:
 
      * **min_mandatory_genes_required**: an *integer* representing the minimal number of mandatory genes required
        to infer the system's presence.
      * **min_genes_required**: an *integer* representing the minimal number of mandatory or accessory genes
        (whose corresponding proteins match a profile of the model) required to infer the system's presence.
-     * **multi_loci**: a *boolean* set to 'true' to allow the definition of "scattered" systems
+     * **multi_loci**: a *boolean* set to 'true' (``boolean values must be in lower case.
+       'True' and 'False' are not allowed in grammar vers=2.1``) to allow the definition of "scattered" systems
        (i.e., systems encoded at different genomic loci or by different gene *clusters*).
        If not specified, *default value is false*.
      * **max_nb_genes** define how many genes is necessary to consider a system as full.
@@ -124,7 +128,7 @@ in terms of Gene content and genomic architecture criteria.
 * The element "gene" has several mandatory attributes:
 
    * **name**: a *string* representing the name of the component/gene which must match that of a profile enclosed in the profile directory of
-     the macsy-model package (see :ref:`below <provide-hmm_label>`).
+     the macsy-model package (see :ref:`below <provide-hmm_label>`). ``It's not allowed to have several gene element at the model level with the same attribute name.``
    * **presence**: a *string* representing the status of the gene's presence in the system.
      It can take four values among "mandatory", "accessory", "neutral", "forbidden" (see above).
 
