@@ -10,7 +10,7 @@ This work is licensed under the Creative Commons Attribution-NonCommercial-Share
 To view a copy of this license, visit http://creativecommons.org/licenses/by-nc-sa/4.0/
 or send a letter to Creative Commons, PO Box 1866, Mountain View, CA 94042, USA.
 -->
-<model inter_gene_max_space="5" min_mandatory_genes_required="2" min_genes_required="3" vers="2.0">
+<model inter_gene_max_space="5" min_mandatory_genes_required="2" min_genes_required="3" vers="2.1">
   <!--GENE_1 is a mandatory gene. GENE_1.hmm must exist in profiles directory-->
   <gene name="GENE_1" presence="mandatory" />
   <!--GENE_2 is accessory and can be exchanged with GENE_3 which play a similar role in model.
