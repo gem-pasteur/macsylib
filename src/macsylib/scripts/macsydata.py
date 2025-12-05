@@ -852,7 +852,7 @@ To turn this feature ON:
                            attrib={'inter_gene_max_space': "5",
                                    'min_mandatory_genes_required': "2",
                                    'min_genes_required': "3",
-                                   'vers': "2.0"
+                                   'vers': "2.1"
                                    }
         )
         comment = ET.Comment('GENE_1 is a mandatory gene. GENE_1.hmm must exist in profiles directory')
