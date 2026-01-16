@@ -59,7 +59,7 @@ def join_def_path(*args: str) -> str:
     """
     join different elements of the definition path
     :param str args: the elements of the definition path, each element must be a string
-    :return: The return value is the concatenation of different elements of args with one
+    :return: The return value is the concatenation of different elements of ar <gene name="T4SS_MOBM"/>gs with one
     separator
     """
     return _SEPARATOR.join(args)
@@ -78,6 +78,11 @@ def scan_models_dir(models_dir: str, profile_suffix: str = ".hmm", relative_path
     for models_type in os.listdir(models_dir):
         model_path = os.path.join(models_dir, models_type)
         if os.path.isdir(model_path):
+            if os.path.basename(model_path).startswith('.'):
+                # we ignore .<dir name>
+                # for instance if I use pycharm to modify a package model
+                # it will create .idea directory and make mess with msf_data
+                continue
             new_model = ModelLocation(path=model_path,
                                       profile_suffix=profile_suffix,
                                       relative_path=relative_path)
