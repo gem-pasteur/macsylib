@@ -145,7 +145,7 @@
         "https://www.python.org/downloads/ (>= 3.10)",
         "http://hmmer.org/ (>= 3.1)"
     ],
-    "version": "1.0",
+    "version": "1.0.4",
     "codemeta:contIntegration": {
         "id": "https://github.com/gem-pasteur/macsylib/actions"
     },
