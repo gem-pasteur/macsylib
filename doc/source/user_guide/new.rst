@@ -14,7 +14,14 @@
 What's new in MacSyLib
 **********************
 
+main
+====
 
+Bug fix
+-------
+
+The command line option `--no-cut-ga` supersed the *model.conf* `cut_ga` value.
+(see https://github.com/gem-pasteur/macsyfinder/issues/84)
 
 V 1.0.4
 =======
