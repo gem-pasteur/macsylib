@@ -585,6 +585,15 @@ class TestConfig(MacsyTest):
         cfg = Config(self.defaults, self.parsed_args)
         self.assertTrue(cfg.cut_ga())
 
+        # the user specify --no-cut-ga
+        # the modeler set cut-ga true in model_conf
+        self.parsed_args.cut_ga = None
+        self.parsed_args.no_cut_ga = True
+        self.parsed_args.models_dir = self.find_data('models')
+        self.parsed_args.models = ['Model_conf_cutga', 'all']
+        cfg = Config(self.defaults, self.parsed_args)
+        self.assertFalse(cfg.cut_ga())
+
     def test_models(self):
         self.parsed_args.models = ['TFF-SF', 'all']
         cfg = Config(self.defaults, self.parsed_args)

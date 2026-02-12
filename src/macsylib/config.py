@@ -150,7 +150,7 @@ class Config:
 
     model_opts = ('itself', 'exchangeable', 'mandatory', 'accessory', 'neutral',
                   'out_of_cluster', 'redundancy_penalty',
-                  'e_value_search', 'e_value_sel', 'coverage_profile', 'cut_ga')
+                  'e_value_search', 'e_value_sel', 'coverage_profile', 'cut_ga', 'no_cut_ga')
 
     path_opts = ('sequence_db', 'topology_file', 'cfg_file', 'log_file', 'models_dir', 'system_models_dir', 'out_dir',
                  'profile_suffix', 'res_search_dir', 'res_search_suffix', 'res_extract_suffix', 'index_dir')
@@ -244,7 +244,6 @@ class Config:
         # superseed options (potentially in model_conf)
         # by the values provided by previous-run, project conf, the users on the commandline
         self._options.update(self._tmp_opts)
-
         # check that hmmsearch exists
         if not self.hmmer():
             msg = "'hmmsearch' NOT found in your PATH, Please specify hmmsearch path with --hmmer opt " \
@@ -373,7 +372,10 @@ class Config:
         args_dict = {k: v for k, v in vars(parsed_args).items() if not k.startswith('__') and v is not None}
         for opt in self.model_opts:
             if opt in args_dict:
-                self._tmp_opts[opt] = args_dict[opt]
+                if opt == 'no_cut_ga':
+                    self._tmp_opts['cut_ga'] = False
+                else:
+                    self._tmp_opts[opt] = args_dict[opt]
                 del args_dict[opt]
         self._set_options(args_dict)
 
@@ -789,7 +791,9 @@ class Config:
         :return:
         :rtype:
         """
+        print(f'!!!!!!!!!!!!!! _set_no_cut_ga {value = } !!!!!!!!!!!!!!!!!!!!!!!!')
         self._options['cut_ga'] = not value
+        print(f"!!!! {self._options['cut_ga'] = }")
 
 
     def models_dir(self) -> str | None:
